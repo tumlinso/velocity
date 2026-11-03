@@ -1,0 +1,31 @@
+# Local authority, environments, build output, and private execution evidence.
+/.todo-orchestrator/
+/.venv/
+/build/
+/out/
+/CMakeUserPresets.json
+/planning/private/
+/benchmarks/artifacts/
+/tests/artifacts/
+__pycache__/
+*.pyc
+*.o
+*.pcm
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+perf.data*
+gmon.out
+callgrind.out.*
+
+# Supplied or generated biological data stays outside version control.
+*.h5ad
+*.h5mu
+*.h5ads
+*.h5td
+*.zarr/
+*.zarr2/
+*.zarr3/

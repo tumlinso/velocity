@@ -1,0 +1,96 @@
+{
+  "format": "velocity-cppm.setup-receipt",
+  "version": 1,
+  "observed_at": "2026-11-03T19:16:02Z",
+  "repository": {
+    "root": "/home/tumlinson/velocity.cppm",
+    "origin": "git@github.com:tumlinso/velocity.cppm.git",
+    "project_control_project": "velocity-cppm",
+    "project_control_repository": "velocity-cppm",
+    "registered_as_authority_repository": true
+  },
+  "software": {
+    "project_control_version": "0.5.2",
+    "todo_orchestrator_version": "0.2.1"
+  },
+  "todo": {
+    "authority_initialized": true,
+    "project_id": "velocity-cppm",
+    "repository_id": "velocity-cppm",
+    "authority_id": "velocity-cppm-authority",
+    "authority_path": ".todo-orchestrator/authority.sqlite3",
+    "metadata_path": ".todo-orchestrator/project.json",
+    "owner_credentials": "private files outside the repository",
+    "integration_ref": "refs/heads/todo-orchestrator/integration/773689304c4aa548f15c",
+    "integration_base": "faee1e2eac68d462e40869b523feae9fdfd8bdbc",
+    "provider_runtime_directories_provisioned": true,
+    "integrity_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "verification": {
+    "fresh_source_retrieval": {
+      "status": "ok",
+      "repository": "velocity-cppm",
+      "path": "README.md",
+      "content_sha256_at_observation": "0ea25342f17c3b47c5db39126a7dd19558a8a141b6c97f49f43a842c67f59fc9",
+      "exact": true,
+      "complete": true,
+      "client": "fresh independent Python process using installed Project Control Runtime and observer composition"
+    },
+    "fresh_semantic_overview": {
+      "workflow_available": true,
+      "authority": "todo_semantic_workflow",
+      "semantic_revision": 8,
+      "provider_revision_skew": 0,
+      "status": "partial",
+      "optional_omission": "semantic_context_extension_unavailable",
+      "client": "fresh independent Python process using installed Project Control Runtime and observer composition"
+    },
+    "host_scoped_sessions": {
+      "observer": "verified",
+      "coder": "verified",
+      "mutator": "verified",
+      "investigator": "verified",
+      "skill_assembler": "verified",
+      "scope": "exact project, authority, host principal, and profile",
+      "expires_at": "2026-12-02T19:15:45.733214+00:00",
+      "other_project_and_attempt_credentials_preserved": true,
+      "recovery_evidence": "private grant-family credential and per-profile journals outside the repository"
+    },
+    "agent_scoped_mcp_overview": {
+      "workflow_available": true,
+      "authority": "todo_semantic_workflow",
+      "semantic_revision": 8,
+      "status": "partial",
+      "optional_omission": "semantic_context_extension_unavailable",
+      "service_restarted": false,
+      "client": "bootstrap subagent mcp__project_control__overview connection",
+      "scope_note": "This observation establishes only this subagent connection, not the state of root-connected clients."
+    },
+    "root_connected_clients": {
+      "observation": "project_not_permitted for velocity-cppm",
+      "routes": [
+        "mcp__project_control__overview",
+        "mcp__codex_apps__project_control overview and read"
+      ],
+      "client_state": "connections existed before registration; a fresh connection or process is needed before retrying",
+      "service_restarted": false
+    },
+    "independent_verification_artifacts": {
+      "script": "/tmp/velocity_project_control_verify.py",
+      "sanitized_output": "/tmp/velocity_project_control_verify.json",
+      "persistence": "temporary; these files are not part of the repository"
+    }
+  },
+  "planning": {
+    "accepted_plan_revisions": 0,
+    "work_definitions": 0,
+    "active_runs": 0,
+    "next_step": "Plan in the next user-directed step."
+  },
+  "limits": [
+    "The source hash records the observed file at setup time and can change with subsequent documentation edits.",
+    "The owner bearer is not supplied to routine Project Control profiles.",
+    "Fresh process observation and the bootstrap subagent connection succeeded. Root-connected clients returned project_not_permitted; retry them after a fresh connection or process. No service was restarted."
+  ]
+}
