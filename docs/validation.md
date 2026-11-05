@@ -42,7 +42,7 @@ identified parameters or absolute biological time.
   results. Report nonfinite behavior, reduction sensitivity, and the qualified
   precision range. Exact equality is not the project acceptance requirement.
 - Test real AnnData integration independently from numerical-buffer tests using
-  anndata.cppm and pinned upstream readers when that adapter is implemented.
+  AnnData++ and pinned upstream readers when that adapter is implemented.
 
 The native reference is useful for regression and later Cellerator comparison;
 analytic and upstream checks remain necessary to detect defects shared by both

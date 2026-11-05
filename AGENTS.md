@@ -54,7 +54,7 @@ overwrite another agent's work. Commit and push only when authorized.
   Preserve explicit access to the reference implementation when custom paths
   are selected. Do not impose a universal tensor, backend, or scheduler framework.
 - Preserve dependency direction: Cellerator may consume this library;
-  velocity.cppm does not depend on Cellerator or its runtime. Reuse anndata.cppm
+  velocity.cppm does not depend on Cellerator or its runtime. Reuse AnnData++
   for AnnData storage and memory integration when that adapter is designed.
 
 ## Scientific and performance evidence

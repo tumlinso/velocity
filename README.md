@@ -45,7 +45,7 @@ cross-implementation checks without freezing the library's architecture before
 it has been designed.
 
 The library remains independent of Cellerator, Python, Torch, and CUDA.
-AnnData interoperability should reuse [anndata.cppm](https://github.com/tumlinso/anndata.cppm)
+AnnData interoperability should reuse [AnnData++](https://github.com/tumlinso/anndatapp)
 and its native memory access rather than duplicate its storage codecs. Exact
 adapter packaging and dependency choices belong to the next planning step.
 

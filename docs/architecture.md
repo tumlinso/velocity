@@ -116,7 +116,7 @@ the dependency does not reverse. Any shared device-compatible numerical helpers
 must have an explicit compilation boundary rather than requiring all code to
 use one compiler or execution model.
 
-Reuse [anndata.cppm](https://github.com/tumlinso/anndata.cppm) for AnnData data access and
+Reuse [AnnData++](https://github.com/tumlinso/anndatapp) for AnnData data access and
 serialization. An integration boundary can select layers/metadata and acquire
 native views, while numerical operations remain usable with external buffers
 or synthetic inputs. Exact adapter dependencies and packaging await planning.

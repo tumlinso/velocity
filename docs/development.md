@@ -9,7 +9,7 @@ planning. Do not infer permission to begin implementation from the architecture
 or source-opportunity documents.
 
 The intended public entry point is `import velocity;` using C++20 named modules.
-Use [anndata.cppm](https://github.com/tumlinso/anndata.cppm/blob/main/docs/development.md)
+Use [AnnData++](https://github.com/tumlinso/anndatapp/blob/main/docs/development.md)
 as a tooling reference:
 Clang 18 with matching `clang-scan-deps`, CMake >=3.28, and Ninja >=1.11 are a
 reasonable initial target. They are not a qualified velocity.cppm toolchain
