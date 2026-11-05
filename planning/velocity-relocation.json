@@ -1,0 +1,1089 @@
+{
+  "format": "velocity.first-party-relocation",
+  "version": 1,
+  "started_at_utc": "2026-11-05T13:42:29.580380+00:00",
+  "source": "/home/tumlinson/velocity.cppm",
+  "portable_destination": "/home/tumlinson/Cellerator/src/velocity",
+  "quarantine_destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators",
+  "status": "relocated_without_runtime_validation",
+  "files": [
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/cpu_kernels.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/cpu_kernels.cpp",
+      "sha256_before": "25876233fe6badb9c386bf4f2671939e47b53ae5befb23fcb36a85aad21974c5",
+      "section": "portable",
+      "sha256_after": "25876233fe6badb9c386bf4f2671939e47b53ae5befb23fcb36a85aad21974c5",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/cpu_kernels.hh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/cpu_kernels.hh",
+      "sha256_before": "ff2602903a70de95e2565e8f6c7a28df4b33cf09462ef3a0a5f729a66db7ca1c",
+      "section": "portable",
+      "sha256_after": "ff2602903a70de95e2565e8f6c7a28df4b33cf09462ef3a0a5f729a66db7ca1c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/fit.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/fit.cpp",
+      "sha256_before": "afb93c99bfd7ca6cf49ddaeb2533b002514df3e54044fa01779e0f56d0783e39",
+      "section": "portable",
+      "sha256_after": "afb93c99bfd7ca6cf49ddaeb2533b002514df3e54044fa01779e0f56d0783e39",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/fit.hh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/fit.hh",
+      "sha256_before": "b2327ab8fe876ff1787a86f734a04ed92358f0e8bf093d200972bef085433878",
+      "section": "portable",
+      "sha256_after": "b2327ab8fe876ff1787a86f734a04ed92358f0e8bf093d200972bef085433878",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/neighborhood.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/neighborhood.cpp",
+      "sha256_before": "9b935be73ae69fa92bc5314581cf12d85c67a4108e569705d14ff0a126b9ee2f",
+      "section": "portable",
+      "sha256_after": "9b935be73ae69fa92bc5314581cf12d85c67a4108e569705d14ff0a126b9ee2f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/prepared.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/prepared.cpp",
+      "sha256_before": "8f38f3bfbb2b3cc4492331b6fd906ae365a6091170a8f5e9d0129ab0b66aada1",
+      "section": "portable",
+      "sha256_after": "8f38f3bfbb2b3cc4492331b6fd906ae365a6091170a8f5e9d0129ab0b66aada1",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/prepared.hh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/prepared.hh",
+      "sha256_before": "ae89a058a927af02ad19eeea03bfd51a88934e5e2856da12fad39275cba53749",
+      "section": "portable",
+      "sha256_after": "ae89a058a927af02ad19eeea03bfd51a88934e5e2856da12fad39275cba53749",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/scientific.hh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/scientific.hh",
+      "sha256_before": "d75f3c7a2876dec1614acb3ec396f6b90a1723d0c374ac7544e0e11a2a1f4fec",
+      "section": "portable",
+      "sha256_after": "d75f3c7a2876dec1614acb3ec396f6b90a1723d0c374ac7544e0e11a2a1f4fec",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/scientific_adapters.hh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/scientific_adapters.hh",
+      "sha256_before": "d2abbfb508e5cdc99767e05bcf633f8a17be14c490ec4291af11c70e82c40060",
+      "section": "portable",
+      "sha256_after": "d2abbfb508e5cdc99767e05bcf633f8a17be14c490ec4291af11c70e82c40060",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/sensitivity.hh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/sensitivity.hh",
+      "sha256_before": "f4bff44e8096feb2c7ed3cd96485c04218b44caf4d7dfac86fbc9b4371426af3",
+      "section": "portable",
+      "sha256_after": "f4bff44e8096feb2c7ed3cd96485c04218b44caf4d7dfac86fbc9b4371426af3",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/stochastic_fit.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/stochastic_fit.cpp",
+      "sha256_before": "e5b2ede97c3445102dbe3db41fab31d4f363d7eeb13cdf194b52bcd2167d6899",
+      "section": "portable",
+      "sha256_after": "e5b2ede97c3445102dbe3db41fab31d4f363d7eeb13cdf194b52bcd2167d6899",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/detail/stochastic_fit.hh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/detail/stochastic_fit.hh",
+      "sha256_before": "752e535c372e955d0284786eadd25c27f8d86ce9c53702ed9360344c5fa8610c",
+      "section": "portable",
+      "sha256_after": "752e535c372e955d0284786eadd25c27f8d86ce9c53702ed9360344c5fa8610c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/precision.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/precision.cpp",
+      "sha256_before": "d17f2839b5bf16d68f3ea1dbfc0e1de64638190fe140932dcef58e6148e0f059",
+      "section": "portable",
+      "sha256_after": "d17f2839b5bf16d68f3ea1dbfc0e1de64638190fe140932dcef58e6148e0f059",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/velocity.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/velocity.cpp",
+      "sha256_before": "4f460cce0c8b46244bf0dfa0e85e05cb1452ee48787cf71e047a1961f6cdfc6c",
+      "section": "portable",
+      "sha256_after": "4f460cce0c8b46244bf0dfa0e85e05cb1452ee48787cf71e047a1961f6cdfc6c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/velocity.cppm",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/velocity.cppm",
+      "sha256_before": "59327a71b7ef52b37233986507137e20ab0eb6186539fe8b5cd341147e820344",
+      "section": "portable",
+      "sha256_after": "59327a71b7ef52b37233986507137e20ab0eb6186539fe8b5cd341147e820344",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/src/velocity.precision.cppm",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/src/velocity.precision.cppm",
+      "sha256_before": "5241b6675093ad2104581e33d6077b436194b0d26d118e5058183b927169d991",
+      "section": "portable",
+      "sha256_after": "5241b6675093ad2104581e33d6077b436194b0d26d118e5058183b927169d991",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/cmake/test-installed-consumer.cmake",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/cmake/test-installed-consumer.cmake",
+      "sha256_before": "338502b1c908b8cea8f0a9b38c177899a0a72f7ae8696c44e82b4446742a2c16",
+      "section": "portable",
+      "sha256_after": "338502b1c908b8cea8f0a9b38c177899a0a72f7ae8696c44e82b4446742a2c16",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/cmake/velocityConfig.cmake.in",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/cmake/velocityConfig.cmake.in",
+      "sha256_before": "7d7fb8711e2fea7d55e18dba42ecaf1a4fc58ffc9b96d563073936ae511f5e8a",
+      "section": "portable",
+      "sha256_after": "79c1c1b8166558c83bc4d5c2171352df44c200b8144d301288d68c076bac9623",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/cmake/velocityModuleProvider.cmake",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/cmake/velocityModuleProvider.cmake",
+      "sha256_before": "9ae893de9298170056691e18acb08c59bd4b087bc0608c5f2e398fc8a556d4f1",
+      "section": "portable",
+      "sha256_after": "9ae893de9298170056691e18acb08c59bd4b087bc0608c5f2e398fc8a556d4f1",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/examples/selective_precision.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/examples/selective_precision.cpp",
+      "sha256_before": "1eab6b718a08284ad820f1689b5fc98d32d9c68cc60b493eb54bd56599a5a04e",
+      "section": "portable",
+      "sha256_after": "1eab6b718a08284ad820f1689b5fc98d32d9c68cc60b493eb54bd56599a5a04e",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/examples/steady_state.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/examples/steady_state.cpp",
+      "sha256_before": "c083f7ffb0d54248c3e9f817b71869a562665ff5ee2cc50bf742e4f1ef9169c0",
+      "section": "portable",
+      "sha256_after": "c083f7ffb0d54248c3e9f817b71869a562665ff5ee2cc50bf742e4f1ef9169c0",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/examples/stochastic.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/examples/stochastic.cpp",
+      "sha256_before": "bb2948d8988f29a27d8b426efa09a09e8541c8bc01395822980d10a52fc4af67",
+      "section": "portable",
+      "sha256_after": "bb2948d8988f29a27d8b426efa09a09e8541c8bc01395822980d10a52fc4af67",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/docs/api.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/docs/api.md",
+      "sha256_before": "3e1da9b51368b120f373c4d73653a63940e400a93d8885ae384c1b65e6ec5a0f",
+      "section": "portable",
+      "sha256_after": "3e1da9b51368b120f373c4d73653a63940e400a93d8885ae384c1b65e6ec5a0f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/docs/architecture.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/docs/architecture.md",
+      "sha256_before": "a5f54efb97d1cef1e0e66061957071bd9012790b09e63097991d96f78e7c2867",
+      "section": "portable",
+      "sha256_after": "67145b6e8695a8c8e863615e0f2e6a1fadc5f09141d7677d9370d490d7570b6b",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/docs/development.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/docs/development.md",
+      "sha256_before": "ce1bc39c8fd04b92c70d0bebe27ca5a2bdc4916ab7a0d99013c1891d6c2c318c",
+      "section": "portable",
+      "sha256_after": "a04825522baeedf03a4245c90871bc014ee3c7543ecafea510f3aea8282a105c",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/docs/precision.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/docs/precision.md",
+      "sha256_before": "7dfaecc3920aba59318d48cad958ce4ad1f1691b9199afaae52abbd19b2b7cf5",
+      "section": "portable",
+      "sha256_after": "2ab9f70fa4ea4b1ffe2a2344e5c9dfbddeb9f31218a9e3b54aae22bc03b4ef9b",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/docs/scvelo-foundation.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/docs/scvelo-foundation.md",
+      "sha256_before": "ca8a5df933f469e68a52b05c146391355f315ced7bc841e55e61d3a9d46ad46b",
+      "section": "portable",
+      "sha256_after": "ca8a5df933f469e68a52b05c146391355f315ced7bc841e55e61d3a9d46ad46b",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/docs/segmentation.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/docs/segmentation.md",
+      "sha256_before": "b75a33dbabc82e2a5785fa07951bdee14f11d79a54e3c6327417227d85908609",
+      "section": "portable",
+      "sha256_after": "f90b902535cfa09b2d1e39c1a2dde4a402869fda2f428058840148a151dd21d4",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/docs/validation.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/docs/validation.md",
+      "sha256_before": "582af41c260bf9fc772eb0a58d9aa52788117e3b8d879b51b7b986eb07e9a609",
+      "section": "portable",
+      "sha256_after": "582af41c260bf9fc772eb0a58d9aa52788117e3b8d879b51b7b986eb07e9a609",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/CMakeLists.txt",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/CMakeLists.txt",
+      "sha256_before": "b9901db263165af4c27646581f8c2232d2025034c2295011666bb5d54c2363ce",
+      "section": "portable",
+      "sha256_after": "8150f0c00b80e57e92255af01d089118aa18e46e0078a9bc514d096f6cc8ebf8",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/CMakePresets.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/CMakePresets.json",
+      "sha256_before": "f910913ae1ec05531859c04ec5b418813b79eedcf9dac45a406b648598059801",
+      "section": "portable",
+      "sha256_after": "f910913ae1ec05531859c04ec5b418813b79eedcf9dac45a406b648598059801",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/README.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/README.md",
+      "sha256_before": "2072829ad42d8c4732de12aff793af0ed32daa40411ab18058c153c906aafe88",
+      "section": "portable",
+      "sha256_after": "51a7e20b01a2288f9b96a0057ea0a13a056e1990def3de0572a31d44b4dd2298",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/STYLE.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/STYLE.md",
+      "sha256_before": "7ce3bfdf4d1f957faf9eba9eb725eee1e75bde6611744a78f8577bf136536ebe",
+      "section": "portable",
+      "sha256_after": "7ce3bfdf4d1f957faf9eba9eb725eee1e75bde6611744a78f8577bf136536ebe",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/THIRD_PARTY_NOTICES.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/THIRD_PARTY_NOTICES.md",
+      "sha256_before": "a8b742fbf1db0d26fcde9b22dce34f0be965816a0be51a3dd72e070274b7b6a3",
+      "section": "portable",
+      "sha256_after": "a8b742fbf1db0d26fcde9b22dce34f0be965816a0be51a3dd72e070274b7b6a3",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/.gitignore",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/.gitignore",
+      "sha256_before": "bfaa257817f546d1ec752d3312db1955a7f1cdf670748d849d439321e8c781bc",
+      "section": "portable",
+      "operation": "copy",
+      "sha256_after": "bfaa257817f546d1ec752d3312db1955a7f1cdf670748d849d439321e8c781bc",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/benchmark_reference.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/benchmark_reference.py",
+      "sha256_before": "aa82f5e54cad4286e2d1389cf99244f9927d10798bebb404e3ca4bb7a63b7336",
+      "section": "portable_support",
+      "sha256_after": "aa82f5e54cad4286e2d1389cf99244f9927d10798bebb404e3ca4bb7a63b7336",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/benchmark_stochastic.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/benchmark_stochastic.py",
+      "sha256_before": "10e3f8752e3c0270aa03c738dd352fc1147c32b9ae05f8eaabcb57d871a8ea8b",
+      "section": "portable_support",
+      "sha256_after": "10e3f8752e3c0270aa03c738dd352fc1147c32b9ae05f8eaabcb57d871a8ea8b",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/build_anndatapp.sh",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/build_anndatapp.sh",
+      "sha256_before": "6d279357d801d2692a981b4d7b03bff49af70415a125b5f706e4a1c7259c19af",
+      "section": "portable_support",
+      "sha256_after": "6d279357d801d2692a981b4d7b03bff49af70415a125b5f706e4a1c7259c19af",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/measure_build.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/measure_build.py",
+      "sha256_before": "72a053714065dbfa0f951ae10260093e7fd8035d1581494d534920784bf3358a",
+      "section": "portable_support",
+      "sha256_after": "72a053714065dbfa0f951ae10260093e7fd8035d1581494d534920784bf3358a",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/qualify.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/qualify.py",
+      "sha256_before": "81546235cddc7272a7ef9ce77e522ade3ee078006b0156a6c4d6841612b82688",
+      "section": "portable_support",
+      "sha256_after": "81546235cddc7272a7ef9ce77e522ade3ee078006b0156a6c4d6841612b82688",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/qualify_sensitivity.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/qualify_sensitivity.py",
+      "sha256_before": "add6ea767a41276f4274a6a67ae096a2994d53f1c201f48e8547e49176d9702a",
+      "section": "portable_support",
+      "sha256_after": "add6ea767a41276f4274a6a67ae096a2994d53f1c201f48e8547e49176d9702a",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/qualify_stochastic.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/qualify_stochastic.py",
+      "sha256_before": "c74d2e983e78930a943f8dda0f6be5e3352de049ba18aee7e206915ff1142c35",
+      "section": "portable_support",
+      "sha256_after": "c74d2e983e78930a943f8dda0f6be5e3352de049ba18aee7e206915ff1142c35",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/run_benchmarks.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/run_benchmarks.py",
+      "sha256_before": "3bf69751a9f6f57b4a77e4fa76e734fa4f0d8666c99da23ae7eeff6647cdb1a6",
+      "section": "portable_support",
+      "sha256_after": "3bf69751a9f6f57b4a77e4fa76e734fa4f0d8666c99da23ae7eeff6647cdb1a6",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tools/run_stochastic_benchmarks.py",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tools/run_stochastic_benchmarks.py",
+      "sha256_before": "6c51f864f73677e1ec844d32d21548b06f1933270905da53b99916419377d4a1",
+      "section": "portable_support",
+      "sha256_after": "6c51f864f73677e1ec844d32d21548b06f1933270905da53b99916419377d4a1",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/consumer/CMakeLists.txt",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/consumer/CMakeLists.txt",
+      "sha256_before": "2ca7a7b8adf8f2a11c8575eeceff9aaf0e131efc7e75ffcb42d7250998264273",
+      "section": "portable_support",
+      "sha256_after": "2ca7a7b8adf8f2a11c8575eeceff9aaf0e131efc7e75ffcb42d7250998264273",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/consumer/main.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/consumer/main.cpp",
+      "sha256_before": "d81fdd76273f26a31fdcd8ea722fe692c481209e6c679389f33ed5c44511136c",
+      "section": "portable_support",
+      "sha256_after": "d81fdd76273f26a31fdcd8ea722fe692c481209e6c679389f33ed5c44511136c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/interop_driver.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/interop_driver.cpp",
+      "sha256_before": "8c9c6cde0270cd75eb0bc81d98dd1e3c97d9ea3a94864bc98ee19bfd0f8a414f",
+      "section": "portable_support",
+      "sha256_after": "8c9c6cde0270cd75eb0bc81d98dd1e3c97d9ea3a94864bc98ee19bfd0f8a414f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/precision_interop_driver.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/precision_interop_driver.cpp",
+      "sha256_before": "0b99b1690e88f5309f0d3ad3e4c0e483629f6dd1ca12378352ca2d1e92217847",
+      "section": "portable_support",
+      "sha256_after": "0b99b1690e88f5309f0d3ad3e4c0e483629f6dd1ca12378352ca2d1e92217847",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/requirements-reference.txt",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/requirements-reference.txt",
+      "sha256_before": "82f47870701575b8c3f1fa32aa7df4def562c5ac78f205e011d694b916c77844",
+      "section": "portable_support",
+      "sha256_after": "82f47870701575b8c3f1fa32aa7df4def562c5ac78f205e011d694b916c77844",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/milestone-1.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/milestone-1.json",
+      "sha256_before": "8cc6ea49d1eefe33b636c257cec21476d653ae8b5223cee19abcce3da9887d1d",
+      "section": "historical_evidence",
+      "sha256_after": "8cc6ea49d1eefe33b636c257cec21476d653ae8b5223cee19abcce3da9887d1d",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/milestone-2-deterministic-regression.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/milestone-2-deterministic-regression.json",
+      "sha256_before": "eacef9ab43b93b2c54870a5834f6bee7f2ec772a2d45faad2407db55142c898d",
+      "section": "historical_evidence",
+      "sha256_after": "eacef9ab43b93b2c54870a5834f6bee7f2ec772a2d45faad2407db55142c898d",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/milestone-2-native.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/milestone-2-native.json",
+      "sha256_before": "b4a38acbcbe986a0af07e6d7fc8c709c02b7f3df3bf189376aa700dbff607bef",
+      "section": "historical_evidence",
+      "sha256_after": "b4a38acbcbe986a0af07e6d7fc8c709c02b7f3df3bf189376aa700dbff607bef",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/milestone-2-solver-review.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/milestone-2-solver-review.json",
+      "sha256_before": "17ce8af26d5bbc624d812c5c45521b7e4fea9cd7c1e92c0d4ac3bab7853eb195",
+      "section": "historical_evidence",
+      "sha256_after": "17ce8af26d5bbc624d812c5c45521b7e4fea9cd7c1e92c0d4ac3bab7853eb195",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/milestone-2.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/milestone-2.json",
+      "sha256_before": "8b5584307acb6c15e8818fef3c9018fd86649cca32752ae4ca49deb40c7df724",
+      "section": "historical_evidence",
+      "sha256_after": "8b5584307acb6c15e8818fef3c9018fd86649cca32752ae4ca49deb40c7df724",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/milestone-3.json",
+      "sha256_before": "a72e1c8a2d73fc25164199c9d6face05fac61da403b1315dac123305043326e5",
+      "section": "historical_evidence",
+      "sha256_after": "a72e1c8a2d73fc25164199c9d6face05fac61da403b1315dac123305043326e5",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/precision-errors.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/precision-errors.json",
+      "sha256_before": "1774844ff55402bb8ff4bb687e15a0435d9f5f3c7fe3e5e0742fac9cc3be940f",
+      "section": "historical_evidence",
+      "sha256_after": "1774844ff55402bb8ff4bb687e15a0435d9f5f3c7fe3e5e0742fac9cc3be940f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/results/selective-precision.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/results/selective-precision.json",
+      "sha256_before": "d2da71a718c7152790f557cd272c94b6533efa6b7d0f767c46b99f68e869e50c",
+      "section": "historical_evidence",
+      "sha256_after": "d2da71a718c7152790f557cd272c94b6533efa6b7d0f767c46b99f68e869e50c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/sensitivity_driver.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/sensitivity_driver.cpp",
+      "sha256_before": "47bb76aacb8ef4966cfd190ccb09327495a516d390575259225747ee9a03092f",
+      "section": "portable_support",
+      "sha256_after": "47bb76aacb8ef4966cfd190ccb09327495a516d390575259225747ee9a03092f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/stochastic_interop_driver.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/stochastic_interop_driver.cpp",
+      "sha256_before": "f38e49e01152e397e19d4e26d5e7abe77d190c805f393d2d76b41e0fd08dc47f",
+      "section": "portable_support",
+      "sha256_after": "f38e49e01152e397e19d4e26d5e7abe77d190c805f393d2d76b41e0fd08dc47f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/test_cpu_kernels.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/test_cpu_kernels.cpp",
+      "sha256_before": "9a34bd515d95d0211cdcb18d93c88f62d8165aee3c62d4e08b400a0d1a041ed3",
+      "section": "portable_support",
+      "sha256_after": "9a34bd515d95d0211cdcb18d93c88f62d8165aee3c62d4e08b400a0d1a041ed3",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/test_customization.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/test_customization.cpp",
+      "sha256_before": "4289ddf428ad2a91584645f5c97a882229d1bcb00a272eaa417d315804bed921",
+      "section": "portable_support",
+      "sha256_after": "4289ddf428ad2a91584645f5c97a882229d1bcb00a272eaa417d315804bed921",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/test_precision.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/test_precision.cpp",
+      "sha256_before": "b36e4164d58ace9ae6d283bf4b3d3937d47cfd7c8633cfd97f8b049aae8ba5dc",
+      "section": "portable_support",
+      "sha256_after": "b36e4164d58ace9ae6d283bf4b3d3937d47cfd7c8633cfd97f8b049aae8ba5dc",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/test_precision_cpu.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/test_precision_cpu.cpp",
+      "sha256_before": "da8dec9df0f6d4a8b0596ba65082adf9a16c68cb9476160558b395196e721dd5",
+      "section": "portable_support",
+      "sha256_after": "da8dec9df0f6d4a8b0596ba65082adf9a16c68cb9476160558b395196e721dd5",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/test_reference.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/test_reference.cpp",
+      "sha256_before": "c518ebaaa53cc268c67544d8812b0d76390d7e851e70b44fd0f4ba49e269ef8b",
+      "section": "portable_support",
+      "sha256_after": "c518ebaaa53cc268c67544d8812b0d76390d7e851e70b44fd0f4ba49e269ef8b",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/test_stochastic.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/test_stochastic.cpp",
+      "sha256_before": "0172e28222bc0ec4b64b5d00d12e6c3e45e504e7656add4e1474ff21d6ae3616",
+      "section": "portable_support",
+      "sha256_after": "0172e28222bc0ec4b64b5d00d12e6c3e45e504e7656add4e1474ff21d6ae3616",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/tests/test_stochastic_customization.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/tests/test_stochastic_customization.cpp",
+      "sha256_before": "9b90974591e67cccf9e0c25a85ddc1029172af08b19d2b6bfbc82cb127a677ae",
+      "section": "portable_support",
+      "sha256_after": "9b90974591e67cccf9e0c25a85ddc1029172af08b19d2b6bfbc82cb127a677ae",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/precision_qualification.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/precision_qualification.cpp",
+      "sha256_before": "11c5b78a7bd13ddbc5e332dd8cd71cb4cac0bdd0405335a920b4ed87e8b32984",
+      "section": "portable_support",
+      "sha256_after": "11c5b78a7bd13ddbc5e332dd8cd71cb4cac0bdd0405335a920b4ed87e8b32984",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/qualification.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/qualification.cpp",
+      "sha256_before": "ec9c4f9baaf7ab0811caab8a0972f86eb56dca196be9077b6f0fe8bec14e5e72",
+      "section": "portable_support",
+      "sha256_after": "ec9c4f9baaf7ab0811caab8a0972f86eb56dca196be9077b6f0fe8bec14e5e72",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/results/milestone-1.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/results/milestone-1.json",
+      "sha256_before": "8722ab0420b2f8445d6227b3391457c7978f99fb979db2d419a0e9c6128c8757",
+      "section": "historical_evidence",
+      "sha256_after": "8722ab0420b2f8445d6227b3391457c7978f99fb979db2d419a0e9c6128c8757",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/results/milestone-2.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/results/milestone-2.json",
+      "sha256_before": "28ef8c61951258b1cb2f51de4bd548fb1ee23f6fb8e9bb90ac6d5b22d619790d",
+      "section": "historical_evidence",
+      "sha256_after": "28ef8c61951258b1cb2f51de4bd548fb1ee23f6fb8e9bb90ac6d5b22d619790d",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/results/milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/results/milestone-3.json",
+      "sha256_before": "ed28144ee0b9578781bd270550505c629c3f9d8212499cdd25ad477b1b95222c",
+      "section": "historical_evidence",
+      "sha256_after": "ed28144ee0b9578781bd270550505c629c3f9d8212499cdd25ad477b1b95222c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/results/module-build-milestone-2.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/results/module-build-milestone-2.json",
+      "sha256_before": "8e49b9874970771db7008fcea4e5af9bb1a25739fb4300c58b9712288cca112c",
+      "section": "historical_evidence",
+      "sha256_after": "8e49b9874970771db7008fcea4e5af9bb1a25739fb4300c58b9712288cca112c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/results/module-build-milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/results/module-build-milestone-3.json",
+      "sha256_before": "ed45b56966ac1328055c3c8cf713740943cf420bbb83a35602237a9dc7b2ca0e",
+      "section": "historical_evidence",
+      "sha256_after": "ed45b56966ac1328055c3c8cf713740943cf420bbb83a35602237a9dc7b2ca0e",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/results/module-build.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/results/module-build.json",
+      "sha256_before": "49ab70fe4b409d4e53f566801e68e6cf703f56890e166f786a207c83b37c326d",
+      "section": "historical_evidence",
+      "sha256_after": "49ab70fe4b409d4e53f566801e68e6cf703f56890e166f786a207c83b37c326d",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/benchmarks/stochastic_qualification.cpp",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/benchmarks/stochastic_qualification.cpp",
+      "sha256_before": "1fc33179c8ff1ea9dabd9f468e504dd4e7bb0394701f7a58404cfa8fe0cb6553",
+      "section": "portable_support",
+      "sha256_after": "1fc33179c8ff1ea9dabd9f468e504dd4e7bb0394701f7a58404cfa8fe0cb6553",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/README.md",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/README.md",
+      "sha256_before": "b6928e8da4404f165fda41fb752ffd83083528726148e86dfbf7987e059517e3",
+      "section": "quarantine",
+      "sha256_after": "8f63edc45580f73fd5d4456ff9f0b00215e2a7d1bb3a3e678489b145fa990d08",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/avx2/src/detail/cpu_kernels.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/avx2/src/detail/cpu_kernels.cpp",
+      "sha256_before": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+      "section": "quarantine",
+      "sha256_after": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/avx2/src/detail/cpu_kernels.hh",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/avx2/src/detail/cpu_kernels.hh",
+      "sha256_before": "25ecd283466a7b52192c0564ff6113f97a410c425cc6f719db8953b50ba1a9ee",
+      "section": "quarantine",
+      "sha256_after": "25ecd283466a7b52192c0564ff6113f97a410c425cc6f719db8953b50ba1a9ee",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/avx2/tests/test_cpu_kernels.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/avx2/tests/test_cpu_kernels.cpp",
+      "sha256_before": "d48d18942d30be18fba95f889dbffd7422f5bfecb7daa426f50f6771db6d6341",
+      "section": "quarantine",
+      "sha256_after": "d48d18942d30be18fba95f889dbffd7422f5bfecb7daa426f50f6771db6d6341",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/benchmarks/precision_cuda_qualification.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/benchmarks/precision_cuda_qualification.cpp",
+      "sha256_before": "3600d282af11ab5858e568e7df0464c385e760271cb63bdb4422f22d6262f1bc",
+      "section": "quarantine",
+      "sha256_after": "3600d282af11ab5858e568e7df0464c385e760271cb63bdb4422f22d6262f1bc",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/cmake/test-installed-cuda-consumer.cmake",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/cmake/test-installed-cuda-consumer.cmake",
+      "sha256_before": "4d469212f4c2f5055bb36ec76680678931219633e4f8a1463c240380db5b279c",
+      "section": "quarantine",
+      "sha256_after": "4d469212f4c2f5055bb36ec76680678931219633e4f8a1463c240380db5b279c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/cmake/velocityCuda.cmake",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/cmake/velocityCuda.cmake",
+      "sha256_before": "d124e1881d843e07d32e052aba055fae1d909249482dad5b53fc2d51a03548c0",
+      "section": "quarantine",
+      "sha256_after": "d124e1881d843e07d32e052aba055fae1d909249482dad5b53fc2d51a03548c0",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/cmake/velocityCudaConfig.cmake",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/cmake/velocityCudaConfig.cmake",
+      "sha256_before": "a00f759625cbb473de7c20cb2be328191cf4c051d8d49f63e4b7169d20551908",
+      "section": "quarantine",
+      "sha256_after": "a00f759625cbb473de7c20cb2be328191cf4c051d8d49f63e4b7169d20551908",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/docs/cuda.md",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/docs/cuda.md",
+      "sha256_before": "329efe0fb7279c778827ca8d28be6000173cf3ef0fd553b582496f60ac25e1cb",
+      "section": "quarantine",
+      "sha256_after": "329efe0fb7279c778827ca8d28be6000173cf3ef0fd553b582496f60ac25e1cb",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/docs/draft.md",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/docs/draft.md",
+      "sha256_before": "33ddc2c8fcf5d59ac41f16bce4639c81840678a6b44a5cf7b0210895a7d1ab0f",
+      "section": "quarantine",
+      "sha256_after": "33ddc2c8fcf5d59ac41f16bce4639c81840678a6b44a5cf7b0210895a7d1ab0f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/cuda/bridge.hh",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/cuda/bridge.hh",
+      "sha256_before": "239dec941938b4075f609ca466fc16757c979de1ed3af1595b863f080cb373eb",
+      "section": "quarantine",
+      "sha256_after": "239dec941938b4075f609ca466fc16757c979de1ed3af1595b863f080cb373eb",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/cuda/kernels.cu",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/cuda/kernels.cu",
+      "sha256_before": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+      "section": "quarantine",
+      "sha256_after": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/cuda/sensitivity.cu",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/cuda/sensitivity.cu",
+      "sha256_before": "d99b5fc8c459ed4ac774262dfb4ac87e8a39f38f0f308461536a6b938bbfafa1",
+      "section": "quarantine",
+      "sha256_after": "d99b5fc8c459ed4ac774262dfb4ac87e8a39f38f0f308461536a6b938bbfafa1",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/cuda/sensitivity_bridge.hh",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/cuda/sensitivity_bridge.hh",
+      "sha256_before": "d82c4ec52cd4eaf93c7ddb49b56b057dc906e3fdb6fd627c2b78aa3f47548e6f",
+      "section": "quarantine",
+      "sha256_after": "d82c4ec52cd4eaf93c7ddb49b56b057dc906e3fdb6fd627c2b78aa3f47548e6f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/cuda.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/cuda.cpp",
+      "sha256_before": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+      "section": "quarantine",
+      "sha256_after": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/detail/scientific.hh",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/detail/scientific.hh",
+      "sha256_before": "ca89ed7977ca90daee02c95140525f0c4e47f8e18f48c25aca3992beefd2bdc4",
+      "section": "quarantine",
+      "sha256_after": "ca89ed7977ca90daee02c95140525f0c4e47f8e18f48c25aca3992beefd2bdc4",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/detail/sensitivity.hh",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/detail/sensitivity.hh",
+      "sha256_before": "44e3636a3b142d728e2e98d9a34a0f168f1f03403c967da45af9870a4d50a1df",
+      "section": "quarantine",
+      "sha256_after": "44e3636a3b142d728e2e98d9a34a0f168f1f03403c967da45af9870a4d50a1df",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/src/velocity.cuda.cppm",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/src/velocity.cuda.cppm",
+      "sha256_before": "144b0f1c9bb68d044236f1bd1bb2e9c3f1a02a0f6e325d318769a6b2e85ee89d",
+      "section": "quarantine",
+      "sha256_after": "144b0f1c9bb68d044236f1bd1bb2e9c3f1a02a0f6e325d318769a6b2e85ee89d",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tests/cuda_consumer/CMakeLists.txt",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tests/cuda_consumer/CMakeLists.txt",
+      "sha256_before": "2fce6ba84bb55555e8cae144e27088b39cb4795adca00a07f464e3e8d3b0a4f8",
+      "section": "quarantine",
+      "sha256_after": "2fce6ba84bb55555e8cae144e27088b39cb4795adca00a07f464e3e8d3b0a4f8",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tests/cuda_consumer/device_abi.cu",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tests/cuda_consumer/device_abi.cu",
+      "sha256_before": "5ca5d867226a5ee5c0c1d6f1da5225c9aee8885b1a6717360a2052955752ea55",
+      "section": "quarantine",
+      "sha256_after": "5ca5d867226a5ee5c0c1d6f1da5225c9aee8885b1a6717360a2052955752ea55",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tests/cuda_consumer/main.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tests/cuda_consumer/main.cpp",
+      "sha256_before": "8b8dfb6ee6ff6dbf37f8b352a05371fbebec865908f518d4a5ec605831d12f30",
+      "section": "quarantine",
+      "sha256_after": "8b8dfb6ee6ff6dbf37f8b352a05371fbebec865908f518d4a5ec605831d12f30",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tests/test_cuda.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tests/test_cuda.cpp",
+      "sha256_before": "a3e31f1aee3f920a1616af62fee9afb3ba66cc489936bca230d08a2f1cd1f1f4",
+      "section": "quarantine",
+      "sha256_after": "a3e31f1aee3f920a1616af62fee9afb3ba66cc489936bca230d08a2f1cd1f1f4",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tests/test_cuda_batches.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tests/test_cuda_batches.cpp",
+      "sha256_before": "ddc20b508fa3d66ef397e23e0835148fac8de433a1d890260482702c313e6b5f",
+      "section": "quarantine",
+      "sha256_after": "ddc20b508fa3d66ef397e23e0835148fac8de433a1d890260482702c313e6b5f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tests/test_precision_cuda.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tests/test_precision_cuda.cpp",
+      "sha256_before": "8ca9a954f243b5262769542c7ecf017bc5347cebf68cd1efc92fcf7ef2e3f258",
+      "section": "quarantine",
+      "sha256_after": "8ca9a954f243b5262769542c7ecf017bc5347cebf68cd1efc92fcf7ef2e3f258",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tools/benchmark_precision_cuda.py",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tools/benchmark_precision_cuda.py",
+      "sha256_before": "cea9389dae70675b9d41fcacaf8831b553a475f51b719e7c7d8fa2a96b6c8459",
+      "section": "quarantine",
+      "sha256_after": "cea9389dae70675b9d41fcacaf8831b553a475f51b719e7c7d8fa2a96b6c8459",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tools/cuda_sanitizers.py",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tools/cuda_sanitizers.py",
+      "sha256_before": "590e704aa239e033eb8e6f0d0eedc7a0520fc539910a340fb1d59f4dad0def77",
+      "section": "quarantine",
+      "sha256_after": "590e704aa239e033eb8e6f0d0eedc7a0520fc539910a340fb1d59f4dad0def77",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/cuda/tools/run_cuda_job.py",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/cuda/tools/run_cuda_job.py",
+      "sha256_before": "911f38e63d59b37b6c717847188721a0206fe3711d4c0896d731ca1acc4f1fde",
+      "section": "quarantine",
+      "sha256_after": "911f38e63d59b37b6c717847188721a0206fe3711d4c0896d731ca1acc4f1fde",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/root-segmentation-files.json",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/root-segmentation-files.json",
+      "sha256_before": "e2311aa3ad85aba4a5734e48e9e00ae6e67c1bb7f551c12a2bdb95e21d60a8a7",
+      "section": "quarantine",
+      "sha256_after": "e2311aa3ad85aba4a5734e48e9e00ae6e67c1bb7f551c12a2bdb95e21d60a8a7",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/CMakeLists.txt",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/CMakeLists.txt",
+      "sha256_before": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+      "section": "quarantine",
+      "sha256_after": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/benchmarks/precision_qualification.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/benchmarks/precision_qualification.cpp",
+      "sha256_before": "f08879dd92db160161745ec5d7feda51c41a3e2f48d8640b26f030099fdea0fe",
+      "section": "quarantine",
+      "sha256_after": "f08879dd92db160161745ec5d7feda51c41a3e2f48d8640b26f030099fdea0fe",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/benchmarks/results/milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/benchmarks/results/milestone-3.json",
+      "sha256_before": "ed28144ee0b9578781bd270550505c629c3f9d8212499cdd25ad477b1b95222c",
+      "section": "quarantine",
+      "sha256_after": "ed28144ee0b9578781bd270550505c629c3f9d8212499cdd25ad477b1b95222c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/benchmarks/results/module-build-milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/benchmarks/results/module-build-milestone-3.json",
+      "sha256_before": "ed45b56966ac1328055c3c8cf713740943cf420bbb83a35602237a9dc7b2ca0e",
+      "section": "quarantine",
+      "sha256_after": "ed45b56966ac1328055c3c8cf713740943cf420bbb83a35602237a9dc7b2ca0e",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/cmake/velocityConfig.cmake.in",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/cmake/velocityConfig.cmake.in",
+      "sha256_before": "456fda99b9bda82b490a422e3fb748824c3898fef3b11899d03704908f536312",
+      "section": "quarantine",
+      "sha256_after": "456fda99b9bda82b490a422e3fb748824c3898fef3b11899d03704908f536312",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/planning/milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/planning/milestone-3.json",
+      "sha256_before": "35f87454b7081088f3583b523679df76db64cdd9cba6b087720bc746b6408dd0",
+      "section": "quarantine",
+      "sha256_after": "35f87454b7081088f3583b523679df76db64cdd9cba6b087720bc746b6408dd0",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/src/velocity.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/src/velocity.cpp",
+      "sha256_before": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+      "section": "quarantine",
+      "sha256_after": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/src/velocity.cppm",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/src/velocity.cppm",
+      "sha256_before": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+      "section": "quarantine",
+      "sha256_after": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tests/precision_interop_driver.cpp",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tests/precision_interop_driver.cpp",
+      "sha256_before": "c8ca7dbcfded9b8b907a699988276920f44a722ae00eb13766b62a5fd3bcd64a",
+      "section": "quarantine",
+      "sha256_after": "c8ca7dbcfded9b8b907a699988276920f44a722ae00eb13766b62a5fd3bcd64a",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tests/results/milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tests/results/milestone-3.json",
+      "sha256_before": "a72e1c8a2d73fc25164199c9d6face05fac61da403b1315dac123305043326e5",
+      "section": "quarantine",
+      "sha256_after": "a72e1c8a2d73fc25164199c9d6face05fac61da403b1315dac123305043326e5",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tests/results/precision-errors.json",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tests/results/precision-errors.json",
+      "sha256_before": "1774844ff55402bb8ff4bb687e15a0435d9f5f3c7fe3e5e0742fac9cc3be940f",
+      "section": "quarantine",
+      "sha256_after": "1774844ff55402bb8ff4bb687e15a0435d9f5f3c7fe3e5e0742fac9cc3be940f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tests/results/selective-precision.json",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tests/results/selective-precision.json",
+      "sha256_before": "d2da71a718c7152790f557cd272c94b6533efa6b7d0f767c46b99f68e869e50c",
+      "section": "quarantine",
+      "sha256_after": "d2da71a718c7152790f557cd272c94b6533efa6b7d0f767c46b99f68e869e50c",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tools/benchmark_precision.py",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tools/benchmark_precision.py",
+      "sha256_before": "bdacfceed0098d1fa25cc61feca376f3e3e186a53d48c4d25c4cd971045e7709",
+      "section": "quarantine",
+      "sha256_after": "bdacfceed0098d1fa25cc61feca376f3e3e186a53d48c4d25c4cd971045e7709",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tools/measure_precision_build.py",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tools/measure_precision_build.py",
+      "sha256_before": "0213db35eec851a3b752be42d2b4e3f810a18dfb3ab014cabf0cd8b9cb058a2f",
+      "section": "quarantine",
+      "sha256_after": "0213db35eec851a3b752be42d2b4e3f810a18dfb3ab014cabf0cd8b9cb058a2f",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tools/qualify_precision.py",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tools/qualify_precision.py",
+      "sha256_before": "b3a4fb9d0704c45008c1a1334be91e06d08173ff4c1273e01e63e94ac917ce54",
+      "section": "quarantine",
+      "sha256_after": "b3a4fb9d0704c45008c1a1334be91e06d08173ff4c1273e01e63e94ac917ce54",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/quarantine/velocity-accelerators/support/tools/summarize_precision_errors.py",
+      "destination": "/home/tumlinson/Cellerator/quarantine/velocity-accelerators/support/tools/summarize_precision_errors.py",
+      "sha256_before": "ea9201cac7a97038f870b13cede06926cdcfbb84e93313d70757d9d0d5e93843",
+      "section": "quarantine",
+      "sha256_after": "ea9201cac7a97038f870b13cede06926cdcfbb84e93313d70757d9d0d5e93843",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/README.md",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/README.md",
+      "sha256_before": "2d395066f57dfd9ad54151326ccb58ac8368470c52ba1910f3f563d3c0ff747a",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "3c6d7111386a9c4eb4a91045480ebcb32b29bade31e8be92be37ba52171480fb",
+      "relocation_metadata_edited": true
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/milestone-1-workflow.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/milestone-1-workflow.json",
+      "sha256_before": "3cff939ac331eb12b3f6f6f7579b05c9fb69201ff7916cb45c1b96d810390df6",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "3cff939ac331eb12b3f6f6f7579b05c9fb69201ff7916cb45c1b96d810390df6",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/milestone-1.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/milestone-1.json",
+      "sha256_before": "e805d74901bb121224de4116b47839dc6318a9ccf9613e2bca075ea80cbd54ca",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "e805d74901bb121224de4116b47839dc6318a9ccf9613e2bca075ea80cbd54ca",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/milestone-2-workflow.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/milestone-2-workflow.json",
+      "sha256_before": "7391022b0331332aacee09fadda861c0ce5890ea923baf257b71d264edf971f1",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "7391022b0331332aacee09fadda861c0ce5890ea923baf257b71d264edf971f1",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/milestone-2.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/milestone-2.json",
+      "sha256_before": "e62e986f0f785260de0a326d441f616f1f110613444f48d8329ad66d84f1e667",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "e62e986f0f785260de0a326d441f616f1f110613444f48d8329ad66d84f1e667",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/milestone-3.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/milestone-3.json",
+      "sha256_before": "35f87454b7081088f3583b523679df76db64cdd9cba6b087720bc746b6408dd0",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "35f87454b7081088f3583b523679df76db64cdd9cba6b087720bc746b6408dd0",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/portable-segmentation.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/portable-segmentation.json",
+      "sha256_before": "2ec606562d275dcb32c75f119f5bb4471d2454382897909d35c07df92aad68dc",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "2ec606562d275dcb32c75f119f5bb4471d2454382897909d35c07df92aad68dc",
+      "relocation_metadata_edited": false
+    },
+    {
+      "source": "/home/tumlinson/velocity.cppm/planning/setup-receipt.json",
+      "destination": "/home/tumlinson/Cellerator/src/velocity/planning/setup-receipt.json",
+      "sha256_before": "c65d095a15d49e57ac0921d0f4f00386cdf52c9fe42b59cc222b958bf52a2ea2",
+      "section": "historical_planning_copy",
+      "operation": "copy",
+      "sha256_after": "c65d095a15d49e57ac0921d0f4f00386cdf52c9fe42b59cc222b958bf52a2ea2",
+      "relocation_metadata_edited": false
+    }
+  ],
+  "execution": {
+    "configured": false,
+    "compiled": false,
+    "tests_run": false,
+    "benchmarks_run": false
+  },
+  "preservation": [
+    "Data-package sources unchanged",
+    "Existing Cellerator work preserved",
+    "Original Git/workflow authority/builds/raw artifacts retained at original checkout"
+  ],
+  "completed_file_moves_at_utc": "2026-11-05T13:42:29.606163+00:00",
+  "completed_at_utc": "2026-11-05T13:53:10.241519+00:00",
+  "portable_numerical_source_bytes_preserved": true,
+  "quarantined_code_bytes_preserved": true,
+  "standalone": {
+    "entrypoint": "/home/tumlinson/Cellerator/src/velocity/CMakeLists.txt",
+    "languages": [
+      "CXX"
+    ],
+    "requires_parent_cellerator_build": false,
+    "requires_cuda": false,
+    "required_data_package": "anndatapp (existing names preserved)",
+    "build_targets": [
+      "velocity::velocity",
+      "Cellerator::velocity"
+    ],
+    "public_modules": [
+      "velocity",
+      "velocity.precision"
+    ],
+    "parent_opt_in": "CELLERATOR_ENABLE_VELOCITY=ON",
+    "parent_default_enabled": false,
+    "configuration_or_compilation_run": false
+  },
+  "metadata_edits": {
+    "/home/tumlinson/Cellerator/CMakeLists.txt": "e1f43b8511154d31af37579044de72b660d528a168f5a674991bab9a46a09bf1",
+    "/home/tumlinson/Cellerator/cmake/CelleratorVelocity.cmake": "f4d1594459a99e69beb4eb034b4e761d71f746d5f8e2a2453df71d5f01b713ad",
+    "/home/tumlinson/Cellerator/src/velocity/AGENTS.md": "fd921675477fde15fa47cc95cc2b4859011958a49fe253fda98190392f698c62",
+    "/home/tumlinson/Cellerator/src/velocity/CMakeLists.txt": "8150f0c00b80e57e92255af01d089118aa18e46e0078a9bc514d096f6cc8ebf8",
+    "/home/tumlinson/Cellerator/src/velocity/cmake/velocityConfig.cmake.in": "79c1c1b8166558c83bc4d5c2171352df44c200b8144d301288d68c076bac9623",
+    "/home/tumlinson/velocity.cppm/README.md": "a2fe0495af4ba343ad7d779bd541d9d485810dacb7a6868bd9d0eb3e4777466b",
+    "/home/tumlinson/velocity.cppm/AGENTS.md": "47f248b716350bc30d2dc4af3470254dc1a19164f0b8043f5227e7e43005716f"
+  },
+  "original_checkout_retains": [
+    ".git",
+    ".todo-orchestrator",
+    "build",
+    "tests/artifacts",
+    "benchmarks/artifacts",
+    "generated raw result directories",
+    "authored historical planning inputs"
+  ]
+}

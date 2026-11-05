@@ -1,0 +1,65 @@
+{
+  "format": "velocity-cppm.milestone-workflow-receipt",
+  "version": 1,
+  "plan": {
+    "package": "planning/milestone-2.json",
+    "user_authorized": true,
+    "authority_commit_verified": false
+  },
+  "work": {
+    "work_item_id": "milestone-2",
+    "execution_handle_available": false,
+    "verification_performed": false,
+    "outcome_reported": false,
+    "accepted": false
+  },
+  "local_execution": {
+    "authorized_without_handle": true,
+    "user_instruction": "Ignore the project control error. Work anyway. No handle required",
+    "authorization": "User approved Milestone 2 plan and requested implementation; existing handle waiver carried forward.",
+    "validation": "Implementation and local checks complete with an explicit strict source-diagnostic tolerance exception.",
+    "native_build_tests": {
+      "report": "tests/results/milestone-2-native.json",
+      "configurations": 4,
+      "groups_each": 7,
+      "passed": true
+    },
+    "numerical": {
+      "report": "tests/results/milestone-2.json",
+      "command": [
+        "/home/tumlinson/anndata.cppm/.venv/bin/python",
+        "tools/qualify_stochastic.py",
+        "--driver",
+        "build/release/velocity_stochastic_interop_driver"
+      ],
+      "exit_code": 1,
+      "strict_source_pass_all": false,
+      "estimator_pass_all": true,
+      "independent_fp64_initial_pass_all": true,
+      "production_class_pass_all": true,
+      "cases": 32,
+      "strict_diagnostic_exception_cases": 4,
+      "exception": "FP32 source initialization offsets exceed original tolerance; centered native FP64 agrees with independent FP64 oracle. Threshold not changed.",
+      "raw_log": "tests/artifacts/milestone-2-final/qualification.log",
+      "user_accepted_exception": true,
+      "acceptance_basis": "User accepted the documented FP32 source versus FP64 initialization difference after reviewing its precision diagnosis and tolerance excess. Raw strict comparison and observed exit code are preserved."
+    },
+    "deterministic_regression": {
+      "report": "tests/results/milestone-2-deterministic-regression.json",
+      "exit_code": 0,
+      "pass_all": true
+    },
+    "performance": {
+      "report": "benchmarks/results/milestone-2.json",
+      "memory_gate": true,
+      "cold_runtime_gate": true
+    },
+    "module_build": {
+      "report": "benchmarks/results/module-build-milestone-2.json",
+      "exit_code": 0,
+      "preserved_bmis_and_consumers": true
+    },
+    "independent_review": "tests/results/milestone-2-solver-review.json"
+  },
+  "limits": "Authored package and local validation are not native authority acceptance. Milestone 1 admitted attempt and authority state preserved."
+}

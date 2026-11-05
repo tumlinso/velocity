@@ -1,0 +1,131 @@
+{
+  "recorded_at_utc": "2026-11-05T14:30:32.964295+00:00",
+  "source_root": "/home/tumlinson/Cellerator/src/velocity",
+  "source_sha256": {
+    "CMakeLists.txt": "b97168e2b8a7cf69de0c8678a7e51d732e3efcd6feb4f1763bbdd889764901bd",
+    "cmake/velocityConfig.cmake.in": "3151f9ddc553e83260e9b0a973fdc972bd045d1aa579b8d9f962bb1d0be286fb",
+    "src/detail/cpu_kernels.cpp": "34fcfe7e59d7f59e42d86954eea38aef47a6e6cbd7c58441d61335613aaae103",
+    "src/detail/fit.cpp": "afb93c99bfd7ca6cf49ddaeb2533b002514df3e54044fa01779e0f56d0783e39",
+    "src/detail/neighborhood.cpp": "0b1bdd1f539dba27da409a13c4c47a28717702f558d3473a9103c2c64f589669",
+    "src/detail/prepared.cpp": "3015aebbe46725fec50b4d7cadb9f37356c352b44ee251c0224eeb11cfa1875a",
+    "src/detail/stochastic_fit.cpp": "e5b2ede97c3445102dbe3db41fab31d4f363d7eeb13cdf194b52bcd2167d6899",
+    "src/numeric.cpp": "dcf7f6db9dd809bd61de941f2c3f235ebd48d19099765f0f61ef8f4b45a7ff83",
+    "src/precision.cpp": "3e07fd097b19fc53abc7fa1a3fb9e5367f82f432249a3218f36769aed6586fc7",
+    "src/velocity.cpp": "3a3a0da56b706d19f5da84a4163b727271aee0b21806f411fae6740508318a8b",
+    "src/velocity.cppm": "618d24e9bdc9cc22c39788eae8266a49f7b329315c083f6930b334134af280d0",
+    "src/velocity.numeric.cppm": "33839294dbe9f6a5e4ba248eb5db9b4b1eb9ca6cefbcc2dd63cf79388d272c31",
+    "src/velocity.precision.cppm": "7a4b3ff6c719ecd2d8878f756148bfc7523d568b5493bc4cb5950ad99a8c3280"
+  },
+  "anndatapp_prefix": "/tmp/fp16-ownership-20261105T140415Z/prefix-debug",
+  "debug": {
+    "build_dir": "/tmp/fp16-ownership-20261105T140415Z/velocity-debug",
+    "core_build": "46/46",
+    "registered_tests_passed": 12,
+    "qualification_targets_compiled": 7,
+    "benchmark_executables_run": false,
+    "runs": [
+      {
+        "filter": "ready native/example batch",
+        "passed": 9
+      },
+      {
+        "filter": "cpu_kernels, precision_cpu",
+        "passed": 2
+      },
+      {
+        "filter": "installed-consumer",
+        "passed": 1
+      },
+      {
+        "filter": "final complete suite",
+        "passed": 12
+      }
+    ]
+  },
+  "sanitizers": {
+    "build_dir": "/tmp/fp16-ownership-20261105T140415Z/velocity-sanitizers",
+    "core_build": "46/46",
+    "registered_tests_passed": 12,
+    "runs": [
+      {
+        "filter": "exclude precision_cpu and installed-consumer",
+        "passed": 10
+      },
+      {
+        "filter": "precision_cpu or installed-consumer",
+        "passed": 2
+      }
+    ],
+    "ASAN_OPTIONS": "detect_leaks=0",
+    "UBSAN_OPTIONS": "halt_on_error=1",
+    "leak_check": false
+  },
+  "new_regression": "sole-owner temporary dense, CSR, CSC neighborhood inputs poison their buffer on owner destruction; verify normalized outputs and post-call release",
+  "installed_consumers": "two executables rebuild all three installed velocity module units, receive transitive CelleratorBinary16 include/package, execute explicit raw FP16 mixed-input/output path",
+  "scope": "No GPU execution or benchmarks. Historical receipts untouched.",
+  "velocity-debug_library_sha256": "18340164baf4aea711b93a0095123e12603ee8b6eda39413f0b32a7571b7acc4",
+  "velocity-debug_numeric_test_sha256": "7332d8e193b232369635f83921425539505fd065a2e38a9f3abb96b56f9e8738",
+  "velocity-sanitizers_library_sha256": "d5f0f72ac0351b78f066972ac8482f88fecab9d9cf6368ad3b5d5b6972a31b00",
+  "velocity-sanitizers_numeric_test_sha256": "0fd465d2215e5d3cbdb9141ee3e5831598a419fedbc1e05f34f9a5716f6b921b",
+  "integrated": {
+    "source": "/home/tumlinson/Cellerator",
+    "build_dir": "/tmp/fp16-ownership-20261105T140415Z/velocity-integrated",
+    "anndatapp_prefix": "/tmp/fp16-ownership-20261105T140415Z/prefix-hdf5-only",
+    "CELLERATOR_ENABLE_CUDA": "OFF",
+    "CELLERATOR_ENABLE_HARDWARE_PROBE": "OFF",
+    "CELLERATOR_AUTO_DETECT_CUDA_ARCHITECTURES": "OFF",
+    "CELLERATOR_ENABLE_VELOCITY": "ON",
+    "consumer_target": "fp16_integrated_consumer",
+    "linked_target": "Cellerator::velocity",
+    "build": "48/48",
+    "run_exit_code": 0,
+    "executable_sha256": "c585bbad754a913580c97da237e5c6cac67555969a0a501b0542075c04ebb330",
+    "probe_injection": "/tmp/fp16-ownership-20261105T140415Z/velocity-integrated-probe/add-consumer.cmake",
+    "scope": "Actual Cellerator root configured, only velocity+small actual mixed FP16/FP64 and raw FP16 output consumer built/run; no compiler suite/GPU execution."
+  },
+  "schema": "velocity.fp16-ownership.validation.v1",
+  "helper_validation": {
+    "component": "Cellerator::binary16",
+    "package": "CelleratorBinary16",
+    "header": "include/Cellerator/ops/numeric/binary16.hh",
+    "header_sha256": "924de4f3f170f8b5fa233536d3b5cfab2a813dd3747ebb9291e5b48d30e1f8e5",
+    "exhaustive_binary16_load_cases": 65536,
+    "independent_numpy_rounding_cases": 390465,
+    "numpy_version": "2.2.6",
+    "qualification": "Separate helper component executor ran the exhaustive and independent NumPy oracle tests and an installed CMake consumer; no GPU work."
+  },
+  "caller_sha256": {
+    "tests/consumer/main.cpp": "91cfaa5683ce2bb635ab7f52a35a8d5731d36fe4768685e4e5c0c132097798da",
+    "tests/interop_driver.cpp": "8c9c6cde0270cd75eb0bc81d98dd1e3c97d9ea3a94864bc98ee19bfd0f8a414f",
+    "tests/precision_interop_driver.cpp": "485cf9a92c29bf7a87a4a07d5fa7009d3e8956257f0b23dd57d0562bc7760c92",
+    "tests/sensitivity_driver.cpp": "47bb76aacb8ef4966cfd190ccb09327495a516d390575259225747ee9a03092f",
+    "tests/stochastic_interop_driver.cpp": "f38e49e01152e397e19d4e26d5e7abe77d190c805f393d2d76b41e0fd08dc47f",
+    "tests/test_cpu_kernels.cpp": "9a34bd515d95d0211cdcb18d93c88f62d8165aee3c62d4e08b400a0d1a041ed3",
+    "tests/test_customization.cpp": "4289ddf428ad2a91584645f5c97a882229d1bcb00a272eaa417d315804bed921",
+    "tests/test_numeric_views.cpp": "009f2282ffce2da9d3c3c71ab182860b6bac4ed07095c4261f34521d4bc21df2",
+    "tests/test_precision.cpp": "ed648cea1489b5dcc8a8ed6fabeebe483d1fab88e2f140099983246c02bebcf9",
+    "tests/test_precision_cpu.cpp": "c32fb85e3d953a3bac4538dde29b419ae3cee06ed08bc3b27cdd53de73fd0cb3",
+    "tests/test_reference.cpp": "3d5b9bb299645b9a547690409973d6cca1d38ac2ea86938bb3c9ac79d95a8edd",
+    "tests/test_stochastic.cpp": "048c019729a6bf85c251dfc03617853d09be4828bf54108e74c4de5e10d5caa4",
+    "tests/test_stochastic_customization.cpp": "2614fd0c803d574a1633f31ab80d753a31743f41bcd50d6d7a49674aa1542069",
+    "examples/selective_precision.cpp": "0bbdce64303f68553620797892a8a0908fee87b0d7797043c14257351f3727ce",
+    "examples/steady_state.cpp": "c083f7ffb0d54248c3e9f817b71869a562665ff5ee2cc50bf742e4f1ef9169c0",
+    "examples/stochastic.cpp": "bb2948d8988f29a27d8b426efa09a09e8541c8bc01395822980d10a52fc4af67",
+    "benchmarks/precision_qualification.cpp": "880f4446468f6e3f3a3a1a99ff320c3b35ce4f8bffe4b2c418cefe5451687b72",
+    "benchmarks/qualification.cpp": "1f640b6ef8cac124ad64197cb0deeafd2c9a2923a3d94a0bfabb53cad1f491fe",
+    "benchmarks/stochastic_qualification.cpp": "880d461901dfaf89eb374d32714511e79cda5ed2b8c035b314c686fd0a472cdc"
+  },
+  "repository_head": "bac859c1b731f9d5ca6f0371d414886764105b58",
+  "working_tree_dirty": true,
+  "reproduction_commands": {
+    "debug_configure": "cmake -S /home/tumlinson/Cellerator/src/velocity -B /tmp/fp16-ownership-20261105T140415Z/velocity-debug -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/tmp/fp16-ownership-20261105T140415Z/prefix-debug -DVELOCITY_BUILD_TESTS=ON -DVELOCITY_BUILD_EXAMPLES=ON -DVELOCITY_BUILD_QUALIFICATION=ON",
+    "debug_build": "cmake --build /tmp/fp16-ownership-20261105T140415Z/velocity-debug --parallel 2",
+    "debug_tests": "ctest --test-dir /tmp/fp16-ownership-20261105T140415Z/velocity-debug --output-on-failure",
+    "sanitizer_configure": "cmake -S /home/tumlinson/Cellerator/src/velocity -B /tmp/fp16-ownership-20261105T140415Z/velocity-sanitizers -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/tmp/fp16-ownership-20261105T140415Z/prefix-debug -DVELOCITY_BUILD_TESTS=ON -DVELOCITY_BUILD_EXAMPLES=ON -DVELOCITY_BUILD_QUALIFICATION=OFF -DVELOCITY_ENABLE_SANITIZERS=ON",
+    "sanitizer_build": "cmake --build /tmp/fp16-ownership-20261105T140415Z/velocity-sanitizers --parallel 2",
+    "sanitizer_tests": "ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir /tmp/fp16-ownership-20261105T140415Z/velocity-sanitizers --output-on-failure",
+    "integrated_configure": "cmake -S /home/tumlinson/Cellerator -B /tmp/fp16-ownership-20261105T140415Z/velocity-integrated -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=/tmp/fp16-ownership-20261105T140415Z/prefix-hdf5-only -DCELLERATOR_ENABLE_CUDA=OFF -DCELLERATOR_ENABLE_HARDWARE_PROBE=OFF -DCELLERATOR_AUTO_DETECT_CUDA_ARCHITECTURES=OFF -DCELLERATOR_ENABLE_VELOCITY=ON -DCELLERATOR_BUILD_TESTS=OFF -DVELOCITY_BUILD_TESTS=OFF -DVELOCITY_BUILD_EXAMPLES=OFF -DVELOCITY_BUILD_QUALIFICATION=OFF -DCMAKE_PROJECT_INCLUDE=/tmp/fp16-ownership-20261105T140415Z/velocity-integrated-probe/add-consumer.cmake",
+    "integrated_build": "cmake --build /tmp/fp16-ownership-20261105T140415Z/velocity-integrated --target fp16_integrated_consumer --parallel 2",
+    "integrated_run": "/tmp/fp16-ownership-20261105T140415Z/velocity-integrated/fp16_integrated_consumer"
+  }
+}

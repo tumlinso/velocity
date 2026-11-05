@@ -1,0 +1,139 @@
+{
+  "format": "todo-orchestrator.plan",
+  "schema_version": 1,
+  "package_id": "velocity-cppm-milestone-2-v1",
+  "project": {
+    "project_id": "velocity-cppm",
+    "authority_id": "velocity-cppm-authority"
+  },
+  "work_items": [
+    {
+      "id": "milestone-2",
+      "title": "Deliver bounded-memory stochastic RNA velocity",
+      "objective": "Implement second-order neighborhood moments, residual-scale estimation, stable joint weighted fitting, explicit deterministic fallback and deep customization using anndata.cppm, with independent numerical and memory qualification.",
+      "outcome": "Native consumers can run and customize a streaming stochastic estimator with an independent reference and qualified numerical, memory, runtime and module-build evidence.",
+      "scope": {
+        "paths": [
+          {
+            "path": "CMakeLists.txt",
+            "access": "write"
+          },
+          {
+            "path": "CMakePresets.json",
+            "access": "write"
+          },
+          {
+            "path": "README.md",
+            "access": "write"
+          },
+          {
+            "path": "cmake",
+            "access": "write"
+          },
+          {
+            "path": "src",
+            "access": "write"
+          },
+          {
+            "path": "tests",
+            "access": "write"
+          },
+          {
+            "path": "examples",
+            "access": "write"
+          },
+          {
+            "path": "benchmarks",
+            "access": "write"
+          },
+          {
+            "path": "docs",
+            "access": "write"
+          },
+          {
+            "path": "planning",
+            "access": "write"
+          },
+          {
+            "path": ".github",
+            "access": "write"
+          }
+        ],
+        "concepts": [
+          "C++20 modules",
+          "anndata.cppm",
+          "raw second and cross moments",
+          "stochastic RNA velocity GLS",
+          "consistent fit masks",
+          "bounded workspace",
+          "explicit reference and deterministic fallback"
+        ],
+        "locks": []
+      },
+      "acceptance": {
+        "assertions": [
+          "Raw second moments coalesce expression duplicates before products, support existing dense/CSR/CSC acquisition contracts, and allocate no full source-product matrices.",
+          "Stochastic refinement uses the declared scVelo GLS equations, consistent fit-row masks, explicit selection policies and finite deterministic fallbacks with distinct statuses.",
+          "Custom moments, scales, fitting and whole-block execution can replace reference stages; explicit compiled reference execution remains independent.",
+          "Independent ordinary-case moments meet atol 1e-6 rtol 1e-5; slopes/scales meet atol 1e-5 rtol 1e-4; residuals and intercepts use gene-scaled atol 1e-5 rtol 1e-4; normalized objectives agree within 1e-4.",
+          "Three paired canonical bounded measurements establish at least 10x lower preparation-inclusive incremental peak memory and no median end-to-end runtime regression versus the matched scVelo stochastic baseline.",
+          "Native, Release, shared, sanitizer, installed consumers and Milestone 1 regressions pass; isolated module rebuild probe preserves public BMIs and consumer objects after a private edit.",
+          "GPU, Bayesian/dynamical fitting, velocity graphs, backed orchestration and Python runtime bindings remain outside this milestone."
+        ],
+        "required_evidence": [
+          "milestone-2-native-result"
+        ],
+        "allowed_dispositions": [
+          "completed"
+        ]
+      },
+      "ownership": {
+        "mode": "any",
+        "actors": []
+      },
+      "requirement_groups": [
+        {
+          "kind": "check",
+          "mode": "all",
+          "members": [
+            "milestone-2-native"
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [],
+  "requirements": [
+    {
+      "id": "milestone-2-native",
+      "work_item_id": "milestone-2",
+      "kind": "check",
+      "description": "Run native stochastic, deterministic regression, examples and installed consumer tests.",
+      "check_key": "milestone-2-native",
+      "verification": {
+        "kind": "command",
+        "version": 1,
+        "config": {
+          "argv": [
+            "cmake",
+            "--workflow",
+            "--preset",
+            "native-check"
+          ],
+          "cwd": ".",
+          "timeout_seconds": 1800,
+          "expected_exit_codes": [
+            0
+          ]
+        }
+      },
+      "required_evidence": [
+        {
+          "name": "milestone-2-native-result",
+          "kind": "command_result",
+          "version": 1
+        }
+      ]
+    }
+  ]
+}

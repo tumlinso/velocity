@@ -1,0 +1,68 @@
+{
+  "format": "todo-orchestrator.plan",
+  "schema_version": 1,
+  "package_id": "velocity-cppm-milestone-1-v1",
+  "project": {
+    "project_id": "velocity-cppm",
+    "authority_id": "velocity-cppm-authority"
+  },
+  "work_items": [
+    {
+      "id": "milestone-1",
+      "title": "Deliver deterministic in-memory RNA velocity foundation",
+      "objective": "Implement an installable C++20 module using the required anndata.cppm dependency, streaming moments and steady-state velocity with caller-controlled outputs and bounded scratch memory, and independent numerical and memory qualification.",
+      "outcome": "A native consumer can compute the declared in-memory moments and steady-state velocity with explicit filtering and reference-bypass behavior, supported by reproducible numerical, installation, sanitizer, and memory evidence.",
+      "scope": {
+        "paths": [
+          {"path": "CMakeLists.txt", "access": "write"},
+          {"path": "CMakePresets.json", "access": "write"},
+          {"path": "README.md", "access": "write"},
+          {"path": "cmake", "access": "write"},
+          {"path": "src", "access": "write"},
+          {"path": "tests", "access": "write"},
+          {"path": "examples", "access": "write"},
+          {"path": "benchmarks", "access": "write"},
+          {"path": "docs", "access": "write"},
+          {"path": "planning", "access": "write"},
+          {"path": ".github", "access": "write"}
+        ],
+        "concepts": ["C++20 modules", "anndata.cppm", "moments", "steady-state RNA velocity", "streaming and caller outputs", "numerical reference", "bounded scratch memory"],
+        "locks": []
+      },
+      "acceptance": {
+        "assertions": [
+          "The required native workflow configures and builds the C++20 module and passes native and separately installed consumer checks with the required anndata.cppm dependency.",
+          "Moments and deterministic steady-state velocity are qualified against independent numerical references, including declared edge cases, filtering defaults, and custom reference bypass.",
+          "Streaming and caller-owned output paths are exercised; accumulation uses FP64 and a reproducible measurement establishes less than 64 MiB scratch for blocks of at most 64 genes under the stated measurement conditions.",
+          "Sanitizer qualification and oracle, memory, and native results record their workload, toolchain, and limitations without asserting unmeasured performance.",
+          "The milestone is restricted to the declared in-memory deterministic path; GPU, backed storage, and stochastic velocity are outside its scope."
+        ],
+        "required_evidence": ["milestone-1-native-result"],
+        "allowed_dispositions": ["completed"]
+      },
+      "ownership": {"mode": "any", "actors": []},
+      "requirement_groups": [{"kind": "check", "mode": "all", "members": ["milestone-1-native"]}]
+    }
+  ],
+  "dependencies": [],
+  "requirements": [
+    {
+      "id": "milestone-1-native",
+      "work_item_id": "milestone-1",
+      "kind": "check",
+      "description": "Run the required native, installed-consumer, and qualification workflow in the qualified workspace.",
+      "check_key": "milestone-1-native",
+      "verification": {
+        "kind": "command",
+        "version": 1,
+        "config": {
+          "argv": ["cmake", "--workflow", "--preset", "native-check"],
+          "cwd": ".",
+          "timeout_seconds": 1800,
+          "expected_exit_codes": [0]
+        }
+      },
+      "required_evidence": [{"name": "milestone-1-native-result", "kind": "command_result", "version": 1}]
+    }
+  ]
+}

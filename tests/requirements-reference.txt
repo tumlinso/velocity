@@ -1,0 +1,5 @@
+# Reference-only environment. scVelo source is loaded from a pinned checkout;
+# Scanpy is not needed for the isolated production deterministic implementation.
+numpy==2.2.6
+scipy==1.17.1
+anndata==0.13.4

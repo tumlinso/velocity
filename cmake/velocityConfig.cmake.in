@@ -1,0 +1,14 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(anndatapp 0.1 CONFIG)
+find_dependency(CelleratorBinary16 CONFIG REQUIRED)
+include("${CMAKE_CURRENT_LIST_DIR}/velocityModuleProvider.cmake")
+if(NOT TARGET velocity::velocity)
+  include("${CMAKE_CURRENT_LIST_DIR}/velocityTargets.cmake")
+  _velocity_module_provider(velocity::velocity velocity::velocity_binary
+    velocity_module_interfaces anndatapp::anndatapp)
+endif()
+if(NOT TARGET Cellerator::velocity)
+  add_library(Cellerator::velocity ALIAS velocity::velocity)
+endif()
+check_required_components(velocity)

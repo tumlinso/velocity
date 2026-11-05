@@ -1,0 +1,92 @@
+{
+  "format": "velocity-cppm.milestone-2-native.v1",
+  "observed_at": "2026-11-04T06:53:54.643047+00:00",
+  "source_sha256": {
+    "src/detail/fit.cpp": "74a67bae4d2dde93d4da3652d1976de0cf443ae9bfce6642075a34aab8252e34",
+    "src/detail/fit.hh": "ffd1896f35b6bf5538641153194b5d2730c568c5ed8882610a21acf001b2556a",
+    "src/detail/neighborhood.cpp": "57fa850d4a53ee43ab6c5cd27bac168617fc2b69737a91eb7a3f724526dea06e",
+    "src/detail/prepared.cpp": "d184e45329add82a12bf5e4f40b5b3d7fad635fc0be1c069bec047f2cc270fb1",
+    "src/detail/prepared.hh": "f163741f9c23d0bae3a71d660b263066e43b45f578855f7ce86ab5b1abdedb2d",
+    "src/detail/stochastic_fit.cpp": "022ba3d925d8c7d5e2d32bcb27e32706e9dd27bb157c12c63a4230bde1d2cb26",
+    "src/detail/stochastic_fit.hh": "bb5849a07dfa2b1dcbd6204f711ffd6888e33d0a6d757c566d8923876d9c26c4",
+    "src/velocity.cpp": "dca3f30c40ef83e72e2779e5f89834831baee5df37fa8541d7e45a5442a8fb13",
+    "src/velocity.cppm": "2c4fc9a9c27a984b3e76370df7c78dd30724e51f27ca0e50f8dc62c3e0c4be8f"
+  },
+  "configurations": [
+    {
+      "preset": "native-check",
+      "configure_build_test_exit_code": 0,
+      "test_groups_passed": 7,
+      "test_groups": [
+        "reference",
+        "customization",
+        "stochastic",
+        "stochastic_customization",
+        "example",
+        "stochastic-example",
+        "installed-consumer"
+      ],
+      "raw_test_log": "build/native/Testing/Temporary/LastTest.log",
+      "raw_test_log_sha256": "2069c67a4f7b489f10204fa159b0bbcf7fe43088b3f59ff81695d5091a3e8fb2"
+    },
+    {
+      "preset": "release",
+      "configure_build_test_exit_code": 0,
+      "test_groups_passed": 7,
+      "test_groups": [
+        "reference",
+        "customization",
+        "stochastic",
+        "stochastic_customization",
+        "example",
+        "stochastic-example",
+        "installed-consumer"
+      ],
+      "raw_test_log": "build/release/Testing/Temporary/LastTest.log",
+      "raw_test_log_sha256": "476f0228e4db8a6ff1461a9adde03a23cf62456b8d202809dd25cc9801aa420c"
+    },
+    {
+      "preset": "sanitizers",
+      "configure_build_test_exit_code": 0,
+      "test_groups_passed": 7,
+      "test_groups": [
+        "reference",
+        "customization",
+        "stochastic",
+        "stochastic_customization",
+        "example",
+        "stochastic-example",
+        "installed-consumer"
+      ],
+      "raw_test_log": "build/sanitizers/Testing/Temporary/LastTest.log",
+      "raw_test_log_sha256": "9a23cf6b79a22d9a51e98adc9e686c39174751ef39aafc8ab3bf482dde9e9c6d"
+    },
+    {
+      "preset": "shared",
+      "configure_build_test_exit_code": 0,
+      "test_groups_passed": 7,
+      "test_groups": [
+        "reference",
+        "customization",
+        "stochastic",
+        "stochastic_customization",
+        "example",
+        "stochastic-example",
+        "installed-consumer"
+      ],
+      "raw_test_log": "build/shared/Testing/Temporary/LastTest.log",
+      "raw_test_log_sha256": "545d3c470838146c46fe55c784b53bac782fb00ac2b91267f6ece48f44833604"
+    }
+  ],
+  "scope": "Local native/package verification; no Project Control native outcome acceptance and no GPU qualification.",
+  "sanitizer_limit": "velocity, tests and module interfaces instrumented; separately built anndata dependency binary is Release.",
+  "required_workflow": {
+    "command": [
+      "cmake",
+      "--workflow",
+      "--preset",
+      "native-check"
+    ],
+    "exit_code": 0
+  }
+}

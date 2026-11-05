@@ -29,3 +29,7 @@ callgrind.out.*
 *.zarr/
 *.zarr2/
 *.zarr3/
+
+# Generated precision measurements; compact milestone summaries remain tracked.
+/benchmarks/results/precision-cpu*/
+/benchmarks/results/precision-gpu*/

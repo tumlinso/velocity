@@ -1,0 +1,30 @@
+{
+  "format": "velocity-cppm.stochastic-independent-solver-review.v1",
+  "source": "src/detail/stochastic_fit.cpp",
+  "source_sha256": "022ba3d925d8c7d5e2d32bcb27e32706e9dd27bb157c12c63a4230bde1d2cb26",
+  "script": "tests/artifacts/milestone-2-solver-review/review_stochastic_solver.py",
+  "script_sha256": "45047d2c9da18001ea3a5070deaaa11d65dbda73d954b878607b0c72f669c2f7",
+  "seed": 8267,
+  "cases": 720,
+  "worst_parameter_objective_scaled_absolute_difference": 3.2564680685823805e-14,
+  "scale_tolerance": "rtol=atol=1e-11",
+  "numpy_version": "2.2.6",
+  "python_version": "3.12.3",
+  "scope": "stochastic solver equations and scales; excludes pipeline, sparse traversal, end-to-end oracle, pathological extremes",
+  "method": "compile source body in standalone scratch library; compare against NumPy SVD least squares; all four intercept combinations, no/upper/tails trimming, row masks, second-intercept positivity, active/inactive slope bounds",
+  "artifact": "tests/artifacts/milestone-2-solver-review/review_stochastic_solver-current.json",
+  "pipeline_review": {
+    "source_sha256": {
+      "src/velocity.cpp": "9da3b3ed0609f30e8d735d0bd0d4a7c0541838ff3ea35c558bb1a051d19ad5e2",
+      "src/detail/prepared.cpp": "d184e45329add82a12bf5e4f40b5b3d7fad635fc0be1c069bec047f2cc270fb1"
+    },
+    "findings_addressed": [
+      "Reference staged moments now contain genuine second moments independently of built-in refinement selection.",
+      "Public primitive boundaries reject overlapping buffers and invalid strides and revalidate checked input values."
+    ],
+    "regressions": "tests/test_stochastic.cpp and tests/test_stochastic_customization.cpp",
+    "scope": "Source and focused probe review; broader build, source-oracle and performance evidence recorded separately.",
+    "post_review_change": "Private output writer caches output dtype before element loop; final native, Release, shared and sanitizer suites passed after rebuilding.",
+    "final_source_sha256": "dca3f30c40ef83e72e2779e5f89834831baee5df37fa8541d7e45a5442a8fb13"
+  }
+}

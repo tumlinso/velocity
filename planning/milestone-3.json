@@ -1,0 +1,173 @@
+{
+  "format": "bio-cppm.coordinated-milestone",
+  "version": 1,
+  "milestone": "device-precision",
+  "authorized": true,
+  "status": "complete_local_qualification_with_precision_exception",
+  "repositories": {
+    "anndata-cppm": {
+      "path": "/home/tumlinson/anndata.cppm",
+      "source_head": "dc946845e1457299351b0ffc4ba36ef91d49db7b"
+    },
+    "velocity-cppm": {
+      "source_head": "7e467192a5e143d0e0af03e84e5b9f641f993e9a",
+      "preexisting_work": "Preserve all uncommitted M1/M2 source and evidence; baseline snapshot build/milestone3/baseline"
+    }
+  },
+  "scope": [
+    "binary16 core and native H5AD/Zarr physical encodings",
+    "borrowed device contracts and optional CUDA allocation/filling in anndata",
+    "FP32/FP64 scalar reference and build-selected AVX2",
+    "device-resident deterministic and stochastic CUDA reference",
+    "optional advisory initialization screen and explicit per-gene source overrides",
+    "installed modules, numerical parity, memory/runtime/build qualification"
+  ],
+  "excluded": [
+    "Cellerator changes or builds",
+    "BF16",
+    "AVX512",
+    "NEON",
+    "new velocity methods",
+    "Python runtime bindings"
+  ],
+  "precision": {
+    "legacy_default_compute": "float64",
+    "half_profile_compute": "float32",
+    "derived_fields": "compute precision; no FP16 requantization",
+    "same_input_backend_parity": true,
+    "automatic_promotion": false,
+    "uniform_path": "always available; source presence does not activate screening/promotion",
+    "automatic_resolution": "FP32 if any W/S/U uses FP16 and none uses FP64; otherwise FP64. Explicit selection wins."
+  },
+  "dependencies": [
+    {
+      "producer": "anndata-cppm",
+      "contract": "DType::float16, Float16 and optional anndata.cuda device ABI",
+      "consumer": "velocity-cppm",
+      "verification": "installed-consumer and same-input CPU/CUDA numerical checks"
+    }
+  ],
+  "work_packages": [
+    {
+      "id": "storage",
+      "owner": "anndata-cppm",
+      "requires": [],
+      "status": "implemented_and_locally_qualified"
+    },
+    {
+      "id": "device-data",
+      "owner": "anndata-cppm",
+      "requires": [
+        "storage"
+      ],
+      "status": "implemented_and_locally_qualified"
+    },
+    {
+      "id": "cpu-precision-avx2",
+      "owner": "velocity-cppm",
+      "requires": [
+        "storage"
+      ],
+      "status": "implemented_and_locally_qualified"
+    },
+    {
+      "id": "cuda-velocity",
+      "owner": "velocity-cppm",
+      "requires": [
+        "device-data",
+        "cpu-precision-avx2"
+      ],
+      "status": "implemented_and_locally_qualified"
+    },
+    {
+      "id": "selective-precision",
+      "owner": "velocity-cppm",
+      "requires": [
+        "cpu-precision-avx2",
+        "cuda-velocity"
+      ],
+      "status": "implemented_and_locally_qualified"
+    },
+    {
+      "id": "qualification",
+      "owner": "coordinated",
+      "requires": [
+        "storage",
+        "device-data",
+        "cpu-precision-avx2",
+        "cuda-velocity",
+        "selective-precision"
+      ],
+      "status": "implemented_and_locally_qualified"
+    }
+  ],
+  "gates": {
+    "workspace_bytes": 67108864,
+    "block_genes": 64,
+    "performance_worker_seconds": 30,
+    "cuda_correctness_job_seconds": 300,
+    "warm_consumer_max_baseline_ratio": 1.25,
+    "private_edit_preserves_public_bmis_and_consumer_objects": true,
+    "moment_scaled_atol_rtol": {
+      "float64": [
+        1e-12,
+        1e-11
+      ],
+      "float32": [
+        2e-06,
+        2e-05
+      ]
+    },
+    "fit_scaled_atol_rtol": {
+      "float64": [
+        1e-10,
+        1e-09
+      ],
+      "float32": [
+        2e-05,
+        0.0002
+      ]
+    },
+    "r2_atol": {
+      "float64": 1e-10,
+      "float32": 0.0002
+    },
+    "objective_normalized_tolerance": {
+      "float64": 1e-09,
+      "float32": 0.0005
+    }
+  },
+  "workflow": {
+    "execution_handle_waived_by_user": true,
+    "native_authority_accepted": false,
+    "orientation": "Read-only overviews: no active run; authored packages are not native acceptance",
+    "preserve_authority_and_prior_attempts": true
+  },
+  "method_sources": {
+    "kda_head": "277c79b8cdd1d13c34a0dfd132b8bb504bcb5afc",
+    "cuda_skill_sha256": "3992c5b0e85409cce8002fcfe2c6caed63df6451daad9bae28ccd64a381d717a",
+    "cellerator_style_sha256": "aeb25062001f95665ae872cdae07d7a09fd14627a2a2dc50f284f11d95cc2a51"
+  },
+  "completed_at_utc": "2026-11-04T14:47:39.386414+00:00",
+  "local_validation": {
+    "validation": {
+      "path": "/home/tumlinson/velocity.cppm/tests/results/milestone-3.json",
+      "sha256": "a72e1c8a2d73fc25164199c9d6face05fac61da403b1315dac123305043326e5"
+    },
+    "performance": {
+      "path": "/home/tumlinson/velocity.cppm/benchmarks/results/milestone-3.json",
+      "sha256": "ed28144ee0b9578781bd270550505c629c3f9d8212499cdd25ad477b1b95222c"
+    },
+    "build": {
+      "path": "/home/tumlinson/velocity.cppm/benchmarks/results/module-build-milestone-3.json",
+      "sha256": "ed45b56966ac1328055c3c8cf713740943cf420bbb83a35602237a9dc7b2ca0e"
+    },
+    "per_type_errors": {
+      "path": "/home/tumlinson/velocity.cppm/tests/results/precision-errors.json",
+      "sha256": "1774844ff55402bb8ff4bb687e15a0435d9f5f3c7fe3e5e0742fac9cc3be940f"
+    },
+    "native_todo_outcome_accepted": false,
+    "strict_source_diagnostic": "One FP32 initialization R2 source miss remains visible; narrow evidence-supported precision exception. All same-input backend gates pass.",
+    "preserved_legacy_exception": true
+  }
+}

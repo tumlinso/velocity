@@ -1,0 +1,2208 @@
+{
+  "format": "velocity-cppm.module-build-qualification",
+  "version": 1,
+  "runs": [
+    {
+      "run_id": "20261104T143649Z-99a061b3",
+      "started_utc": "2026-11-04T14:36:49.384101+00:00",
+      "requested_scopes": [
+        "cpu_pair",
+        "cpu_avx2",
+        "cuda_private",
+        "anndata_private"
+      ],
+      "conditions": {
+        "build_jobs": 2,
+        "command_timeout_s": 120,
+        "warm_recompile_pairs": 5,
+        "build_type": "Release",
+        "generator": "Ninja",
+        "compiler": "clang++-18",
+        "cold_build_definition": "fresh isolated build directory; OS filesystem cache uncontrolled",
+        "build_only": true,
+        "runtime_samples": false,
+        "gpu_execution": false,
+        "concurrent_measurements": "Root grants quiescence before --run; script does not infer host-wide idleness."
+      },
+      "environment": {
+        "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "cpu_model": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+        "cpu_count": 80,
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "cmake": "cmake version 3.28.3",
+        "ninja": "1.11.1",
+        "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+        "clang_scan_deps": "clang-scan-deps-18",
+        "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver"
+      },
+      "inputs": {
+        "velocity_live_source": {
+          "root": "/home/tumlinson/velocity.cppm",
+          "sha256": "8fb2a6ba7c94b13d1152812846cfdcce675a7f1223fae4293f5945b920aca31b",
+          "file_count": 33,
+          "key_file_sha256": {
+            "CMakeLists.txt": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+            "src/velocity.cppm": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+            "src/velocity.cpp": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+            "src/precision.cpp": "49f54166ba773b522a083e6e5858b5d89f90482568f7952fdc41ec8c47e824e8",
+            "src/detail/cpu_kernels.cpp": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+            "src/cuda.cpp": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+            "src/cuda/kernels.cu": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+            "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+          }
+        },
+        "baseline_velocity_source": {
+          "root": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/source",
+          "sha256": "cf8e3487d8113df1e5cede4916b28cca76a26274b8e8b12640da7f78ad37bdbd",
+          "file_count": 15,
+          "key_file_sha256": {
+            "CMakeLists.txt": "e199dbe6a643ce64faa6af64a2dc9d0ede3dd9736b8333f5be6d7880a0644181",
+            "src/velocity.cppm": "2c4fc9a9c27a984b3e76370df7c78dd30724e51f27ca0e50f8dc62c3e0c4be8f",
+            "src/velocity.cpp": "dca3f30c40ef83e72e2779e5f89834831baee5df37fa8541d7e45a5442a8fb13",
+            "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+          }
+        },
+        "baseline_source_manifest": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/source-identity.json",
+        "prebuilt_baseline_build": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/build",
+        "prebuilt_baseline_build_artifacts": {
+          "public_bmis": {
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+              "sha256": "231ffd4805bbff2fee363508fedb963d8cb0ba846e9a28ac7ca459b0772d6a9a",
+              "mtime_ns": 1793795112721656906
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+              "sha256": "79fb88f7a9050bda4f0017734727dc55ce18dab167e980c25b825ac0e4534856",
+              "mtime_ns": 1793795107197699085
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+              "sha256": "0b58ee45f819457377d42243178f16349cde79379f35c52f4f03cf0665e5954e",
+              "mtime_ns": 1793795110809671507
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+              "sha256": "9b64fae4b55be9601b2bc2b144adee14d23df561120b0897a2d48b0e103b93d3",
+              "mtime_ns": 1793795109361682563
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+              "sha256": "b29d37d1b8cd308d5c1039fe2b357daecfe469466f38a1c126a2b72000a05056",
+              "mtime_ns": 1793795108217691298
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+              "sha256": "c95910196bdb6a2d9fbbd6e18e51529c58ff55a7e05dc9592dc49cb1194dd50d",
+              "mtime_ns": 1793795111080669437
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+              "sha256": "9cfd9df0889f6d38d41e773b644ad32e70deceaf777a25beacd94ab9b0592291",
+              "mtime_ns": 1793795112861655837
+            },
+            "CMakeFiles/velocity.dir/velocity.pcm": {
+              "sha256": "167303b6c7722954c9396e7a4608f59b73ccacf30c45c993a73b9a49ed62cc3b",
+              "mtime_ns": 1793795112621657670
+            }
+          },
+          "consumer_objects": {
+            "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+              "sha256": "04f5ed4a6f208d54b94a30e2ba108d79a6e52e602c42bc420860e5bf4ada1362",
+              "mtime_ns": 1793795117629619424
+            },
+            "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+              "sha256": "3933d2425bf091a21a78369b35005e203c3e9ceafb6ac3b9415ca96f4a74c4df",
+              "mtime_ns": 1793795117893617407
+            }
+          }
+        },
+        "baseline_anndata_prefix": {
+          "root": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/anndata-prefix",
+          "sha256": "3ea3ec70e826e2b1ea0ef5de6494bf389b5264d2a125fb12ed6a576782a30a4a",
+          "file_count": 17,
+          "key_file_sha256": {}
+        },
+        "current_cpu_anndata_prefix": {
+          "root": "/home/tumlinson/velocity.cppm/build/deps/install",
+          "sha256": "a14621d4f845e38489ce97682c04abad967cf405f5befb9750ba1f98d169bebd",
+          "file_count": 20,
+          "key_file_sha256": {}
+        },
+        "current_cuda_anndata_prefix": {
+          "root": "/home/tumlinson/velocity.cppm/build/milestone3/cuda-deps",
+          "sha256": "a73bb41a029ddf9e9efe0cd44e36a86569351b2f992a0c0f7a56ab0e70c1d429",
+          "file_count": 28,
+          "key_file_sha256": {}
+        },
+        "anndata_live_source": {
+          "root": "/home/tumlinson/anndata.cppm",
+          "sha256": "c5228d3d524afdefe35a53d4f67098088bc9bd1f26a9543a1b8f8c1bd7fc97a0",
+          "file_count": 49,
+          "key_file_sha256": {
+            "CMakeLists.txt": "f1dcc1e897abf93f82a7e2704ffc8156db2927b1ffad950493030f96baf678f5",
+            "src/anndata.cppm": "991a9e1f5fd8e51c4affc061e7a49751ccaeb3d0feda0a2e173db84b843a6490",
+            "src/anndata.core.cppm": "84d83471d19cb26bc4b32c38ac2e2f4f1b08e16113ec367a92114edab23bd000",
+            "src/h5ad.cpp": "930182c4067578cc39f69fd526e008df8760f468ee665b767e1cab853754948b",
+            "src/zarr_codecs.cpp": "f146d83d1349fb541f9c16cb497b140e327c669564dbe6f84e3b06fd61ed9a5d",
+            "examples/foundation.cpp": "a46c3dd40ae6ca1e03a2e2bda5c2d64f2681ef9653088af9f6a8b922349c3fa3"
+          }
+        },
+        "anndata_dependency_prefix": {
+          "root": "/home/tumlinson/anndata.cppm/build/dependencies/usr",
+          "sha256": "46016eaba8004ae601cd9a65508f06959ca57d75da3c1fbc88ca5dee33689581",
+          "file_count": 501,
+          "key_file_sha256": {}
+        }
+      },
+      "artifact_directory": "build/milestone3/build-qualification/20261104T143649Z-99a061b3",
+      "scopes": {
+        "cpu_pair": {
+          "status": "failed",
+          "error": "cold-build-cpu-pair/baseline could not start: [Errno 2] No such file or directory: '/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/002-cold-build-cpu-pair/baseline.log'"
+        },
+        "cpu_avx2": {
+          "status": "failed",
+          "error": "cold-build-cpu-avx2/current could not start: [Errno 2] No such file or directory: '/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/004-cold-build-cpu-avx2/current.log'"
+        },
+        "cuda_private": {
+          "status": "complete",
+          "gpu_execution": false,
+          "source": {
+            "root": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/source",
+            "sha256": "8fb2a6ba7c94b13d1152812846cfdcce675a7f1223fae4293f5945b920aca31b",
+            "file_count": 33,
+            "key_file_sha256": {
+              "CMakeLists.txt": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+              "src/velocity.cppm": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+              "src/velocity.cpp": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+              "src/precision.cpp": "49f54166ba773b522a083e6e5858b5d89f90482568f7952fdc41ec8c47e824e8",
+              "src/detail/cpu_kernels.cpp": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+              "src/cuda.cpp": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+              "src/cuda/kernels.cu": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+              "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+            }
+          },
+          "configure_s": 3.1231228610049584,
+          "cold_build_s": 32.90222823899967,
+          "cold_total_s": 36.02535110000463,
+          "public_bmi_count": 12,
+          "consumer_object_count": 3,
+          "nvcc": "/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/cuda/12.9/bin/nvcc",
+          "cuda_architecture": 70,
+          "private_sources": [
+            {
+              "source_edit": {
+                "path": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/source/src/cuda/kernels.cu",
+                "before_sha256": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+                "edited_sha256": "70c271e89c56ec65da11a20acbe0d4c83eab8dce63747b6a8b9011f4b3bb4748",
+                "marker": "milestone-3 private CUDA kernel rebuild probe"
+              },
+              "private_rebuild_s": 16.20618200700119,
+              "private_object_before": {
+                "CMakeFiles/velocity_cuda.dir/src/cuda/kernels.cu.o": {
+                  "sha256": "0e7c29de963597be88b1e0fb21da5a83d50de2df678903a81d3918a076857e83",
+                  "mtime_ns": 1793803031422568821
+                }
+              },
+              "private_object_after": {
+                "CMakeFiles/velocity_cuda.dir/src/cuda/kernels.cu.o": {
+                  "sha256": "d935446faa742e81820b8b274af2a1a92a34f6c6f7f7c7fe4aacaa50599c8e7e",
+                  "mtime_ns": 1793803062898337788
+                }
+              },
+              "private_object_rebuilt": true,
+              "before": {
+                "public_bmis": {
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                    "sha256": "d8f27745a35e86302e358cb545a5cb3b81a0e098352a249c8c6ff7989a7fb025",
+                    "mtime_ns": 1793803020138651479
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                    "sha256": "5d977733db4072f2e27f8113ab479ee57c720a0cf21fbb5d5532210d8a20cf9f",
+                    "mtime_ns": 1793803014694691325
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                    "sha256": "9231c4e5bc1c4a85ce1c77a6d04f35d9b9aaeba808d9df5d4fd3696274b589ba",
+                    "mtime_ns": 1793803018348664583
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                    "sha256": "b62dddb3406b3efeda7a99704f1811acf8fcba54dcf4e02ef6b26385fc4a6d06",
+                    "mtime_ns": 1793803016912675093
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                    "sha256": "771d73427ad5588c6f725faca2a7672e52ba1b768ebba7ae72637aeec507fb30",
+                    "mtime_ns": 1793803015783683356
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                    "sha256": "5515e9e64840ad096bc969b0a780e4a564efdd68fae4310066c78e718e4172ab",
+                    "mtime_ns": 1793803018613662643
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                    "sha256": "466529c6d7049aa38c98af7ce531de78eb8bd7c73bafe746ca678f8cb807ef50",
+                    "mtime_ns": 1793803021964638109
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                    "sha256": "caf06f9ffeb214009a9707ad971e61f2c3937c1d6f9a67c2ea2fef4ed7365c6a",
+                    "mtime_ns": 1793803021846638973
+                  },
+                  "CMakeFiles/anndata_cuda_module_interfaces.dir/anndata.cuda.pcm": {
+                    "sha256": "9ffad38562da16009f560be9a72f5cfe760856f7d30375455f88a82f33a3f389",
+                    "mtime_ns": 1793803023366627842
+                  },
+                  "CMakeFiles/velocity.dir/velocity.pcm": {
+                    "sha256": "316d38e4128380c597d3e9fd0d452f4668a4ff07a35d6b159b8a943b16fadc24",
+                    "mtime_ns": 1793803024825617156
+                  },
+                  "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                    "sha256": "e3d70b3414966e6d1aaaf1bc26082a5bac957b64db964c387c4201a9fac8822d",
+                    "mtime_ns": 1793803037979520748
+                  },
+                  "CMakeFiles/velocity_cuda.dir/velocity.cuda.pcm": {
+                    "sha256": "1cfdddb028b6912e7557bafcd529c3e0badfa7fb60008c0122f082f0bcbc7d2f",
+                    "mtime_ns": 1793803043456480571
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                    "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                    "mtime_ns": 1793803044786470811
+                  },
+                  "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                    "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                    "mtime_ns": 1793803046257460016
+                  },
+                  "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                    "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                    "mtime_ns": 1793803045183467898
+                  }
+                }
+              },
+              "after": {
+                "public_bmis": {
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                    "sha256": "d8f27745a35e86302e358cb545a5cb3b81a0e098352a249c8c6ff7989a7fb025",
+                    "mtime_ns": 1793803020138651479
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                    "sha256": "5d977733db4072f2e27f8113ab479ee57c720a0cf21fbb5d5532210d8a20cf9f",
+                    "mtime_ns": 1793803014694691325
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                    "sha256": "9231c4e5bc1c4a85ce1c77a6d04f35d9b9aaeba808d9df5d4fd3696274b589ba",
+                    "mtime_ns": 1793803018348664583
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                    "sha256": "b62dddb3406b3efeda7a99704f1811acf8fcba54dcf4e02ef6b26385fc4a6d06",
+                    "mtime_ns": 1793803016912675093
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                    "sha256": "771d73427ad5588c6f725faca2a7672e52ba1b768ebba7ae72637aeec507fb30",
+                    "mtime_ns": 1793803015783683356
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                    "sha256": "5515e9e64840ad096bc969b0a780e4a564efdd68fae4310066c78e718e4172ab",
+                    "mtime_ns": 1793803018613662643
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                    "sha256": "466529c6d7049aa38c98af7ce531de78eb8bd7c73bafe746ca678f8cb807ef50",
+                    "mtime_ns": 1793803021964638109
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                    "sha256": "caf06f9ffeb214009a9707ad971e61f2c3937c1d6f9a67c2ea2fef4ed7365c6a",
+                    "mtime_ns": 1793803021846638973
+                  },
+                  "CMakeFiles/anndata_cuda_module_interfaces.dir/anndata.cuda.pcm": {
+                    "sha256": "9ffad38562da16009f560be9a72f5cfe760856f7d30375455f88a82f33a3f389",
+                    "mtime_ns": 1793803023366627842
+                  },
+                  "CMakeFiles/velocity.dir/velocity.pcm": {
+                    "sha256": "316d38e4128380c597d3e9fd0d452f4668a4ff07a35d6b159b8a943b16fadc24",
+                    "mtime_ns": 1793803024825617156
+                  },
+                  "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                    "sha256": "e3d70b3414966e6d1aaaf1bc26082a5bac957b64db964c387c4201a9fac8822d",
+                    "mtime_ns": 1793803037979520748
+                  },
+                  "CMakeFiles/velocity_cuda.dir/velocity.cuda.pcm": {
+                    "sha256": "1cfdddb028b6912e7557bafcd529c3e0badfa7fb60008c0122f082f0bcbc7d2f",
+                    "mtime_ns": 1793803043456480571
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                    "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                    "mtime_ns": 1793803044786470811
+                  },
+                  "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                    "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                    "mtime_ns": 1793803046257460016
+                  },
+                  "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                    "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                    "mtime_ns": 1793803045183467898
+                  }
+                }
+              },
+              "public_bmis_unchanged": true,
+              "consumer_objects_unchanged": true,
+              "passed": true
+            },
+            {
+              "source_edit": {
+                "path": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/source/src/cuda.cpp",
+                "before_sha256": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+                "edited_sha256": "bd8990de03839dd7e88ecc2f4d6d506c24b82172cc105d681bc8ba4d887de168",
+                "marker": "milestone-3 private CUDA host implementation rebuild probe"
+              },
+              "private_rebuild_s": 2.6712966509949183,
+              "private_object_before": {
+                "CMakeFiles/velocity_cuda.dir/src/cuda.cpp.o": {
+                  "sha256": "eb8c5efa460bb88e45d3d6d8864248a8479a5c454773ab15459f861deda93d79",
+                  "mtime_ns": 1793803046175460618
+                }
+              },
+              "private_object_after": {
+                "CMakeFiles/velocity_cuda.dir/src/cuda.cpp.o": {
+                  "sha256": "eb8c5efa460bb88e45d3d6d8864248a8479a5c454773ab15459f861deda93d79",
+                  "mtime_ns": 1793803066020314837
+                }
+              },
+              "private_object_rebuilt": true,
+              "before": {
+                "public_bmis": {
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                    "sha256": "d8f27745a35e86302e358cb545a5cb3b81a0e098352a249c8c6ff7989a7fb025",
+                    "mtime_ns": 1793803020138651479
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                    "sha256": "5d977733db4072f2e27f8113ab479ee57c720a0cf21fbb5d5532210d8a20cf9f",
+                    "mtime_ns": 1793803014694691325
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                    "sha256": "9231c4e5bc1c4a85ce1c77a6d04f35d9b9aaeba808d9df5d4fd3696274b589ba",
+                    "mtime_ns": 1793803018348664583
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                    "sha256": "b62dddb3406b3efeda7a99704f1811acf8fcba54dcf4e02ef6b26385fc4a6d06",
+                    "mtime_ns": 1793803016912675093
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                    "sha256": "771d73427ad5588c6f725faca2a7672e52ba1b768ebba7ae72637aeec507fb30",
+                    "mtime_ns": 1793803015783683356
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                    "sha256": "5515e9e64840ad096bc969b0a780e4a564efdd68fae4310066c78e718e4172ab",
+                    "mtime_ns": 1793803018613662643
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                    "sha256": "466529c6d7049aa38c98af7ce531de78eb8bd7c73bafe746ca678f8cb807ef50",
+                    "mtime_ns": 1793803021964638109
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                    "sha256": "caf06f9ffeb214009a9707ad971e61f2c3937c1d6f9a67c2ea2fef4ed7365c6a",
+                    "mtime_ns": 1793803021846638973
+                  },
+                  "CMakeFiles/anndata_cuda_module_interfaces.dir/anndata.cuda.pcm": {
+                    "sha256": "9ffad38562da16009f560be9a72f5cfe760856f7d30375455f88a82f33a3f389",
+                    "mtime_ns": 1793803023366627842
+                  },
+                  "CMakeFiles/velocity.dir/velocity.pcm": {
+                    "sha256": "316d38e4128380c597d3e9fd0d452f4668a4ff07a35d6b159b8a943b16fadc24",
+                    "mtime_ns": 1793803024825617156
+                  },
+                  "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                    "sha256": "e3d70b3414966e6d1aaaf1bc26082a5bac957b64db964c387c4201a9fac8822d",
+                    "mtime_ns": 1793803037979520748
+                  },
+                  "CMakeFiles/velocity_cuda.dir/velocity.cuda.pcm": {
+                    "sha256": "1cfdddb028b6912e7557bafcd529c3e0badfa7fb60008c0122f082f0bcbc7d2f",
+                    "mtime_ns": 1793803043456480571
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                    "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                    "mtime_ns": 1793803044786470811
+                  },
+                  "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                    "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                    "mtime_ns": 1793803046257460016
+                  },
+                  "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                    "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                    "mtime_ns": 1793803045183467898
+                  }
+                }
+              },
+              "after": {
+                "public_bmis": {
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                    "sha256": "d8f27745a35e86302e358cb545a5cb3b81a0e098352a249c8c6ff7989a7fb025",
+                    "mtime_ns": 1793803020138651479
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                    "sha256": "5d977733db4072f2e27f8113ab479ee57c720a0cf21fbb5d5532210d8a20cf9f",
+                    "mtime_ns": 1793803014694691325
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                    "sha256": "9231c4e5bc1c4a85ce1c77a6d04f35d9b9aaeba808d9df5d4fd3696274b589ba",
+                    "mtime_ns": 1793803018348664583
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                    "sha256": "b62dddb3406b3efeda7a99704f1811acf8fcba54dcf4e02ef6b26385fc4a6d06",
+                    "mtime_ns": 1793803016912675093
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                    "sha256": "771d73427ad5588c6f725faca2a7672e52ba1b768ebba7ae72637aeec507fb30",
+                    "mtime_ns": 1793803015783683356
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                    "sha256": "5515e9e64840ad096bc969b0a780e4a564efdd68fae4310066c78e718e4172ab",
+                    "mtime_ns": 1793803018613662643
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                    "sha256": "466529c6d7049aa38c98af7ce531de78eb8bd7c73bafe746ca678f8cb807ef50",
+                    "mtime_ns": 1793803021964638109
+                  },
+                  "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                    "sha256": "caf06f9ffeb214009a9707ad971e61f2c3937c1d6f9a67c2ea2fef4ed7365c6a",
+                    "mtime_ns": 1793803021846638973
+                  },
+                  "CMakeFiles/anndata_cuda_module_interfaces.dir/anndata.cuda.pcm": {
+                    "sha256": "9ffad38562da16009f560be9a72f5cfe760856f7d30375455f88a82f33a3f389",
+                    "mtime_ns": 1793803023366627842
+                  },
+                  "CMakeFiles/velocity.dir/velocity.pcm": {
+                    "sha256": "316d38e4128380c597d3e9fd0d452f4668a4ff07a35d6b159b8a943b16fadc24",
+                    "mtime_ns": 1793803024825617156
+                  },
+                  "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                    "sha256": "e3d70b3414966e6d1aaaf1bc26082a5bac957b64db964c387c4201a9fac8822d",
+                    "mtime_ns": 1793803037979520748
+                  },
+                  "CMakeFiles/velocity_cuda.dir/velocity.cuda.pcm": {
+                    "sha256": "1cfdddb028b6912e7557bafcd529c3e0badfa7fb60008c0122f082f0bcbc7d2f",
+                    "mtime_ns": 1793803043456480571
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                    "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                    "mtime_ns": 1793803044786470811
+                  },
+                  "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                    "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                    "mtime_ns": 1793803046257460016
+                  },
+                  "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                    "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                    "mtime_ns": 1793803045183467898
+                  }
+                }
+              },
+              "public_bmis_unchanged": true,
+              "consumer_objects_unchanged": true,
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        "anndata_private": {
+          "status": "complete",
+          "source": {
+            "root": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/source",
+            "sha256": "c5228d3d524afdefe35a53d4f67098088bc9bd1f26a9543a1b8f8c1bd7fc97a0",
+            "file_count": 49,
+            "key_file_sha256": {
+              "CMakeLists.txt": "f1dcc1e897abf93f82a7e2704ffc8156db2927b1ffad950493030f96baf678f5",
+              "src/anndata.cppm": "991a9e1f5fd8e51c4affc061e7a49751ccaeb3d0feda0a2e173db84b843a6490",
+              "src/anndata.core.cppm": "84d83471d19cb26bc4b32c38ac2e2f4f1b08e16113ec367a92114edab23bd000",
+              "src/h5ad.cpp": "930182c4067578cc39f69fd526e008df8760f468ee665b767e1cab853754948b",
+              "src/zarr_codecs.cpp": "f146d83d1349fb541f9c16cb497b140e327c669564dbe6f84e3b06fd61ed9a5d",
+              "examples/foundation.cpp": "a46c3dd40ae6ca1e03a2e2bda5c2d64f2681ef9653088af9f6a8b922349c3fa3"
+            }
+          },
+          "configure_s": 0.6160717480015592,
+          "cold_build_s": 57.114521929994226,
+          "cold_total_s": 57.730593677995785,
+          "hdf5_enabled": true,
+          "zarr_enabled": true,
+          "dependency_prefix": {
+            "root": "/home/tumlinson/anndata.cppm/build/dependencies/usr",
+            "sha256": "46016eaba8004ae601cd9a65508f06959ca57d75da3c1fbc88ca5dee33689581",
+            "file_count": 501,
+            "key_file_sha256": {}
+          },
+          "public_bmi_count": 11,
+          "foundation_consumer_object": {
+            "path": "CMakeFiles/anndata_example.dir/examples/foundation.cpp.o"
+          },
+          "private_sources": [
+            {
+              "source_edit": {
+                "path": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/source/src/h5ad.cpp",
+                "before_sha256": "930182c4067578cc39f69fd526e008df8760f468ee665b767e1cab853754948b",
+                "edited_sha256": "43802a248c1403aacc8ae6b2bcadbbdb691fb7a81c276b022a67c78efdf44395",
+                "marker": "milestone-3 private HDF5 codec rebuild probe"
+              },
+              "private_rebuild_s": 7.233661056001438,
+              "private_object_before": {
+                "CMakeFiles/anndata.dir/src/h5ad.cpp.o": {
+                  "sha256": "b3806adefb4649cb9759f38cd698b5d4d861813eead8c9aa8243b716f0a02cad",
+                  "mtime_ns": 1793803099980064777
+                }
+              },
+              "private_object_after": {
+                "CMakeFiles/anndata.dir/src/h5ad.cpp.o": {
+                  "sha256": "b3806adefb4649cb9759f38cd698b5d4d861813eead8c9aa8243b716f0a02cad",
+                  "mtime_ns": 1793803131397832807
+                }
+              },
+              "private_object_rebuilt": true,
+              "before": {
+                "public_bmis": {
+                  "CMakeFiles/anndata.dir/anndata.backed-storage.pcm": {
+                    "sha256": "7b817ab4e26a8554ca0129aa8f0ed831f1c63eec551790cbd52a20ff58e16149",
+                    "mtime_ns": 1793803095647096722
+                  },
+                  "CMakeFiles/anndata.dir/anndata.backed.pcm": {
+                    "sha256": "5bba2768d34bbb7372ee78bd185ac1efea1aa57b34ef1f509a5fdf3d1a49695a",
+                    "mtime_ns": 1793803088351150487
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-arrays.pcm": {
+                    "sha256": "398c4a0f0785f612aa3c3364621dddf0f0fd8078927eea32ecbeb11ef254faa2",
+                    "mtime_ns": 1793803072952263853
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-data.pcm": {
+                    "sha256": "7aadb383eed129d2181756a4407daccb5c022e8287f749d495928aa11e6f9180",
+                    "mtime_ns": 1793803076392238541
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-records.pcm": {
+                    "sha256": "6badb1614b1774acdc9fa8f8d9cd65ef8a27d01445f2a8fee29bf2fb105246dc",
+                    "mtime_ns": 1793803075022248623
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-strings.pcm": {
+                    "sha256": "aec19cfbc2aead8857c26d9628ba0527c59cfcd4851ec098e884a06d02957053",
+                    "mtime_ns": 1793803073920256731
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core.pcm": {
+                    "sha256": "fedd6b8322de447d84203058938d72133d4f1cdc365ed28a8e664500fe80dda8",
+                    "mtime_ns": 1793803076645236679
+                  },
+                  "CMakeFiles/anndata.dir/anndata.h5ad.pcm": {
+                    "sha256": "06048b3ba76d41f9390c40e13af23d797b137f143c11b37cab782aded7b5f6cf",
+                    "mtime_ns": 1793803092644118856
+                  },
+                  "CMakeFiles/anndata.dir/anndata.pcm": {
+                    "sha256": "329218cd63d5157f714e1501e7fb4472bc6917f05e7a120a3854894c6d774dbc",
+                    "mtime_ns": 1793803093773110535
+                  },
+                  "CMakeFiles/anndata.dir/anndata.streaming.pcm": {
+                    "sha256": "4f8ce27aa320c4ce4f1c75d94f58ce1e8850026c43416ef54b810dde67b4a5fb",
+                    "mtime_ns": 1793803090037138066
+                  },
+                  "CMakeFiles/anndata.dir/anndata.zarr.pcm": {
+                    "sha256": "f51c78164d8d7ee2272249c8a990e10e917025868f35716831226282d9179903",
+                    "mtime_ns": 1793803093361113572
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/anndata_example.dir/examples/foundation.cpp.o": {
+                    "sha256": "3bdab536a641d98bab13ed6fc9ba7d4822922fb94bd3bce8940b1c3ebb1142dc",
+                    "mtime_ns": 1793803122316899915
+                  }
+                }
+              },
+              "after": {
+                "public_bmis": {
+                  "CMakeFiles/anndata.dir/anndata.backed-storage.pcm": {
+                    "sha256": "7b817ab4e26a8554ca0129aa8f0ed831f1c63eec551790cbd52a20ff58e16149",
+                    "mtime_ns": 1793803095647096722
+                  },
+                  "CMakeFiles/anndata.dir/anndata.backed.pcm": {
+                    "sha256": "5bba2768d34bbb7372ee78bd185ac1efea1aa57b34ef1f509a5fdf3d1a49695a",
+                    "mtime_ns": 1793803088351150487
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-arrays.pcm": {
+                    "sha256": "398c4a0f0785f612aa3c3364621dddf0f0fd8078927eea32ecbeb11ef254faa2",
+                    "mtime_ns": 1793803072952263853
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-data.pcm": {
+                    "sha256": "7aadb383eed129d2181756a4407daccb5c022e8287f749d495928aa11e6f9180",
+                    "mtime_ns": 1793803076392238541
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-records.pcm": {
+                    "sha256": "6badb1614b1774acdc9fa8f8d9cd65ef8a27d01445f2a8fee29bf2fb105246dc",
+                    "mtime_ns": 1793803075022248623
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-strings.pcm": {
+                    "sha256": "aec19cfbc2aead8857c26d9628ba0527c59cfcd4851ec098e884a06d02957053",
+                    "mtime_ns": 1793803073920256731
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core.pcm": {
+                    "sha256": "fedd6b8322de447d84203058938d72133d4f1cdc365ed28a8e664500fe80dda8",
+                    "mtime_ns": 1793803076645236679
+                  },
+                  "CMakeFiles/anndata.dir/anndata.h5ad.pcm": {
+                    "sha256": "06048b3ba76d41f9390c40e13af23d797b137f143c11b37cab782aded7b5f6cf",
+                    "mtime_ns": 1793803092644118856
+                  },
+                  "CMakeFiles/anndata.dir/anndata.pcm": {
+                    "sha256": "329218cd63d5157f714e1501e7fb4472bc6917f05e7a120a3854894c6d774dbc",
+                    "mtime_ns": 1793803093773110535
+                  },
+                  "CMakeFiles/anndata.dir/anndata.streaming.pcm": {
+                    "sha256": "4f8ce27aa320c4ce4f1c75d94f58ce1e8850026c43416ef54b810dde67b4a5fb",
+                    "mtime_ns": 1793803090037138066
+                  },
+                  "CMakeFiles/anndata.dir/anndata.zarr.pcm": {
+                    "sha256": "f51c78164d8d7ee2272249c8a990e10e917025868f35716831226282d9179903",
+                    "mtime_ns": 1793803093361113572
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/anndata_example.dir/examples/foundation.cpp.o": {
+                    "sha256": "3bdab536a641d98bab13ed6fc9ba7d4822922fb94bd3bce8940b1c3ebb1142dc",
+                    "mtime_ns": 1793803122316899915
+                  }
+                }
+              },
+              "public_bmis_unchanged": true,
+              "consumer_objects_unchanged": true,
+              "passed": true
+            },
+            {
+              "source_edit": {
+                "path": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/source/src/zarr_codecs.cpp",
+                "before_sha256": "f146d83d1349fb541f9c16cb497b140e327c669564dbe6f84e3b06fd61ed9a5d",
+                "edited_sha256": "cf110831d3536ce522a3aad587439b16fc6d561d30743abe1adc3d4cc69c73c0",
+                "marker": "milestone-3 private Zarr codec rebuild probe"
+              },
+              "private_rebuild_s": 4.777330857999914,
+              "private_object_before": {
+                "CMakeFiles/anndata.dir/src/zarr_codecs.cpp.o": {
+                  "sha256": "5b0b6f7f85a4191a569f012da280b6a185dd967349ac0e5c80cbfdba8df47974",
+                  "mtime_ns": 1793803072938263956
+                }
+              },
+              "private_object_after": {
+                "CMakeFiles/anndata.dir/src/zarr_codecs.cpp.o": {
+                  "sha256": "5b0b6f7f85a4191a569f012da280b6a185dd967349ac0e5c80cbfdba8df47974",
+                  "mtime_ns": 1793803136511794994
+                }
+              },
+              "private_object_rebuilt": true,
+              "before": {
+                "public_bmis": {
+                  "CMakeFiles/anndata.dir/anndata.backed-storage.pcm": {
+                    "sha256": "7b817ab4e26a8554ca0129aa8f0ed831f1c63eec551790cbd52a20ff58e16149",
+                    "mtime_ns": 1793803095647096722
+                  },
+                  "CMakeFiles/anndata.dir/anndata.backed.pcm": {
+                    "sha256": "5bba2768d34bbb7372ee78bd185ac1efea1aa57b34ef1f509a5fdf3d1a49695a",
+                    "mtime_ns": 1793803088351150487
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-arrays.pcm": {
+                    "sha256": "398c4a0f0785f612aa3c3364621dddf0f0fd8078927eea32ecbeb11ef254faa2",
+                    "mtime_ns": 1793803072952263853
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-data.pcm": {
+                    "sha256": "7aadb383eed129d2181756a4407daccb5c022e8287f749d495928aa11e6f9180",
+                    "mtime_ns": 1793803076392238541
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-records.pcm": {
+                    "sha256": "6badb1614b1774acdc9fa8f8d9cd65ef8a27d01445f2a8fee29bf2fb105246dc",
+                    "mtime_ns": 1793803075022248623
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-strings.pcm": {
+                    "sha256": "aec19cfbc2aead8857c26d9628ba0527c59cfcd4851ec098e884a06d02957053",
+                    "mtime_ns": 1793803073920256731
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core.pcm": {
+                    "sha256": "fedd6b8322de447d84203058938d72133d4f1cdc365ed28a8e664500fe80dda8",
+                    "mtime_ns": 1793803076645236679
+                  },
+                  "CMakeFiles/anndata.dir/anndata.h5ad.pcm": {
+                    "sha256": "06048b3ba76d41f9390c40e13af23d797b137f143c11b37cab782aded7b5f6cf",
+                    "mtime_ns": 1793803092644118856
+                  },
+                  "CMakeFiles/anndata.dir/anndata.pcm": {
+                    "sha256": "329218cd63d5157f714e1501e7fb4472bc6917f05e7a120a3854894c6d774dbc",
+                    "mtime_ns": 1793803093773110535
+                  },
+                  "CMakeFiles/anndata.dir/anndata.streaming.pcm": {
+                    "sha256": "4f8ce27aa320c4ce4f1c75d94f58ce1e8850026c43416ef54b810dde67b4a5fb",
+                    "mtime_ns": 1793803090037138066
+                  },
+                  "CMakeFiles/anndata.dir/anndata.zarr.pcm": {
+                    "sha256": "f51c78164d8d7ee2272249c8a990e10e917025868f35716831226282d9179903",
+                    "mtime_ns": 1793803093361113572
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/anndata_example.dir/examples/foundation.cpp.o": {
+                    "sha256": "3bdab536a641d98bab13ed6fc9ba7d4822922fb94bd3bce8940b1c3ebb1142dc",
+                    "mtime_ns": 1793803122316899915
+                  }
+                }
+              },
+              "after": {
+                "public_bmis": {
+                  "CMakeFiles/anndata.dir/anndata.backed-storage.pcm": {
+                    "sha256": "7b817ab4e26a8554ca0129aa8f0ed831f1c63eec551790cbd52a20ff58e16149",
+                    "mtime_ns": 1793803095647096722
+                  },
+                  "CMakeFiles/anndata.dir/anndata.backed.pcm": {
+                    "sha256": "5bba2768d34bbb7372ee78bd185ac1efea1aa57b34ef1f509a5fdf3d1a49695a",
+                    "mtime_ns": 1793803088351150487
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-arrays.pcm": {
+                    "sha256": "398c4a0f0785f612aa3c3364621dddf0f0fd8078927eea32ecbeb11ef254faa2",
+                    "mtime_ns": 1793803072952263853
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-data.pcm": {
+                    "sha256": "7aadb383eed129d2181756a4407daccb5c022e8287f749d495928aa11e6f9180",
+                    "mtime_ns": 1793803076392238541
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-records.pcm": {
+                    "sha256": "6badb1614b1774acdc9fa8f8d9cd65ef8a27d01445f2a8fee29bf2fb105246dc",
+                    "mtime_ns": 1793803075022248623
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core-strings.pcm": {
+                    "sha256": "aec19cfbc2aead8857c26d9628ba0527c59cfcd4851ec098e884a06d02957053",
+                    "mtime_ns": 1793803073920256731
+                  },
+                  "CMakeFiles/anndata.dir/anndata.core.pcm": {
+                    "sha256": "fedd6b8322de447d84203058938d72133d4f1cdc365ed28a8e664500fe80dda8",
+                    "mtime_ns": 1793803076645236679
+                  },
+                  "CMakeFiles/anndata.dir/anndata.h5ad.pcm": {
+                    "sha256": "06048b3ba76d41f9390c40e13af23d797b137f143c11b37cab782aded7b5f6cf",
+                    "mtime_ns": 1793803092644118856
+                  },
+                  "CMakeFiles/anndata.dir/anndata.pcm": {
+                    "sha256": "329218cd63d5157f714e1501e7fb4472bc6917f05e7a120a3854894c6d774dbc",
+                    "mtime_ns": 1793803093773110535
+                  },
+                  "CMakeFiles/anndata.dir/anndata.streaming.pcm": {
+                    "sha256": "4f8ce27aa320c4ce4f1c75d94f58ce1e8850026c43416ef54b810dde67b4a5fb",
+                    "mtime_ns": 1793803090037138066
+                  },
+                  "CMakeFiles/anndata.dir/anndata.zarr.pcm": {
+                    "sha256": "f51c78164d8d7ee2272249c8a990e10e917025868f35716831226282d9179903",
+                    "mtime_ns": 1793803093361113572
+                  }
+                },
+                "consumer_objects": {
+                  "CMakeFiles/anndata_example.dir/examples/foundation.cpp.o": {
+                    "sha256": "3bdab536a641d98bab13ed6fc9ba7d4822922fb94bd3bce8940b1c3ebb1142dc",
+                    "mtime_ns": 1793803122316899915
+                  }
+                }
+              },
+              "public_bmis_unchanged": true,
+              "consumer_objects_unchanged": true,
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      },
+      "commands": [
+        {
+          "name": "configure-baseline",
+          "argv": [
+            "cmake",
+            "-S",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-pair/baseline/source",
+            "-B",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-pair/baseline/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_CXX_COMPILER=clang++-18",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/milestone3/baseline/anndata-prefix",
+            "-DVELOCITY_BUILD_TESTS=OFF",
+            "-DVELOCITY_BUILD_QUALIFICATION=OFF",
+            "-DVELOCITY_ENABLE_SANITIZERS=OFF"
+          ],
+          "command": "cmake -S /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-pair/baseline/source -B /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-pair/baseline/build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/milestone3/baseline/anndata-prefix -DVELOCITY_BUILD_TESTS=OFF -DVELOCITY_BUILD_QUALIFICATION=OFF -DVELOCITY_ENABLE_SANITIZERS=OFF",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/001-configure-baseline.log",
+          "elapsed_s": 0.41506427800050005,
+          "returncode": 0
+        },
+        {
+          "name": "cold-build-cpu-pair/baseline",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-pair/baseline/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-pair/baseline/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/002-cold-build-cpu-pair/baseline.log",
+          "elapsed_s": 5.5463999160565436e-05,
+          "execution_error": "[Errno 2] No such file or directory: '/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/002-cold-build-cpu-pair/baseline.log'"
+        },
+        {
+          "name": "configure-current",
+          "argv": [
+            "cmake",
+            "-S",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-avx2/current/source",
+            "-B",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-avx2/current/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_CXX_COMPILER=clang++-18",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/deps/install",
+            "-DVELOCITY_BUILD_TESTS=OFF",
+            "-DVELOCITY_BUILD_QUALIFICATION=OFF",
+            "-DVELOCITY_ENABLE_SANITIZERS=OFF",
+            "-DVELOCITY_CPU_ISA=avx2",
+            "-DVELOCITY_ENABLE_CUDA=OFF"
+          ],
+          "command": "cmake -S /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-avx2/current/source -B /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-avx2/current/build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/deps/install -DVELOCITY_BUILD_TESTS=OFF -DVELOCITY_BUILD_QUALIFICATION=OFF -DVELOCITY_ENABLE_SANITIZERS=OFF -DVELOCITY_CPU_ISA=avx2 -DVELOCITY_ENABLE_CUDA=OFF",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/003-configure-current.log",
+          "elapsed_s": 0.415848687000107,
+          "returncode": 0
+        },
+        {
+          "name": "cold-build-cpu-avx2/current",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-avx2/current/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cpu-avx2/current/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/004-cold-build-cpu-avx2/current.log",
+          "elapsed_s": 5.509000038728118e-05,
+          "execution_error": "[Errno 2] No such file or directory: '/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/004-cold-build-cpu-avx2/current.log'"
+        },
+        {
+          "name": "configure-cuda-private",
+          "argv": [
+            "cmake",
+            "-S",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/source",
+            "-B",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_CXX_COMPILER=clang++-18",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/milestone3/cuda-deps",
+            "-DVELOCITY_BUILD_TESTS=OFF",
+            "-DVELOCITY_BUILD_QUALIFICATION=OFF",
+            "-DVELOCITY_ENABLE_SANITIZERS=OFF",
+            "-DVELOCITY_ENABLE_CUDA=ON",
+            "-DVELOCITY_CPU_ISA=scalar",
+            "-DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/cuda/12.9/bin/nvcc",
+            "-DCMAKE_CUDA_ARCHITECTURES=70"
+          ],
+          "command": "cmake -S /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/source -B /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/milestone3/cuda-deps -DVELOCITY_BUILD_TESTS=OFF -DVELOCITY_BUILD_QUALIFICATION=OFF -DVELOCITY_ENABLE_SANITIZERS=OFF -DVELOCITY_ENABLE_CUDA=ON -DVELOCITY_CPU_ISA=scalar -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/cuda/12.9/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/005-configure-cuda-private.log",
+          "elapsed_s": 3.1231228610049584,
+          "returncode": 0
+        },
+        {
+          "name": "cold-build-cuda",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/006-cold-build-cuda.log",
+          "elapsed_s": 32.90222823899967,
+          "returncode": 0
+        },
+        {
+          "name": "private-cuda-kernel-rebuild",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/007-private-cuda-kernel-rebuild.log",
+          "elapsed_s": 16.20618200700119,
+          "returncode": 0
+        },
+        {
+          "name": "private-cuda-host-rebuild",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/cuda-private/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/008-private-cuda-host-rebuild.log",
+          "elapsed_s": 2.6712966509949183,
+          "returncode": 0
+        },
+        {
+          "name": "configure-anndata-private",
+          "argv": [
+            "cmake",
+            "-S",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/source",
+            "-B",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_CXX_COMPILER=clang++-18",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/home/tumlinson/anndata.cppm/build/dependencies/usr",
+            "-DANNDATA_DEPENDENCY_PREFIX=/home/tumlinson/anndata.cppm/build/dependencies/usr",
+            "-DANNDATA_BUILD_TESTS=OFF",
+            "-DANNDATA_BUILD_EXAMPLES=ON",
+            "-DANNDATA_BUILD_BENCHMARKS=OFF",
+            "-DANNDATA_ENABLE_HDF5=ON",
+            "-DANNDATA_ENABLE_ZARR=ON",
+            "-DANNDATA_ENABLE_CUDA=OFF"
+          ],
+          "command": "cmake -S /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/source -B /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/home/tumlinson/anndata.cppm/build/dependencies/usr -DANNDATA_DEPENDENCY_PREFIX=/home/tumlinson/anndata.cppm/build/dependencies/usr -DANNDATA_BUILD_TESTS=OFF -DANNDATA_BUILD_EXAMPLES=ON -DANNDATA_BUILD_BENCHMARKS=OFF -DANNDATA_ENABLE_HDF5=ON -DANNDATA_ENABLE_ZARR=ON -DANNDATA_ENABLE_CUDA=OFF",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/009-configure-anndata-private.log",
+          "elapsed_s": 0.6160717480015592,
+          "returncode": 0
+        },
+        {
+          "name": "cold-build-anndata-private",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/010-cold-build-anndata-private.log",
+          "elapsed_s": 57.114521929994226,
+          "returncode": 0
+        },
+        {
+          "name": "private-hdf5-codec-rebuild",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/011-private-hdf5-codec-rebuild.log",
+          "elapsed_s": 7.233661056001438,
+          "returncode": 0
+        },
+        {
+          "name": "private-zarr-codec-rebuild",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T143649Z-99a061b3/anndata-private/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T143649Z-99a061b3/logs/012-private-zarr-codec-rebuild.log",
+          "elapsed_s": 4.777330857999914,
+          "returncode": 0
+        }
+      ],
+      "live_source_after_sha256": "8fb2a6ba7c94b13d1152812846cfdcce675a7f1223fae4293f5945b920aca31b",
+      "live_source_unchanged": true,
+      "prebuilt_baseline_build_artifacts_after": {
+        "public_bmis": {
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+            "sha256": "231ffd4805bbff2fee363508fedb963d8cb0ba846e9a28ac7ca459b0772d6a9a",
+            "mtime_ns": 1793795112721656906
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+            "sha256": "79fb88f7a9050bda4f0017734727dc55ce18dab167e980c25b825ac0e4534856",
+            "mtime_ns": 1793795107197699085
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+            "sha256": "0b58ee45f819457377d42243178f16349cde79379f35c52f4f03cf0665e5954e",
+            "mtime_ns": 1793795110809671507
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+            "sha256": "9b64fae4b55be9601b2bc2b144adee14d23df561120b0897a2d48b0e103b93d3",
+            "mtime_ns": 1793795109361682563
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+            "sha256": "b29d37d1b8cd308d5c1039fe2b357daecfe469466f38a1c126a2b72000a05056",
+            "mtime_ns": 1793795108217691298
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+            "sha256": "c95910196bdb6a2d9fbbd6e18e51529c58ff55a7e05dc9592dc49cb1194dd50d",
+            "mtime_ns": 1793795111080669437
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+            "sha256": "9cfd9df0889f6d38d41e773b644ad32e70deceaf777a25beacd94ab9b0592291",
+            "mtime_ns": 1793795112861655837
+          },
+          "CMakeFiles/velocity.dir/velocity.pcm": {
+            "sha256": "167303b6c7722954c9396e7a4608f59b73ccacf30c45c993a73b9a49ed62cc3b",
+            "mtime_ns": 1793795112621657670
+          }
+        },
+        "consumer_objects": {
+          "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+            "sha256": "04f5ed4a6f208d54b94a30e2ba108d79a6e52e602c42bc420860e5bf4ada1362",
+            "mtime_ns": 1793795117629619424
+          },
+          "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+            "sha256": "3933d2425bf091a21a78369b35005e203c3e9ceafb6ac3b9415ca96f4a74c4df",
+            "mtime_ns": 1793795117893617407
+          }
+        }
+      },
+      "prebuilt_baseline_build_unchanged": true,
+      "ended_utc": "2026-11-04T14:38:57.096374+00:00",
+      "execution_status": "partial_or_failed",
+      "requested_scope_gates_passed": false,
+      "overall_status": "partial_or_failed",
+      "native_workflow_acceptance": "not_asserted; root retains final acceptance"
+    },
+    {
+      "run_id": "20261104T144028Z-f394c31c",
+      "started_utc": "2026-11-04T14:40:28.616001+00:00",
+      "requested_scopes": [
+        "cpu_pair",
+        "cpu_avx2"
+      ],
+      "conditions": {
+        "build_jobs": 2,
+        "command_timeout_s": 120,
+        "warm_recompile_pairs": 5,
+        "build_type": "Release",
+        "generator": "Ninja",
+        "compiler": "clang++-18",
+        "cold_build_definition": "fresh isolated build directory; OS filesystem cache uncontrolled",
+        "build_only": true,
+        "runtime_samples": false,
+        "gpu_execution": false,
+        "concurrent_measurements": "Root grants quiescence before --run; script does not infer host-wide idleness."
+      },
+      "environment": {
+        "platform": "Linux-6.8.0-147-generic-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "cpu_model": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+        "cpu_count": 80,
+        "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+        "cmake": "cmake version 3.28.3",
+        "ninja": "1.11.1",
+        "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+        "clang_scan_deps": "clang-scan-deps-18",
+        "nvcc": "nvcc: NVIDIA (R) Cuda compiler driver"
+      },
+      "inputs": {
+        "velocity_live_source": {
+          "root": "/home/tumlinson/velocity.cppm",
+          "sha256": "8fb2a6ba7c94b13d1152812846cfdcce675a7f1223fae4293f5945b920aca31b",
+          "file_count": 33,
+          "key_file_sha256": {
+            "CMakeLists.txt": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+            "src/velocity.cppm": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+            "src/velocity.cpp": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+            "src/precision.cpp": "49f54166ba773b522a083e6e5858b5d89f90482568f7952fdc41ec8c47e824e8",
+            "src/detail/cpu_kernels.cpp": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+            "src/cuda.cpp": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+            "src/cuda/kernels.cu": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+            "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+          }
+        },
+        "baseline_velocity_source": {
+          "root": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/source",
+          "sha256": "cf8e3487d8113df1e5cede4916b28cca76a26274b8e8b12640da7f78ad37bdbd",
+          "file_count": 15,
+          "key_file_sha256": {
+            "CMakeLists.txt": "e199dbe6a643ce64faa6af64a2dc9d0ede3dd9736b8333f5be6d7880a0644181",
+            "src/velocity.cppm": "2c4fc9a9c27a984b3e76370df7c78dd30724e51f27ca0e50f8dc62c3e0c4be8f",
+            "src/velocity.cpp": "dca3f30c40ef83e72e2779e5f89834831baee5df37fa8541d7e45a5442a8fb13",
+            "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+          }
+        },
+        "baseline_source_manifest": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/source-identity.json",
+        "prebuilt_baseline_build": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/build",
+        "prebuilt_baseline_build_artifacts": {
+          "public_bmis": {
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+              "sha256": "231ffd4805bbff2fee363508fedb963d8cb0ba846e9a28ac7ca459b0772d6a9a",
+              "mtime_ns": 1793795112721656906
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+              "sha256": "79fb88f7a9050bda4f0017734727dc55ce18dab167e980c25b825ac0e4534856",
+              "mtime_ns": 1793795107197699085
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+              "sha256": "0b58ee45f819457377d42243178f16349cde79379f35c52f4f03cf0665e5954e",
+              "mtime_ns": 1793795110809671507
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+              "sha256": "9b64fae4b55be9601b2bc2b144adee14d23df561120b0897a2d48b0e103b93d3",
+              "mtime_ns": 1793795109361682563
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+              "sha256": "b29d37d1b8cd308d5c1039fe2b357daecfe469466f38a1c126a2b72000a05056",
+              "mtime_ns": 1793795108217691298
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+              "sha256": "c95910196bdb6a2d9fbbd6e18e51529c58ff55a7e05dc9592dc49cb1194dd50d",
+              "mtime_ns": 1793795111080669437
+            },
+            "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+              "sha256": "9cfd9df0889f6d38d41e773b644ad32e70deceaf777a25beacd94ab9b0592291",
+              "mtime_ns": 1793795112861655837
+            },
+            "CMakeFiles/velocity.dir/velocity.pcm": {
+              "sha256": "167303b6c7722954c9396e7a4608f59b73ccacf30c45c993a73b9a49ed62cc3b",
+              "mtime_ns": 1793795112621657670
+            }
+          },
+          "consumer_objects": {
+            "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+              "sha256": "04f5ed4a6f208d54b94a30e2ba108d79a6e52e602c42bc420860e5bf4ada1362",
+              "mtime_ns": 1793795117629619424
+            },
+            "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+              "sha256": "3933d2425bf091a21a78369b35005e203c3e9ceafb6ac3b9415ca96f4a74c4df",
+              "mtime_ns": 1793795117893617407
+            }
+          }
+        },
+        "baseline_anndata_prefix": {
+          "root": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/anndata-prefix",
+          "sha256": "3ea3ec70e826e2b1ea0ef5de6494bf389b5264d2a125fb12ed6a576782a30a4a",
+          "file_count": 17,
+          "key_file_sha256": {}
+        },
+        "current_cpu_anndata_prefix": {
+          "root": "/home/tumlinson/velocity.cppm/build/deps/install",
+          "sha256": "a14621d4f845e38489ce97682c04abad967cf405f5befb9750ba1f98d169bebd",
+          "file_count": 20,
+          "key_file_sha256": {}
+        },
+        "current_cuda_anndata_prefix": {
+          "root": "/home/tumlinson/velocity.cppm/build/milestone3/cuda-deps",
+          "sha256": "a73bb41a029ddf9e9efe0cd44e36a86569351b2f992a0c0f7a56ab0e70c1d429",
+          "file_count": 28,
+          "key_file_sha256": {}
+        },
+        "anndata_live_source": {
+          "root": "/home/tumlinson/anndata.cppm",
+          "sha256": "c5228d3d524afdefe35a53d4f67098088bc9bd1f26a9543a1b8f8c1bd7fc97a0",
+          "file_count": 49,
+          "key_file_sha256": {
+            "CMakeLists.txt": "f1dcc1e897abf93f82a7e2704ffc8156db2927b1ffad950493030f96baf678f5",
+            "src/anndata.cppm": "991a9e1f5fd8e51c4affc061e7a49751ccaeb3d0feda0a2e173db84b843a6490",
+            "src/anndata.core.cppm": "84d83471d19cb26bc4b32c38ac2e2f4f1b08e16113ec367a92114edab23bd000",
+            "src/h5ad.cpp": "930182c4067578cc39f69fd526e008df8760f468ee665b767e1cab853754948b",
+            "src/zarr_codecs.cpp": "f146d83d1349fb541f9c16cb497b140e327c669564dbe6f84e3b06fd61ed9a5d",
+            "examples/foundation.cpp": "a46c3dd40ae6ca1e03a2e2bda5c2d64f2681ef9653088af9f6a8b922349c3fa3"
+          }
+        },
+        "anndata_dependency_prefix": {
+          "root": "/home/tumlinson/anndata.cppm/build/dependencies/usr",
+          "sha256": "46016eaba8004ae601cd9a65508f06959ca57d75da3c1fbc88ca5dee33689581",
+          "file_count": 501,
+          "key_file_sha256": {}
+        }
+      },
+      "artifact_directory": "build/milestone3/build-qualification/20261104T144028Z-f394c31c",
+      "scopes": {
+        "cpu_pair": {
+          "status": "complete",
+          "baseline_cold": {
+            "source": {
+              "root": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/source",
+              "sha256": "cf8e3487d8113df1e5cede4916b28cca76a26274b8e8b12640da7f78ad37bdbd",
+              "file_count": 15,
+              "key_file_sha256": {
+                "CMakeLists.txt": "e199dbe6a643ce64faa6af64a2dc9d0ede3dd9736b8333f5be6d7880a0644181",
+                "src/velocity.cppm": "2c4fc9a9c27a984b3e76370df7c78dd30724e51f27ca0e50f8dc62c3e0c4be8f",
+                "src/velocity.cpp": "dca3f30c40ef83e72e2779e5f89834831baee5df37fa8541d7e45a5442a8fb13",
+                "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+              }
+            },
+            "configure_s": 0.415557173997513,
+            "cold_build_s": 12.448984194001241,
+            "cold_total_s": 12.864541367998754,
+            "public_bmi_count": 8,
+            "consumer_object_count": 2
+          },
+          "current_scalar_cold": {
+            "source": {
+              "root": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/source",
+              "sha256": "8fb2a6ba7c94b13d1152812846cfdcce675a7f1223fae4293f5945b920aca31b",
+              "file_count": 33,
+              "key_file_sha256": {
+                "CMakeLists.txt": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+                "src/velocity.cppm": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+                "src/velocity.cpp": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+                "src/precision.cpp": "49f54166ba773b522a083e6e5858b5d89f90482568f7952fdc41ec8c47e824e8",
+                "src/detail/cpu_kernels.cpp": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+                "src/cuda.cpp": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+                "src/cuda/kernels.cu": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+                "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+              }
+            },
+            "configure_s": 0.41556675999891013,
+            "cold_build_s": 21.323636148001242,
+            "cold_total_s": 21.739202908000152,
+            "public_bmi_count": 10,
+            "consumer_object_count": 3
+          },
+          "warm_consumer": {
+            "example": "examples/steady_state.cpp",
+            "source_sha256": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f",
+            "initial_current_example_sha256": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f",
+            "alternating_pairs": 5,
+            "invocation_order": [
+              "baseline",
+              "current",
+              "current",
+              "baseline",
+              "baseline",
+              "current",
+              "current",
+              "baseline",
+              "baseline",
+              "current"
+            ],
+            "samples": [
+              {
+                "pair": 1,
+                "order": [
+                  "baseline",
+                  "current"
+                ],
+                "samples": {
+                  "baseline": {
+                    "elapsed_s": 0.4155138639980578,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/005-warm-baseline-01.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  },
+                  "current": {
+                    "elapsed_s": 0.46565170800022315,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/006-warm-current-01.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  }
+                }
+              },
+              {
+                "pair": 2,
+                "order": [
+                  "current",
+                  "baseline"
+                ],
+                "samples": {
+                  "current": {
+                    "elapsed_s": 0.4155346479965374,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/007-warm-current-02.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  },
+                  "baseline": {
+                    "elapsed_s": 0.41537908199825324,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/008-warm-baseline-02.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  }
+                }
+              },
+              {
+                "pair": 3,
+                "order": [
+                  "baseline",
+                  "current"
+                ],
+                "samples": {
+                  "baseline": {
+                    "elapsed_s": 0.4152229510000325,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/009-warm-baseline-03.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  },
+                  "current": {
+                    "elapsed_s": 0.4154153519993997,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/010-warm-current-03.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  }
+                }
+              },
+              {
+                "pair": 4,
+                "order": [
+                  "current",
+                  "baseline"
+                ],
+                "samples": {
+                  "current": {
+                    "elapsed_s": 0.41560410000238335,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/011-warm-current-04.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  },
+                  "baseline": {
+                    "elapsed_s": 0.41527653700177325,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/012-warm-baseline-04.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  }
+                }
+              },
+              {
+                "pair": 5,
+                "order": [
+                  "baseline",
+                  "current"
+                ],
+                "samples": {
+                  "baseline": {
+                    "elapsed_s": 0.4153791600037948,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/013-warm-baseline-05.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  },
+                  "current": {
+                    "elapsed_s": 0.41520368000055896,
+                    "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/014-warm-current-05.log",
+                    "public_bmis_unchanged": true,
+                    "recompiled_consumer_object": true,
+                    "only_expected_consumer_object_changed": true,
+                    "changed_consumer_objects": [
+                      "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o"
+                    ]
+                  }
+                }
+              }
+            ],
+            "baseline_median_s": 0.41537908199825324,
+            "current_median_s": 0.4155346479965374,
+            "current_over_baseline_ratio": 1.0003745157255772,
+            "maximum_ratio": 1.25,
+            "passed": true
+          },
+          "private_velocity_implementation": {
+            "source_edit": {
+              "path": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/source/src/velocity.cpp",
+              "before_sha256": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+              "edited_sha256": "c1793678627fc7663fbde38be8870f1530b8c4af8d5507bf889a10c441735e2b",
+              "marker": "milestone-3 private velocity implementation rebuild probe"
+            },
+            "private_rebuild_s": 5.729412501998013,
+            "private_object_before": {
+              "CMakeFiles/velocity.dir/src/velocity.cpp.o": {
+                "sha256": "1795d1bb5e284aa5743a38603ca713f887eeb340e10202d6a6bd838af45635c4",
+                "mtime_ns": 1793803254162921258
+              }
+            },
+            "private_object_after": {
+              "CMakeFiles/velocity.dir/src/velocity.cpp.o": {
+                "sha256": "1795d1bb5e284aa5743a38603ca713f887eeb340e10202d6a6bd838af45635c4",
+                "mtime_ns": 1793803276133757354
+              }
+            },
+            "private_object_rebuilt": true,
+            "before": {
+              "public_bmis": {
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                  "sha256": "ceb4c72fb809c5ca560eb25a858392a59962282ba87235e336972b907e1eee7c",
+                  "mtime_ns": 1793803248682962106
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                  "sha256": "86c5713c7d2df19955175b2c04843e186496a3b75e9728e36ca3294228dd8cbd",
+                  "mtime_ns": 1793803243296002246
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                  "sha256": "f29b41a8774f13e3de5fc865eef46950bd97cf94874c3af16d6e234c3e67e656",
+                  "mtime_ns": 1793803246827975929
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                  "sha256": "93a75d622a0d19f2c8451c76291f4c3d2b8daee05fb5d13a292499a3b2cb4381",
+                  "mtime_ns": 1793803245402986548
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                  "sha256": "cc32e04701817c6d4454d5cde5aefaf136d8b3abf3a3379acb769db327e2fa94",
+                  "mtime_ns": 1793803244303994736
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                  "sha256": "33819871c1828c942928a8b571df6655b2c7f4f609b47f721babb92ba304cdf1",
+                  "mtime_ns": 1793803247084974014
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                  "sha256": "95bde3e036254c9361594ce2675c9aa28e8097fd97efaf401baf3468a643b760",
+                  "mtime_ns": 1793803250524948377
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                  "sha256": "c9f392ab59dc61fbd3218fbf1d0902578db1b5f986706e2047afa64686c0b1f0",
+                  "mtime_ns": 1793803250402949286
+                },
+                "CMakeFiles/velocity.dir/velocity.pcm": {
+                  "sha256": "e43f6607466bea665c549365427d79f6c606d7d7426fbbf53dec9946529f3754",
+                  "mtime_ns": 1793803248573962918
+                },
+                "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                  "sha256": "5f112f894372cd07df34c2181d21fff8220472517e09792408d8c9a6cf2a312b",
+                  "mtime_ns": 1793803260854871358
+                }
+              },
+              "consumer_objects": {
+                "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                  "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                  "mtime_ns": 1793803270242801322
+                },
+                "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                  "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                  "mtime_ns": 1793803263024855173
+                },
+                "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                  "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                  "mtime_ns": 1793803262141861759
+                }
+              }
+            },
+            "after": {
+              "public_bmis": {
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                  "sha256": "ceb4c72fb809c5ca560eb25a858392a59962282ba87235e336972b907e1eee7c",
+                  "mtime_ns": 1793803248682962106
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                  "sha256": "86c5713c7d2df19955175b2c04843e186496a3b75e9728e36ca3294228dd8cbd",
+                  "mtime_ns": 1793803243296002246
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                  "sha256": "f29b41a8774f13e3de5fc865eef46950bd97cf94874c3af16d6e234c3e67e656",
+                  "mtime_ns": 1793803246827975929
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                  "sha256": "93a75d622a0d19f2c8451c76291f4c3d2b8daee05fb5d13a292499a3b2cb4381",
+                  "mtime_ns": 1793803245402986548
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                  "sha256": "cc32e04701817c6d4454d5cde5aefaf136d8b3abf3a3379acb769db327e2fa94",
+                  "mtime_ns": 1793803244303994736
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                  "sha256": "33819871c1828c942928a8b571df6655b2c7f4f609b47f721babb92ba304cdf1",
+                  "mtime_ns": 1793803247084974014
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                  "sha256": "95bde3e036254c9361594ce2675c9aa28e8097fd97efaf401baf3468a643b760",
+                  "mtime_ns": 1793803250524948377
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                  "sha256": "c9f392ab59dc61fbd3218fbf1d0902578db1b5f986706e2047afa64686c0b1f0",
+                  "mtime_ns": 1793803250402949286
+                },
+                "CMakeFiles/velocity.dir/velocity.pcm": {
+                  "sha256": "e43f6607466bea665c549365427d79f6c606d7d7426fbbf53dec9946529f3754",
+                  "mtime_ns": 1793803248573962918
+                },
+                "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                  "sha256": "5f112f894372cd07df34c2181d21fff8220472517e09792408d8c9a6cf2a312b",
+                  "mtime_ns": 1793803260854871358
+                }
+              },
+              "consumer_objects": {
+                "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                  "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                  "mtime_ns": 1793803270242801322
+                },
+                "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                  "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                  "mtime_ns": 1793803263024855173
+                },
+                "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                  "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                  "mtime_ns": 1793803262141861759
+                }
+              }
+            },
+            "public_bmis_unchanged": true,
+            "consumer_objects_unchanged": true,
+            "passed": true
+          },
+          "prebuilt_baseline_build": {
+            "path": "/home/tumlinson/velocity.cppm/build/milestone3/baseline/build",
+            "used_for_timing": false,
+            "reason": "Preserved in place; fresh copies of the exact frozen baseline source were measured."
+          },
+          "passed": true
+        },
+        "cpu_avx2": {
+          "status": "complete",
+          "avx2_cold": {
+            "source": {
+              "root": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/source",
+              "sha256": "8fb2a6ba7c94b13d1152812846cfdcce675a7f1223fae4293f5945b920aca31b",
+              "file_count": 33,
+              "key_file_sha256": {
+                "CMakeLists.txt": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+                "src/velocity.cppm": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+                "src/velocity.cpp": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+                "src/precision.cpp": "49f54166ba773b522a083e6e5858b5d89f90482568f7952fdc41ec8c47e824e8",
+                "src/detail/cpu_kernels.cpp": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+                "src/cuda.cpp": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+                "src/cuda/kernels.cu": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+                "examples/steady_state.cpp": "ac55aaf09a9bf6ff5f20a46bc64f3560adfe3142407f4868725a9e83ff4c2c3f"
+              }
+            },
+            "configure_s": 0.415428027001326,
+            "cold_build_s": 22.82569316700392,
+            "cold_total_s": 23.241121194005245,
+            "public_bmi_count": 10,
+            "consumer_object_count": 3
+          },
+          "private_cpu_kernel": {
+            "source_edit": {
+              "path": "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/source/src/detail/cpu_kernels.cpp",
+              "before_sha256": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+              "edited_sha256": "c9ea6e51524bf4243e6e91c6e2687e97f55430b9999e3557a4d0fc88e23fb32f",
+              "marker": "milestone-3 private AVX2 CPU kernel rebuild probe"
+            },
+            "private_rebuild_s": 1.6690182760066818,
+            "private_object_before": {
+              "CMakeFiles/velocity.dir/src/detail/cpu_kernels.cpp.o": {
+                "sha256": "15ea45bdb57308e912a2fcc238923b13e60c6574415f2e3618ce884e21839e84",
+                "mtime_ns": 1793803278814737339
+              }
+            },
+            "private_object_after": {
+              "CMakeFiles/velocity.dir/src/detail/cpu_kernels.cpp.o": {
+                "sha256": "15ea45bdb57308e912a2fcc238923b13e60c6574415f2e3618ce884e21839e84",
+                "mtime_ns": 1793803301557567430
+              }
+            },
+            "private_object_rebuilt": true,
+            "before": {
+              "public_bmis": {
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                  "sha256": "ceb4c72fb809c5ca560eb25a858392a59962282ba87235e336972b907e1eee7c",
+                  "mtime_ns": 1793803283629701386
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                  "sha256": "86c5713c7d2df19955175b2c04843e186496a3b75e9728e36ca3294228dd8cbd",
+                  "mtime_ns": 1793803278141742364
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                  "sha256": "f29b41a8774f13e3de5fc865eef46950bd97cf94874c3af16d6e234c3e67e656",
+                  "mtime_ns": 1793803281816714924
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                  "sha256": "93a75d622a0d19f2c8451c76291f4c3d2b8daee05fb5d13a292499a3b2cb4381",
+                  "mtime_ns": 1793803280419725356
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                  "sha256": "cc32e04701817c6d4454d5cde5aefaf136d8b3abf3a3379acb769db327e2fa94",
+                  "mtime_ns": 1793803279185734569
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                  "sha256": "33819871c1828c942928a8b571df6655b2c7f4f609b47f721babb92ba304cdf1",
+                  "mtime_ns": 1793803282068713043
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                  "sha256": "95bde3e036254c9361594ce2675c9aa28e8097fd97efaf401baf3468a643b760",
+                  "mtime_ns": 1793803285496687442
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                  "sha256": "c9f392ab59dc61fbd3218fbf1d0902578db1b5f986706e2047afa64686c0b1f0",
+                  "mtime_ns": 1793803285387688256
+                },
+                "CMakeFiles/velocity.dir/velocity.pcm": {
+                  "sha256": "4c520c6f5218c33d0323273173de95f717f54173f3525cb1c3c55aa69dee4825",
+                  "mtime_ns": 1793803283587701699
+                },
+                "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                  "sha256": "917bec42342dc4698cb32049072174832d668a94c1a30e8b1328f9ec2f0f945e",
+                  "mtime_ns": 1793803296733603488
+                }
+              },
+              "consumer_objects": {
+                "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                  "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                  "mtime_ns": 1793803298205592486
+                },
+                "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                  "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                  "mtime_ns": 1793803299651581678
+                },
+                "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                  "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                  "mtime_ns": 1793803298516590162
+                }
+              }
+            },
+            "after": {
+              "public_bmis": {
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+                  "sha256": "ceb4c72fb809c5ca560eb25a858392a59962282ba87235e336972b907e1eee7c",
+                  "mtime_ns": 1793803283629701386
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+                  "sha256": "86c5713c7d2df19955175b2c04843e186496a3b75e9728e36ca3294228dd8cbd",
+                  "mtime_ns": 1793803278141742364
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+                  "sha256": "f29b41a8774f13e3de5fc865eef46950bd97cf94874c3af16d6e234c3e67e656",
+                  "mtime_ns": 1793803281816714924
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+                  "sha256": "93a75d622a0d19f2c8451c76291f4c3d2b8daee05fb5d13a292499a3b2cb4381",
+                  "mtime_ns": 1793803280419725356
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+                  "sha256": "cc32e04701817c6d4454d5cde5aefaf136d8b3abf3a3379acb769db327e2fa94",
+                  "mtime_ns": 1793803279185734569
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+                  "sha256": "33819871c1828c942928a8b571df6655b2c7f4f609b47f721babb92ba304cdf1",
+                  "mtime_ns": 1793803282068713043
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+                  "sha256": "95bde3e036254c9361594ce2675c9aa28e8097fd97efaf401baf3468a643b760",
+                  "mtime_ns": 1793803285496687442
+                },
+                "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.streaming.pcm": {
+                  "sha256": "c9f392ab59dc61fbd3218fbf1d0902578db1b5f986706e2047afa64686c0b1f0",
+                  "mtime_ns": 1793803285387688256
+                },
+                "CMakeFiles/velocity.dir/velocity.pcm": {
+                  "sha256": "4c520c6f5218c33d0323273173de95f717f54173f3525cb1c3c55aa69dee4825",
+                  "mtime_ns": 1793803283587701699
+                },
+                "CMakeFiles/velocity.dir/velocity.precision.pcm": {
+                  "sha256": "917bec42342dc4698cb32049072174832d668a94c1a30e8b1328f9ec2f0f945e",
+                  "mtime_ns": 1793803296733603488
+                }
+              },
+              "consumer_objects": {
+                "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+                  "sha256": "397edf6f170f99036de32478018843b242509afbe35c4592beee0a5f540a4cc1",
+                  "mtime_ns": 1793803298205592486
+                },
+                "CMakeFiles/velocity_selective_example.dir/examples/selective_precision.cpp.o": {
+                  "sha256": "1d8da9ebf3a098f01f9442a578c17276240fe5cd695829ffa36024d25d8576b9",
+                  "mtime_ns": 1793803299651581678
+                },
+                "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+                  "sha256": "4229108eb514a89b433211c42c4a5ff8313535358a2798cbe4b824e8cae82871",
+                  "mtime_ns": 1793803298516590162
+                }
+              }
+            },
+            "public_bmis_unchanged": true,
+            "consumer_objects_unchanged": true,
+            "passed": true
+          },
+          "passed": true
+        }
+      },
+      "commands": [
+        {
+          "name": "configure-baseline",
+          "log_name": "configure-baseline",
+          "argv": [
+            "cmake",
+            "-S",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/source",
+            "-B",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_CXX_COMPILER=clang++-18",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/milestone3/baseline/anndata-prefix",
+            "-DVELOCITY_BUILD_TESTS=OFF",
+            "-DVELOCITY_BUILD_QUALIFICATION=OFF",
+            "-DVELOCITY_ENABLE_SANITIZERS=OFF"
+          ],
+          "command": "cmake -S /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/source -B /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/milestone3/baseline/anndata-prefix -DVELOCITY_BUILD_TESTS=OFF -DVELOCITY_BUILD_QUALIFICATION=OFF -DVELOCITY_ENABLE_SANITIZERS=OFF",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/001-configure-baseline.log",
+          "elapsed_s": 0.415557173997513,
+          "returncode": 0
+        },
+        {
+          "name": "cold-build-cpu-pair/baseline",
+          "log_name": "cold-build-cpu-pair-baseline",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/002-cold-build-cpu-pair-baseline.log",
+          "elapsed_s": 12.448984194001241,
+          "returncode": 0
+        },
+        {
+          "name": "configure-current-scalar",
+          "log_name": "configure-current-scalar",
+          "argv": [
+            "cmake",
+            "-S",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/source",
+            "-B",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_CXX_COMPILER=clang++-18",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/deps/install",
+            "-DVELOCITY_BUILD_TESTS=OFF",
+            "-DVELOCITY_BUILD_QUALIFICATION=OFF",
+            "-DVELOCITY_ENABLE_SANITIZERS=OFF",
+            "-DVELOCITY_CPU_ISA=scalar",
+            "-DVELOCITY_ENABLE_CUDA=OFF"
+          ],
+          "command": "cmake -S /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/source -B /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/deps/install -DVELOCITY_BUILD_TESTS=OFF -DVELOCITY_BUILD_QUALIFICATION=OFF -DVELOCITY_ENABLE_SANITIZERS=OFF -DVELOCITY_CPU_ISA=scalar -DVELOCITY_ENABLE_CUDA=OFF",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/003-configure-current-scalar.log",
+          "elapsed_s": 0.41556675999891013,
+          "returncode": 0
+        },
+        {
+          "name": "cold-build-cpu-pair/current-scalar",
+          "log_name": "cold-build-cpu-pair-current-scalar",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/004-cold-build-cpu-pair-current-scalar.log",
+          "elapsed_s": 21.323636148001242,
+          "returncode": 0
+        },
+        {
+          "name": "warm-baseline-01",
+          "log_name": "warm-baseline-01",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/005-warm-baseline-01.log",
+          "elapsed_s": 0.4155138639980578,
+          "returncode": 0
+        },
+        {
+          "name": "warm-current-01",
+          "log_name": "warm-current-01",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/006-warm-current-01.log",
+          "elapsed_s": 0.46565170800022315,
+          "returncode": 0
+        },
+        {
+          "name": "warm-current-02",
+          "log_name": "warm-current-02",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/007-warm-current-02.log",
+          "elapsed_s": 0.4155346479965374,
+          "returncode": 0
+        },
+        {
+          "name": "warm-baseline-02",
+          "log_name": "warm-baseline-02",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/008-warm-baseline-02.log",
+          "elapsed_s": 0.41537908199825324,
+          "returncode": 0
+        },
+        {
+          "name": "warm-baseline-03",
+          "log_name": "warm-baseline-03",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/009-warm-baseline-03.log",
+          "elapsed_s": 0.4152229510000325,
+          "returncode": 0
+        },
+        {
+          "name": "warm-current-03",
+          "log_name": "warm-current-03",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/010-warm-current-03.log",
+          "elapsed_s": 0.4154153519993997,
+          "returncode": 0
+        },
+        {
+          "name": "warm-current-04",
+          "log_name": "warm-current-04",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/011-warm-current-04.log",
+          "elapsed_s": 0.41560410000238335,
+          "returncode": 0
+        },
+        {
+          "name": "warm-baseline-04",
+          "log_name": "warm-baseline-04",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/012-warm-baseline-04.log",
+          "elapsed_s": 0.41527653700177325,
+          "returncode": 0
+        },
+        {
+          "name": "warm-baseline-05",
+          "log_name": "warm-baseline-05",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/baseline/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/013-warm-baseline-05.log",
+          "elapsed_s": 0.4153791600037948,
+          "returncode": 0
+        },
+        {
+          "name": "warm-current-05",
+          "log_name": "warm-current-05",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "--parallel",
+            "2",
+            "--verbose",
+            "--target",
+            "velocity_example"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build --parallel 2 --verbose --target velocity_example",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/014-warm-current-05.log",
+          "elapsed_s": 0.41520368000055896,
+          "returncode": 0
+        },
+        {
+          "name": "private-velocity-rebuild",
+          "log_name": "private-velocity-rebuild",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-pair/current-scalar/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/015-private-velocity-rebuild.log",
+          "elapsed_s": 5.729412501998013,
+          "returncode": 0
+        },
+        {
+          "name": "configure-current",
+          "log_name": "configure-current",
+          "argv": [
+            "cmake",
+            "-S",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/source",
+            "-B",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/build",
+            "-G",
+            "Ninja",
+            "-DCMAKE_CXX_COMPILER=clang++-18",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/deps/install",
+            "-DVELOCITY_BUILD_TESTS=OFF",
+            "-DVELOCITY_BUILD_QUALIFICATION=OFF",
+            "-DVELOCITY_ENABLE_SANITIZERS=OFF",
+            "-DVELOCITY_CPU_ISA=avx2",
+            "-DVELOCITY_ENABLE_CUDA=OFF"
+          ],
+          "command": "cmake -S /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/source -B /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/build -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=/home/tumlinson/velocity.cppm/build/deps/install -DVELOCITY_BUILD_TESTS=OFF -DVELOCITY_BUILD_QUALIFICATION=OFF -DVELOCITY_ENABLE_SANITIZERS=OFF -DVELOCITY_CPU_ISA=avx2 -DVELOCITY_ENABLE_CUDA=OFF",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/016-configure-current.log",
+          "elapsed_s": 0.415428027001326,
+          "returncode": 0
+        },
+        {
+          "name": "cold-build-cpu-avx2/current",
+          "log_name": "cold-build-cpu-avx2-current",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/017-cold-build-cpu-avx2-current.log",
+          "elapsed_s": 22.82569316700392,
+          "returncode": 0
+        },
+        {
+          "name": "private-avx2-kernel-rebuild",
+          "log_name": "private-avx2-kernel-rebuild",
+          "argv": [
+            "cmake",
+            "--build",
+            "/home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/build",
+            "--parallel",
+            "2",
+            "--verbose"
+          ],
+          "command": "cmake --build /home/tumlinson/velocity.cppm/build/milestone3/build-qualification/20261104T144028Z-f394c31c/cpu-avx2/current/build --parallel 2 --verbose",
+          "cwd": "/home/tumlinson/velocity.cppm",
+          "timeout_s": 120,
+          "log": "build/milestone3/build-qualification/20261104T144028Z-f394c31c/logs/018-private-avx2-kernel-rebuild.log",
+          "elapsed_s": 1.6690182760066818,
+          "returncode": 0
+        }
+      ],
+      "live_source_after_sha256": "8fb2a6ba7c94b13d1152812846cfdcce675a7f1223fae4293f5945b920aca31b",
+      "live_source_unchanged": true,
+      "prebuilt_baseline_build_artifacts_after": {
+        "public_bmis": {
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.backed.pcm": {
+            "sha256": "231ffd4805bbff2fee363508fedb963d8cb0ba846e9a28ac7ca459b0772d6a9a",
+            "mtime_ns": 1793795112721656906
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-arrays.pcm": {
+            "sha256": "79fb88f7a9050bda4f0017734727dc55ce18dab167e980c25b825ac0e4534856",
+            "mtime_ns": 1793795107197699085
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-data.pcm": {
+            "sha256": "0b58ee45f819457377d42243178f16349cde79379f35c52f4f03cf0665e5954e",
+            "mtime_ns": 1793795110809671507
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-records.pcm": {
+            "sha256": "9b64fae4b55be9601b2bc2b144adee14d23df561120b0897a2d48b0e103b93d3",
+            "mtime_ns": 1793795109361682563
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core-strings.pcm": {
+            "sha256": "b29d37d1b8cd308d5c1039fe2b357daecfe469466f38a1c126a2b72000a05056",
+            "mtime_ns": 1793795108217691298
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.core.pcm": {
+            "sha256": "c95910196bdb6a2d9fbbd6e18e51529c58ff55a7e05dc9592dc49cb1194dd50d",
+            "mtime_ns": 1793795111080669437
+          },
+          "CMakeFiles/anndata_cppm_module_interfaces.dir/anndata.pcm": {
+            "sha256": "9cfd9df0889f6d38d41e773b644ad32e70deceaf777a25beacd94ab9b0592291",
+            "mtime_ns": 1793795112861655837
+          },
+          "CMakeFiles/velocity.dir/velocity.pcm": {
+            "sha256": "167303b6c7722954c9396e7a4608f59b73ccacf30c45c993a73b9a49ed62cc3b",
+            "mtime_ns": 1793795112621657670
+          }
+        },
+        "consumer_objects": {
+          "CMakeFiles/velocity_example.dir/examples/steady_state.cpp.o": {
+            "sha256": "04f5ed4a6f208d54b94a30e2ba108d79a6e52e602c42bc420860e5bf4ada1362",
+            "mtime_ns": 1793795117629619424
+          },
+          "CMakeFiles/velocity_stochastic_example.dir/examples/stochastic.cpp.o": {
+            "sha256": "3933d2425bf091a21a78369b35005e203c3e9ceafb6ac3b9415ca96f4a74c4df",
+            "mtime_ns": 1793795117893617407
+          }
+        }
+      },
+      "prebuilt_baseline_build_unchanged": true,
+      "ended_utc": "2026-11-04T14:41:42.249070+00:00",
+      "execution_status": "complete",
+      "requested_scope_gates_passed": true,
+      "overall_status": "complete",
+      "native_workflow_acceptance": "not_asserted; root retains final acceptance"
+    }
+  ],
+  "updated_utc": "2026-11-04T14:41:42.249654+00:00"
+}

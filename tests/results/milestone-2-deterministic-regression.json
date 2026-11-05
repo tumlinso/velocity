@@ -1,0 +1,199 @@
+{
+  "source_commit": "4706c4115963b7cae68883d110d351a29904bc24",
+  "source_hashes": {
+    "scvelo/tools/velocity.py": "13fdc0d785ec835e8f63dbd4562312cf5aa6d69bb457b96c34a6c3943eb656e8",
+    "scvelo/core/_linear_models.py": "1c6eea7ce5277e9b44a3188e6a3004b1df5adb5326e21373f07c38a0a26d738a",
+    "scvelo/core/_arithmetic.py": "18f281e8016f4bf9916b57742e57c089c0904ecdce7e2cda6b74cd1cdfaa61f5",
+    "scvelo/tools/utils.py": "78ad0be1dc6121e9ea716c173209037e21ff79ee4db9a73a04b6057e83265715"
+  },
+  "native_driver_sha256": "b1268f1e194c56a44333af6f8b4ddf4b00488c5a07a771eb8496addfe33202ac",
+  "native_sources_sha256": {
+    "src/detail/fit.cpp": "74a67bae4d2dde93d4da3652d1976de0cf443ae9bfce6642075a34aab8252e34",
+    "src/detail/fit.hh": "ffd1896f35b6bf5538641153194b5d2730c568c5ed8882610a21acf001b2556a",
+    "src/detail/neighborhood.cpp": "57fa850d4a53ee43ab6c5cd27bac168617fc2b69737a91eb7a3f724526dea06e",
+    "src/detail/prepared.cpp": "d184e45329add82a12bf5e4f40b5b3d7fad635fc0be1c069bec047f2cc270fb1",
+    "src/detail/prepared.hh": "f163741f9c23d0bae3a71d660b263066e43b45f578855f7ce86ab5b1abdedb2d",
+    "src/detail/stochastic_fit.cpp": "022ba3d925d8c7d5e2d32bcb27e32706e9dd27bb157c12c63a4230bde1d2cb26",
+    "src/detail/stochastic_fit.hh": "bb5849a07dfa2b1dcbd6204f711ffd6888e33d0a6d757c566d8923876d9c26c4",
+    "src/velocity.cpp": "dca3f30c40ef83e72e2779e5f89834831baee5df37fa8541d7e45a5442a8fb13",
+    "src/velocity.cppm": "2c4fc9a9c27a984b3e76370df7c78dd30724e51f27ca0e50f8dc62c3e0c4be8f"
+  },
+  "source_loading": "original AST definitions with numerical helpers; logging suppressed; Scanpy wrapper not loaded",
+  "versions": {
+    "numpy": "2.2.6",
+    "scipy": "1.17.1",
+    "anndata": "0.13.4"
+  },
+  "recipe": "finalized spliced/unspliced; positive graph support + self + row normalization, float32 W and scVelo moments; no normalization or neighbor construction",
+  "cases": [
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 4.099925632772283e-05,
+        "mu": 1.9848346710205078e-05,
+        "gamma": 3.766049111675329e-06,
+        "offset": 0.0,
+        "r2": 4.459899646924725e-06,
+        "velocity": 2.3424625396728516e-05
+      },
+      "fixture": "pancreas",
+      "fixture_sha256": "0ce63b03e47a86cdea52bde776a0f56637f6d09dadeac4757688aa20e57e5a6d",
+      "input_sha256": "fd9e8f83b590178cb6f58d92df0c1511af48c45716556bd33ea25eda3a90e8e7",
+      "variant": "all",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 3682
+    },
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 4.099925632772283e-05,
+        "mu": 1.9848346710205078e-05,
+        "gamma": 1.4162422949937081e-06,
+        "offset": 0.0,
+        "r2": 5.785822320802936e-06,
+        "velocity": 2.5510787963867188e-05
+      },
+      "fixture": "pancreas",
+      "fixture_sha256": "0ce63b03e47a86cdea52bde776a0f56637f6d09dadeac4757688aa20e57e5a6d",
+      "input_sha256": "fd9e8f83b590178cb6f58d92df0c1511af48c45716556bd33ea25eda3a90e8e7",
+      "variant": "fit_subset_hvg",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 3682
+    },
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 8.944955002476718e-06,
+        "mu": 9.665958904392369e-07,
+        "gamma": 3.5251706513861336e-06,
+        "offset": 0.0,
+        "r2": 6.967970506366328e-06,
+        "velocity": 1.5497207641601562e-06
+      },
+      "fixture": "dentategyrus",
+      "fixture_sha256": "46033b23d673e2ff7e8fd6e75b619706861ad8418b6723989300b91ee9e870d8",
+      "input_sha256": "d32a5bc589fdfaff52ede000af9425a298fd88584ed3c5508c8041dd5f73af85",
+      "variant": "all",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 4120
+    },
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 8.944955002476718e-06,
+        "mu": 9.665958904392369e-07,
+        "gamma": 2.306593341216967e-06,
+        "offset": 0.0,
+        "r2": 4.81676846320056e-06,
+        "velocity": 1.430511474609375e-06
+      },
+      "fixture": "dentategyrus",
+      "fixture_sha256": "46033b23d673e2ff7e8fd6e75b619706861ad8418b6723989300b91ee9e870d8",
+      "input_sha256": "d32a5bc589fdfaff52ede000af9425a298fd88584ed3c5508c8041dd5f73af85",
+      "variant": "fit_subset_hvg",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 4120
+    }
+  ],
+  "degenerate": {
+    "pass_all": true,
+    "status": [
+      2,
+      2,
+      4,
+      0
+    ],
+    "gamma": [
+      0.0,
+      0.0,
+      0.0,
+      1.5
+    ],
+    "r2": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "selected": [
+      false,
+      false,
+      false,
+      true
+    ],
+    "finite": true
+  },
+  "pass_all": true
+}

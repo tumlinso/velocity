@@ -1,7 +1,8 @@
 # scVelo mathematical foundation and efficiency evidence
 
-This is a source audit dated 2026-11-03. The present work establishes documentation
-and workflow; mathematical implementation and its plan remain for a later step.
+This is the source audit recorded on 2026-11-03 before implementation. It retains
+the inspected upstream provenance; current implementation and qualification are
+described in [the API](api.md) and [validation](validation.md).
 velocity.cppm is intended to be an independently useful, substantially more efficient
 native C++20 RNA velocity implementation and an explicit reference for substitutions.
 The reference itself should use sound algorithms, compact storage, reuse, and bounded
@@ -162,7 +163,7 @@ oracle and explicit precision policy, not a claim that FP64 universally fixes mo
 The older FP32 scVelo probe's qualification must not be broadened to these newer
 mechanisms merely because they are present in the current source.
 
-## Reference and substitution contracts to settle
+## Reference and substitution contracts
 
 The standalone reference must be directly callable with substitutions bypassed,
 including nested primitives: an installed provider must not silently intercept its
@@ -174,18 +175,62 @@ strategy without forking the complete scientific method. This calls for explicit
 inputs, outputs, workspace, precision, diagnostics and lifetime contracts at those
 boundaries, rather than only a final-pipeline backend switch.
 
-The next planning discussion needs to resolve three scientific/numerical choices:
+Future kinetic milestones will need separate compatibility targets. scVelo's public recovery includes `recover_dynamics` and
+[ExpectationMaximizationModel](/home/tumlinson/accelerated-ports/scVelo/scvelo/tools/_em_model.py:82);
+agreement with one is not automatic agreement with the other. The kinetic source
+explicitly leaves `beta=0`, `gamma=0` and `beta=gamma` unresolved. Stable limits
+and `expm1`-style evaluation are native candidates, but changes near singular
+parameters require their own comparison and acceptance contract. Latent-time,
+branch, history, objective, solver, precision, and nonfinite-output choices must
+also be declared for those later operations.
 
-- Which scVelo graph/normalization, percentile, mask, stochastic and kinetic modes
-  define named compatibility targets? Public recovery includes `recover_dynamics`
-  and [ExpectationMaximizationModel](/home/tumlinson/accelerated-ports/scVelo/scvelo/tools/_em_model.py:82);
-  agreement with one is not automatic agreement with the other.
-- How should mathematical limits and source behavior differ? The kinetic source
-  explicitly leaves `beta=0`, `gamma=0` and `beta=gamma` unresolved. Stable limits,
-  `expm1`-style evaluation and cancellation-resistant centered moments are valuable
-  native candidates, but corrected behavior must be identified separately from
-  pinned-source compatibility, especially at singular and near-singular parameters.
-- Which outputs and numerical policies are promised: latent times/branches/history,
-  residuals/masks/diagnostics, degenerate-gene handling, nonfinite behavior, duplicate
-  edges, storage/accumulation types, reduction order and optional approximate modes?
-  These choices determine legal batching, memory residency and substitution scope.
+## Milestone 2 stochastic contract
+
+Milestone 2 makes the steady-state stochastic equations an explicit native
+operation. With first moments `Ms = W S` and `Mu = W U`, and raw second
+moments `Mss = W(S*S)` and `Mus = W(S*U)`, define
+`A = 2*Mss - Ms` and `B = 2*Mus + Mu`. `A` and `B` retain the scVelo
+stochastic convention; they are not ordinary centered variance and covariance.
+`Muu` is computed only when requested.
+
+For each gene, the reference first performs the deterministic fit and measures
+`sigma1` from its first-order residuals. It then performs an untrimmed
+second-order regression of `B` on `A` to estimate `sigma2` from its residuals.
+`fit_second_intercept` controls this regression's intercept, and
+`initialization.positive_intercept` controls whether a negative initial
+intercept falls back to zero. The final
+joint fit minimizes `sum((r1/sigma1)^2 + (r2/sigma2)^2)` over included fit
+rows, where `r1 = Mu - gamma*Ms - offset` and
+`r2 = B - gamma*A - offset2`. Percentile exclusions zero the corresponding
+first-order `Ms` and `Mu`; they do not remove the first-order intercept rows or
+alter second-order observations.
+
+The optional *output* second-order residual is a distinct quantity:
+`(B - 2*Ms*Mu) - gamma*(A - 2*Ms*Ms) + 2*offset*Ms - offset2`. It is not
+the residual used in the GLS objective. The initial second-order regression
+used to obtain `sigma2` is untrimmed. Final optional intercepts are
+unconstrained. A supplied slope bound is honored; when it activates, enabled
+intercepts are refit at that fixed slope.
+
+The default refinement population is the deterministic selected-gene mask. If
+none qualify, keep deterministic results; matching scVelo's refit-all fallback
+is an explicit option, and explicit gene filters always remain enforced. The
+fit-row mask applies consistently to deterministic initialization, percentile
+selection, both residual scales, and joint fitting. Predictions still cover
+all cells. These selection and mask rules deliberately address scVelo's
+all-row stochastic fit and none-selected refit-all behavior.
+
+A zero or nonfinite residual scale, insufficient rows, or a rank-deficient
+joint system does not produce an undefined stochastic parameter. If the
+initial deterministic result is usable, retain it and report why refinement
+fell back. If it is not usable, preserve its invalid status. This behavior is
+qualified against the declared method; scVelo's undefined degenerate fits are
+not the oracle for these cases.
+
+For sparse expression data, elementwise products operate on logical matrix
+values. Duplicate coordinates are summed before squaring or forming a
+spliced-unspliced product, so `(a+b)^2` is represented rather than `a^2+b^2`.
+This coalescing occurs during source-column acquisition for each numerical run,
+so updated value buffers are respected. Graph duplicates retain their additive
+behavior. Products and graph application are blockwise and do not require
+complete `N x G` second-moment matrices or a doubled GLS observation matrix.

@@ -1,0 +1,3726 @@
+{
+  "schema": "velocity.precision-errors.v1",
+  "method": {
+    "description": "Read-only postprocessing of existing qualification input/output bytes; no driver, kernel, or qualification run was executed.",
+    "same_input_backend_reference": "scalar",
+    "gene_scale": "max(1, max(abs(reference)) over rows); vectors use max(1, abs(reference gene))",
+    "relative_l2": "maximum per-gene ||candidate-reference||2 / ||reference||2; zero-norm reference genes excluded and counted",
+    "ulp": "maximum IEEE-754 ordered-bit distance for same-output-type backend comparisons; omitted for FP32-vs-FP64",
+    "grouping": "maximum observed metric per stored profile, compute type, backend, quantity category across all applicable cases",
+    "gate_masks": "All-gene summaries are unmasked. Original stochastic parameter/scale/objective gates apply valid status and condition masks; initial coefficients apply initialization masks. The original condition mask is not reconstructed here."
+  },
+  "provenance": {
+    "qualification_receipt": "tests/artifacts/precision-full-gpu-final.json",
+    "qualification_receipt_sha256": "1e6bbdf96b4853a62f81ccaf4754b64443c2d93337208a5a6cf600bdc277a724",
+    "run_id": "20261104T135018Z-554409",
+    "created_utc": "2026-11-04T13:50:18.155606+00:00",
+    "source_commit": "4706c4115963b7cae68883d110d351a29904bc24",
+    "qualification_driver_sha256": "c8ca7dbcfded9b8b907a699988276920f44a722ae00eb13766b62a5fd3bcd64a",
+    "qualification_script_sha256": "b3a4fb9d0704c45008c1a1334be91e06d08173ff4c1273e01e63e94ac917ce54",
+    "native_source_hashes_current_tree_match": {
+      "matched": 22,
+      "total": 22,
+      "all_match": true
+    },
+    "driver_hashes_current_tree_match": {
+      "matched": 3,
+      "total": 3,
+      "all_match": true
+    },
+    "qualification_source_hashes_current_tree_match": {
+      "qualification_driver": true,
+      "qualification_script": true
+    },
+    "raw_artifacts": {
+      "unique_files": 196,
+      "sha256_verified": true,
+      "manifest_sha256": "c3ff0d559edda6be685ef79a627e93e36738efa1b2dbffd1220e4e4569c3cf02",
+      "manifest_entries_in_receipt": "tests/artifacts/precision-full-gpu-final.json"
+    },
+    "acceptance_receipt_flags": {
+      "status": "fail",
+      "driver_runs": 192,
+      "backend_complete": true,
+      "pass_all_backend_gates": true,
+      "pass_all_oracle_gates": false,
+      "pass_all_precision_gates": true,
+      "pass_all_branch_contracts": true,
+      "pass_all": false
+    }
+  },
+  "reproduction": {
+    "raw_pairwise_field_maxabs_reproduced": 1024,
+    "raw_precision_pair_field_maxabs_reproduced": 462,
+    "receipt_fields_with_condition_or_status_mask_not_reproduced": 676,
+    "raw_input_quantization_fields_reproduced": 36,
+    "raw_storage_output_deltas_reproduced": 12,
+    "receipt_metric_discrepancies": [],
+    "receipt_metric_reproduction_pass": true
+  },
+  "same_stored_input_backend_errors": [
+    {
+      "stored_profile": "fp16",
+      "stored_dtypes": [
+        "float16",
+        "float16",
+        "float16"
+      ],
+      "compute_precision": "f32",
+      "backend": "avx2",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    },
+    {
+      "stored_profile": "fp16",
+      "stored_dtypes": [
+        "float16",
+        "float16",
+        "float16"
+      ],
+      "compute_precision": "f32",
+      "backend": "cuda",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp16_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    },
+    {
+      "stored_profile": "fp32",
+      "stored_dtypes": [
+        "float32",
+        "float32",
+        "float32"
+      ],
+      "compute_precision": "f32",
+      "backend": "avx2",
+      "case_count": 28,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 24,
+          "compared_values": 1201728,
+          "zero_reference_gene_count": 36,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 24,
+          "compared_values": 14168,
+          "zero_reference_gene_count": 4916,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 12,
+          "compared_values": 4048,
+          "zero_reference_gene_count": 1360,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 24,
+          "compared_values": 600864,
+          "zero_reference_gene_count": 696,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 24,
+          "compared_values": 4048,
+          "zero_reference_gene_count": 40,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 12,
+          "compared_values": 2024,
+          "zero_reference_gene_count": 680,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 4048,
+          "exact_case_count": 28,
+          "case_count": 28
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 4048,
+          "exact_case_count": 28,
+          "case_count": 28
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 4048,
+          "exact_case_count": 28,
+          "case_count": 28
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 28
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 28
+        }
+      }
+    },
+    {
+      "stored_profile": "fp32",
+      "stored_dtypes": [
+        "float32",
+        "float32",
+        "float32"
+      ],
+      "compute_precision": "f32",
+      "backend": "cuda",
+      "case_count": 28,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 24,
+          "compared_values": 1201728,
+          "zero_reference_gene_count": 36,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 24,
+          "compared_values": 14168,
+          "zero_reference_gene_count": 4916,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 12,
+          "compared_values": 4048,
+          "zero_reference_gene_count": 1360,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 24,
+          "compared_values": 600864,
+          "zero_reference_gene_count": 696,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 24,
+          "compared_values": 4048,
+          "zero_reference_gene_count": 40,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 12,
+          "compared_values": 2024,
+          "zero_reference_gene_count": 680,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 4048,
+          "exact_case_count": 28,
+          "case_count": 28
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 4048,
+          "exact_case_count": 28,
+          "case_count": 28
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 4048,
+          "exact_case_count": 28,
+          "case_count": 28
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 28
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 28
+        }
+      }
+    },
+    {
+      "stored_profile": "fp32",
+      "stored_dtypes": [
+        "float32",
+        "float32",
+        "float32"
+      ],
+      "compute_precision": "f64",
+      "backend": "avx2",
+      "case_count": 20,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 16,
+          "compared_values": 721728,
+          "zero_reference_gene_count": 36,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 16,
+          "compared_values": 8568,
+          "zero_reference_gene_count": 3932,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 8,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 988,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 16,
+          "compared_values": 360864,
+          "zero_reference_gene_count": 510,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 16,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 40,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 8,
+          "compared_values": 1224,
+          "zero_reference_gene_count": 494,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 20
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 20
+        }
+      }
+    },
+    {
+      "stored_profile": "fp32",
+      "stored_dtypes": [
+        "float32",
+        "float32",
+        "float32"
+      ],
+      "compute_precision": "f64",
+      "backend": "cuda",
+      "case_count": 20,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 16,
+          "compared_values": 721728,
+          "zero_reference_gene_count": 36,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 16,
+          "compared_values": 8568,
+          "zero_reference_gene_count": 3932,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 8,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 988,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 16,
+          "compared_values": 360864,
+          "zero_reference_gene_count": 510,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 16,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 40,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 8,
+          "compared_values": 1224,
+          "zero_reference_gene_count": 494,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp32_f64_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 20
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 20
+        }
+      }
+    },
+    {
+      "stored_profile": "fp64",
+      "stored_dtypes": [
+        "float64",
+        "float64",
+        "float64"
+      ],
+      "compute_precision": "f64",
+      "backend": "avx2",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    },
+    {
+      "stored_profile": "fp64",
+      "stored_dtypes": [
+        "float64",
+        "float64",
+        "float64"
+      ],
+      "compute_precision": "f64",
+      "backend": "cuda",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_fp64_f64_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    },
+    {
+      "stored_profile": "mixed_s16_u32_w64",
+      "stored_dtypes": [
+        "float16",
+        "float32",
+        "float64"
+      ],
+      "compute_precision": "f32",
+      "backend": "avx2",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    },
+    {
+      "stored_profile": "mixed_s16_u32_w64",
+      "stored_dtypes": [
+        "float16",
+        "float32",
+        "float64"
+      ],
+      "compute_precision": "f32",
+      "backend": "cuda",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s16_u32_w64_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    },
+    {
+      "stored_profile": "mixed_s64_u16_w32",
+      "stored_dtypes": [
+        "float64",
+        "float16",
+        "float32"
+      ],
+      "compute_precision": "f32",
+      "backend": "avx2",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    },
+    {
+      "stored_profile": "mixed_s64_u16_w32",
+      "stored_dtypes": [
+        "float64",
+        "float16",
+        "float32"
+      ],
+      "compute_precision": "f32",
+      "backend": "cuda",
+      "case_count": 4,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 4,
+          "compared_values": 240000,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "ms"
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 4,
+          "compared_values": 2800,
+          "zero_reference_gene_count": 1600,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "gamma"
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 2,
+          "compared_values": 800,
+          "zero_reference_gene_count": 344,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "first_scale"
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 4,
+          "compared_values": 120000,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0,
+            "row": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "velocity"
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 4,
+          "compared_values": 800,
+          "zero_reference_gene_count": 0,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 0
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.deterministic",
+            "field": "r2"
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 2,
+          "compared_values": 400,
+          "zero_reference_gene_count": 172,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.0,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 0.0,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_relative_l2": 0.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 1
+          },
+          "max_ulp": 0,
+          "max_ulp_witness": {
+            "case_id": "pancreas_mixed_s64_u16_w32_f32_all_default.stochastic",
+            "field": "objective"
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 800,
+          "exact_case_count": 4,
+          "case_count": 4
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 4
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 4
+        }
+      }
+    }
+  ],
+  "same_fp32_stored_input_compute_difference": [
+    {
+      "stored_profile": "fp32",
+      "compute_pair": "f32_vs_f64",
+      "backend": "avx2",
+      "case_count": 20,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 16,
+          "compared_values": 721728,
+          "zero_reference_gene_count": 36,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.01030299373815069,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 33,
+            "row": 16
+          },
+          "max_gene_scaled_absolute_error": 3.3833450458636646e-07,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 8
+          },
+          "max_gene_relative_l2": 1.3723581803410396e-07,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 94
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 16,
+          "compared_values": 8568,
+          "zero_reference_gene_count": 3932,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.000854239006912394,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "offset2",
+            "gene": 90
+          },
+          "max_gene_scaled_absolute_error": 5.959474968022454e-05,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "offset2",
+            "gene": 100
+          },
+          "max_gene_relative_l2": 1.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.deterministic",
+            "field": "offset",
+            "gene": 72
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 8,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 988,
+          "nonfinite_values": 0,
+          "max_absolute_error": 9.448934261513386e-05,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_fit_subset_hvg_default.stochastic",
+            "field": "second_scale",
+            "gene": 162
+          },
+          "max_gene_scaled_absolute_error": 1.1389727106997938e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_scale",
+            "gene": 150
+          },
+          "max_gene_relative_l2": 1.3779410532566852e-06,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_scale",
+            "gene": 179
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 16,
+          "compared_values": 360864,
+          "zero_reference_gene_count": 510,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.005754041716500069,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_residual",
+            "gene": 162,
+            "row": 65
+          },
+          "max_gene_scaled_absolute_error": 2.3989271056522405e-05,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "second_residual",
+            "gene": 150
+          },
+          "max_gene_relative_l2": 1.3055955165612263e-05,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "second_residual",
+            "gene": 150
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 16,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 40,
+          "nonfinite_values": 0,
+          "max_absolute_error": 6.967970506366328e-06,
+          "max_absolute_error_witness": {
+            "case_id": "dentategyrus_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 122
+          },
+          "max_gene_scaled_absolute_error": 1.7078414333848713e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "dentategyrus_fp32_f32_fit_subset_hvg_default.deterministic",
+            "field": "r2",
+            "gene": 110
+          },
+          "max_gene_relative_l2": 0.1489221422299422,
+          "max_gene_relative_l2_witness": {
+            "case_id": "dentategyrus_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 2
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 8,
+          "compared_values": 1224,
+          "zero_reference_gene_count": 494,
+          "nonfinite_values": 0,
+          "max_absolute_error": 8.486418025199782e-06,
+          "max_absolute_error_witness": {
+            "case_id": "analytic_degenerate_fp32_f32_all_explicit_branches.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 2.0456964240356257e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 179
+          },
+          "max_gene_relative_l2": 2.7674267043143727e-06,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "objective",
+            "gene": 150
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 20
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 20
+        }
+      }
+    },
+    {
+      "stored_profile": "fp32",
+      "compute_pair": "f32_vs_f64",
+      "backend": "cuda",
+      "case_count": 20,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 16,
+          "compared_values": 721728,
+          "zero_reference_gene_count": 36,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.01030299373815069,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 33,
+            "row": 16
+          },
+          "max_gene_scaled_absolute_error": 3.3833450458636646e-07,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 8
+          },
+          "max_gene_relative_l2": 1.3723581803410396e-07,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 94
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 16,
+          "compared_values": 8568,
+          "zero_reference_gene_count": 3932,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.000854239006912394,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "offset2",
+            "gene": 90
+          },
+          "max_gene_scaled_absolute_error": 5.959474968022454e-05,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "offset2",
+            "gene": 100
+          },
+          "max_gene_relative_l2": 1.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.deterministic",
+            "field": "offset",
+            "gene": 72
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 8,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 988,
+          "nonfinite_values": 0,
+          "max_absolute_error": 9.448934261513386e-05,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_fit_subset_hvg_default.stochastic",
+            "field": "second_scale",
+            "gene": 162
+          },
+          "max_gene_scaled_absolute_error": 1.1389727106997938e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_scale",
+            "gene": 150
+          },
+          "max_gene_relative_l2": 1.3779410532566852e-06,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_scale",
+            "gene": 179
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 16,
+          "compared_values": 360864,
+          "zero_reference_gene_count": 510,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.005754041716500069,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_residual",
+            "gene": 162,
+            "row": 65
+          },
+          "max_gene_scaled_absolute_error": 2.3989271056522405e-05,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "second_residual",
+            "gene": 150
+          },
+          "max_gene_relative_l2": 1.3055955165612263e-05,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "second_residual",
+            "gene": 150
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 16,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 40,
+          "nonfinite_values": 0,
+          "max_absolute_error": 6.967970506366328e-06,
+          "max_absolute_error_witness": {
+            "case_id": "dentategyrus_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 122
+          },
+          "max_gene_scaled_absolute_error": 1.7078414333848713e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "dentategyrus_fp32_f32_fit_subset_hvg_default.deterministic",
+            "field": "r2",
+            "gene": 110
+          },
+          "max_gene_relative_l2": 0.1489221422299422,
+          "max_gene_relative_l2_witness": {
+            "case_id": "dentategyrus_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 2
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 8,
+          "compared_values": 1224,
+          "zero_reference_gene_count": 494,
+          "nonfinite_values": 0,
+          "max_absolute_error": 8.486418025199782e-06,
+          "max_absolute_error_witness": {
+            "case_id": "analytic_degenerate_fp32_f32_all_explicit_branches.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 2.0456964240356257e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 179
+          },
+          "max_gene_relative_l2": 2.7674267043143727e-06,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "objective",
+            "gene": 150
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 20
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 20
+        }
+      }
+    },
+    {
+      "stored_profile": "fp32",
+      "compute_pair": "f32_vs_f64",
+      "backend": "scalar",
+      "case_count": 20,
+      "quantities": {
+        "moments": {
+          "fields": [
+            "ms",
+            "mss",
+            "mu",
+            "mus"
+          ],
+          "case_count": 16,
+          "compared_values": 721728,
+          "zero_reference_gene_count": 36,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.01030299373815069,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 33,
+            "row": 16
+          },
+          "max_gene_scaled_absolute_error": 3.3833450458636646e-07,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 8
+          },
+          "max_gene_relative_l2": 1.3723581803410396e-07,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "mss",
+            "gene": 94
+          }
+        },
+        "parameters": {
+          "fields": [
+            "gamma",
+            "initial_gamma",
+            "initial_offset",
+            "offset",
+            "offset2"
+          ],
+          "case_count": 16,
+          "compared_values": 8568,
+          "zero_reference_gene_count": 3932,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.000854239006912394,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "offset2",
+            "gene": 90
+          },
+          "max_gene_scaled_absolute_error": 5.959474968022454e-05,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "offset2",
+            "gene": 100
+          },
+          "max_gene_relative_l2": 1.0,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.deterministic",
+            "field": "offset",
+            "gene": 72
+          }
+        },
+        "scales": {
+          "fields": [
+            "first_scale",
+            "second_scale"
+          ],
+          "case_count": 8,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 988,
+          "nonfinite_values": 0,
+          "max_absolute_error": 9.448934261513386e-05,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_fit_subset_hvg_default.stochastic",
+            "field": "second_scale",
+            "gene": 162
+          },
+          "max_gene_scaled_absolute_error": 1.1389727106997938e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_scale",
+            "gene": 150
+          },
+          "max_gene_relative_l2": 1.3779410532566852e-06,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_scale",
+            "gene": 179
+          }
+        },
+        "velocity_residual": {
+          "fields": [
+            "second_residual",
+            "velocity"
+          ],
+          "case_count": 16,
+          "compared_values": 360864,
+          "zero_reference_gene_count": 510,
+          "nonfinite_values": 0,
+          "max_absolute_error": 0.005754041716500069,
+          "max_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "second_residual",
+            "gene": 162,
+            "row": 65
+          },
+          "max_gene_scaled_absolute_error": 2.3989271056522405e-05,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "second_residual",
+            "gene": 150
+          },
+          "max_gene_relative_l2": 1.3055955165612263e-05,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "second_residual",
+            "gene": 150
+          }
+        },
+        "r2": {
+          "fields": [
+            "r2"
+          ],
+          "case_count": 16,
+          "compared_values": 2448,
+          "zero_reference_gene_count": 40,
+          "nonfinite_values": 0,
+          "max_absolute_error": 6.967970506366328e-06,
+          "max_absolute_error_witness": {
+            "case_id": "dentategyrus_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 122
+          },
+          "max_gene_scaled_absolute_error": 1.7078414333848713e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "dentategyrus_fp32_f32_fit_subset_hvg_default.deterministic",
+            "field": "r2",
+            "gene": 110
+          },
+          "max_gene_relative_l2": 0.1489221422299422,
+          "max_gene_relative_l2_witness": {
+            "case_id": "dentategyrus_fp32_f32_all_default.deterministic",
+            "field": "r2",
+            "gene": 2
+          }
+        },
+        "normalized_objective": {
+          "fields": [
+            "objective"
+          ],
+          "case_count": 8,
+          "compared_values": 1224,
+          "zero_reference_gene_count": 494,
+          "nonfinite_values": 0,
+          "max_absolute_error": 8.486418025199782e-06,
+          "max_absolute_error_witness": {
+            "case_id": "analytic_degenerate_fp32_f32_all_explicit_branches.stochastic",
+            "field": "objective",
+            "gene": 0
+          },
+          "max_gene_scaled_absolute_error": 2.0456964240356257e-06,
+          "max_gene_scaled_absolute_error_witness": {
+            "case_id": "pancreas_fp32_f32_all_default.stochastic",
+            "field": "objective",
+            "gene": 179
+          },
+          "max_gene_relative_l2": 2.7674267043143727e-06,
+          "max_gene_relative_l2_witness": {
+            "case_id": "pancreas_fp32_f32_all_joint_intercepts.stochastic",
+            "field": "objective",
+            "gene": 150
+          }
+        }
+      },
+      "decisions": {
+        "selected": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "initial_status": {
+          "mismatches": 0,
+          "compared_values": 2448,
+          "exact_case_count": 20,
+          "case_count": 20
+        },
+        "low_signal": {
+          "mismatches": 0,
+          "case_count": 20
+        },
+        "refit_all": {
+          "mismatches": 0,
+          "case_count": 20
+        }
+      }
+    }
+  ],
+  "storage_quantization_vs_canonical_fp32": [
+    {
+      "quantized_profile": "fp16",
+      "canonical_profile": "fp32",
+      "compute_precision": "f32",
+      "interpretation": "storage quantization effect; not backend mismatch",
+      "case_count": 4,
+      "fixture_count": 2,
+      "input_quantization": {
+        "spliced": {
+          "changed_values": 32810,
+          "values": 80000,
+          "max_absolute_error": 0.16943359375,
+          "rms_error": 0.002489140685215472
+        },
+        "unspliced": {
+          "changed_values": 18850,
+          "values": 80000,
+          "max_absolute_error": 0.10302734375,
+          "rms_error": 0.001097184226073738
+        },
+        "weights": {
+          "changed_values": 14324,
+          "values": 40000,
+          "max_absolute_error": 8.139759302139282e-06,
+          "rms_error": 3.1970777375811174e-06
+        }
+      },
+      "output_max_absolute_delta": {
+        "velocity": 0.02414572238922119,
+        "gamma": 0.09787487983703613
+      },
+      "selected_gene_changes_total": 0
+    },
+    {
+      "quantized_profile": "mixed_s16_u32_w64",
+      "canonical_profile": "fp32",
+      "compute_precision": "f32",
+      "interpretation": "storage quantization effect; not backend mismatch",
+      "case_count": 4,
+      "fixture_count": 2,
+      "input_quantization": {
+        "spliced": {
+          "changed_values": 32810,
+          "values": 80000,
+          "max_absolute_error": 0.16943359375,
+          "rms_error": 0.002489140685215472
+        },
+        "unspliced": {
+          "changed_values": 0,
+          "values": 80000,
+          "max_absolute_error": 0.0,
+          "rms_error": 0.0
+        },
+        "weights": {
+          "changed_values": 0,
+          "values": 40000,
+          "max_absolute_error": 0.0,
+          "rms_error": 0.0
+        }
+      },
+      "output_max_absolute_delta": {
+        "velocity": 0.004039764404296875,
+        "gamma": 0.006378173828125
+      },
+      "selected_gene_changes_total": 0
+    },
+    {
+      "quantized_profile": "mixed_s64_u16_w32",
+      "canonical_profile": "fp32",
+      "compute_precision": "f32",
+      "interpretation": "storage quantization effect; not backend mismatch",
+      "case_count": 4,
+      "fixture_count": 2,
+      "input_quantization": {
+        "spliced": {
+          "changed_values": 0,
+          "values": 80000,
+          "max_absolute_error": 0.0,
+          "rms_error": 0.0
+        },
+        "unspliced": {
+          "changed_values": 18850,
+          "values": 80000,
+          "max_absolute_error": 0.10302734375,
+          "rms_error": 0.001097184226073738
+        },
+        "weights": {
+          "changed_values": 0,
+          "values": 40000,
+          "max_absolute_error": 0.0,
+          "rms_error": 0.0
+        }
+      },
+      "output_max_absolute_delta": {
+        "velocity": 0.016998648643493652,
+        "gamma": 0.01294359564781189
+      },
+      "selected_gene_changes_total": 0
+    }
+  ],
+  "limits": [
+    "These maxima summarize the supplied fixtures, masks, configurations, and cases; they are not universal error bounds or a scientific-validity claim.",
+    "Same-input backend deviations and storage quantization effects are separate comparisons; FP32-vs-FP64 describes compute sensitivity only for FP32-stored input.",
+    "For FP32-vs-FP64, all-gene parameter/scale/objective maxima include genes excluded by the qualification gate masks; only full-coverage receipt fields are directly rechecked, and masked fields are counted separately.",
+    "The qualification receipt itself has pass_all=false because the independent source-oracle gate fails; backend, compute-precision, and explicit branch gates pass. This report does not reclassify that source comparison."
+  ]
+}

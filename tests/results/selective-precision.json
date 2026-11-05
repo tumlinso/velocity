@@ -1,0 +1,163 @@
+{
+  "format": "velocity-cppm.selective-precision-validation",
+  "version": 1,
+  "recorded_at_utc": "2026-11-04T13:37:49.799415+00:00",
+  "source_sha256": {
+    "CMakeLists.txt": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+    "src/velocity.cppm": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+    "src/velocity.cpp": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+    "src/velocity.precision.cppm": "8179d4022809ef5e2d76c21c99db5b2d6a336c4b12b511201806f950d507c8cf",
+    "src/precision.cpp": "49f54166ba773b522a083e6e5858b5d89f90482568f7952fdc41ec8c47e824e8",
+    "tests/test_precision.cpp": "a6db7aeb7d60ed660a19ed84d9eaf448a13a26b94998dae37e56f40c71267316",
+    "tests/sensitivity_driver.cpp": "47bb76aacb8ef4966cfd190ccb09327495a516d390575259225747ee9a03092f",
+    "tools/qualify_sensitivity.py": "add6ea767a41276f4274a6a67ae096a2994d53f1c201f48e8547e49176d9702a",
+    "examples/selective_precision.cpp": "8cff63088846033dfbfe64e684d82acb3419582f2752cd768c50461d6698013c",
+    "docs/precision.md": "9090b0cee3224fd8f262cc1259a5bd97423500baf1f4d3247f5f6f733a0d6fcb",
+    "src/detail/cpu_kernels.cpp": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+    "src/detail/cpu_kernels.hh": "25ecd283466a7b52192c0564ff6113f97a410c425cc6f719db8953b50ba1a9ee",
+    "src/detail/fit.cpp": "cd09f896bbc2dbab174d07896dd3fb2c71ccaf317df5ce3452166a6468dfc62b",
+    "src/detail/fit.hh": "b2327ab8fe876ff1787a86f734a04ed92358f0e8bf093d200972bef085433878",
+    "src/detail/neighborhood.cpp": "ce514e759699a7fdd81766a83bfa6f207090687eaa8fa0cb2349e0f4f87198f8",
+    "src/detail/prepared.cpp": "afe2927cc51e3f5d91f3d7fe26bf78d4d2c28eb78786bccf403e46bfb592d602",
+    "src/detail/prepared.hh": "083346c8faceb8f3ba751d909bc3d86f48cea688a72aeb0fb4e9ac5e4cd6dcbd",
+    "src/detail/scientific.hh": "ca89ed7977ca90daee02c95140525f0c4e47f8e18f48c25aca3992beefd2bdc4",
+    "src/detail/scientific_adapters.hh": "d2abbfb508e5cdc99767e05bcf633f8a17be14c490ec4291af11c70e82c40060",
+    "src/detail/sensitivity.hh": "44e3636a3b142d728e2e98d9a34a0f168f1f03403c967da45af9870a4d50a1df",
+    "src/detail/stochastic_fit.cpp": "19219387f2ced01f7e8a3dd8d82e7e8e454968188603038e69d8f8581907ef36",
+    "src/detail/stochastic_fit.hh": "752e535c372e955d0284786eadd25c27f8d86ce9c53702ed9360344c5fa8610c"
+  },
+  "anndata_dependency": {
+    "prefix": "/tmp/anndata-fp16-prefix",
+    "binary_sha256": "9430c0e958bf1b1ce169a694d512de7ab953ee72642348cc4f540de5d4d799be",
+    "arrays_module_sha256": "57b38b9226b707108911520da1c6cdea3923d71c1567672ff3e010580850817f"
+  },
+  "debug": {
+    "command": [
+      "ctest",
+      "--test-dir",
+      "/tmp/velocity-selective-build",
+      "--output-on-failure",
+      "-R",
+      "^precision$"
+    ],
+    "passed": true,
+    "groups_passed": 1,
+    "binary_sha256": "09293f7ec3a8a6a8f1b5f06fa23e7c5939fcc4da03d8c374cda7ef28e7523f6c",
+    "raw": "tests/artifacts/selective-precision/debug-ctest.log"
+  },
+  "sanitizers": {
+    "command": [
+      "ctest",
+      "--test-dir",
+      "/tmp/velocity-selective-asan",
+      "--output-on-failure",
+      "-R",
+      "^precision$"
+    ],
+    "environment": {
+      "ASAN_OPTIONS": "detect_leaks=0",
+      "UBSAN_OPTIONS": "halt_on_error=1"
+    },
+    "passed": true,
+    "groups_passed": 1,
+    "binary_sha256": "afc7585986ae3685ed764b2d52bbd7079d09164284a92b1d8dafe389566e1360",
+    "raw": "tests/artifacts/selective-precision/asan-ctest.log",
+    "build_note": "An initial concurrent Clang 18 module compilation crashed; a serial retry and subsequent rebuilds succeeded. The cause was not established."
+  },
+  "known_sensitive_gene": {
+    "command": [
+      "/home/tumlinson/anndata.cppm/.venv/bin/python",
+      "tools/qualify_sensitivity.py",
+      "--driver",
+      "/tmp/velocity-sensitivity-consumer/build/sensitivity_driver",
+      "--output",
+      "/tmp/velocity-sensitivity-regression-afe2927c.json"
+    ],
+    "environment": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1"
+    },
+    "passed": true,
+    "source_gene": 21,
+    "rows": 100,
+    "original_r2": -0.0104813576,
+    "half_r2": 0.120885372,
+    "original_selected": false,
+    "half_selected": true,
+    "advisory_r2_change": 0.0682938099,
+    "fixture_sha256": "46033b23d673e2ff7e8fd6e75b619706861ad8418b6723989300b91ee9e870d8",
+    "driver_sha256": "2055dafadaf84651f15606da2add03f8fb1f483df3f776d2cf02d8a9383d16fe",
+    "raw": "tests/artifacts/selective-precision/fixture.json",
+    "limit": "One fixture/gene and one trim/intercept setting; no general recall or biological validity claim."
+  },
+  "coverage": "Explicit masked CPU promotion, unavailable/FP16 originals, two-pass selection and refinement, optional advisory screen, source ordering, bindings and workspace budget.",
+  "gpu": {
+    "status": "passed",
+    "current_source_contracts": {
+      "job_id": "793c7533-9b2c-4831-9b43-c63d97f56e6a",
+      "state": "succeeded",
+      "cleanup_verified": true,
+      "receipts": "/home/tumlinson/velocity.cppm/tests/artifacts/device-precision/velocity-final-contracts-a4941c9480da",
+      "success": true,
+      "receipt_sha256": "cf635306763a3169ae5adb620f6b44dd1c3a17820b0efdf265072fa1e4313460"
+    },
+    "sanitizers": {
+      "results": [
+        {
+          "tool": "memcheck",
+          "command": [
+            "/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/cuda/12.9/compute-sanitizer/compute-sanitizer",
+            "--tool",
+            "memcheck",
+            "--error-exitcode",
+            "91",
+            "/home/tumlinson/velocity.cppm/build/milestone3/cuda/test_precision_cuda",
+            "--gpu"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.4540467919978255
+        },
+        {
+          "tool": "racecheck",
+          "command": [
+            "/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/cuda/12.9/compute-sanitizer/compute-sanitizer",
+            "--tool",
+            "racecheck",
+            "--error-exitcode",
+            "91",
+            "/home/tumlinson/velocity.cppm/build/milestone3/cuda/test_precision_cuda",
+            "--gpu"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.8619802460016217
+        },
+        {
+          "tool": "synccheck",
+          "command": [
+            "/opt/nvidia/hpc_sdk/Linux_x86_64/26.1/cuda/12.9/compute-sanitizer/compute-sanitizer",
+            "--tool",
+            "synccheck",
+            "--error-exitcode",
+            "91",
+            "/home/tumlinson/velocity.cppm/build/milestone3/cuda/test_precision_cuda",
+            "--gpu"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.39968155799942906
+        }
+      ],
+      "passed": true,
+      "binary_sha256": "f210d4de37ddac84999c34db855f8355386648c1b46de33c1a1655011e46ff38",
+      "sanitizer_sha256": "979adf037f4e3434a976b7f0912b0a05ce3b062e31b2a73397a1bf1cd5f57547",
+      "receipt": {
+        "path": "tests/artifacts/device-precision/test_precision_cuda-sanitizers/summary.json",
+        "sha256": "6ca59913e9a9fb8851d7486d18427ba88dc2fe8f8dd777cba9854b87646561d3"
+      }
+    },
+    "sanitizer_job_id": "ac5d60bb-816f-4062-b04b-3a66e833f997",
+    "note": "Final source GPU test includes uniform bypass, explicit promotion, missing/partial availability, stable two-pass decisions and advisory sensitivity. No CPU fitting or implicit precision retry."
+  },
+  "native_authority": "Local validation evidence only; not native Todo acceptance.",
+  "prior_receipt": "tests/artifacts/selective-precision/receipt-before-afe2927c.json",
+  "coordinated_update_utc": "2026-11-04T14:47:02.024610+00:00"
+}

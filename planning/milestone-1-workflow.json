@@ -1,0 +1,42 @@
+{
+  "format": "velocity-cppm.milestone-workflow-receipt",
+  "version": 1,
+  "plan": {
+    "package": "planning/milestone-1.json",
+    "project_id": "velocity-cppm",
+    "authority_id": "velocity-cppm-authority",
+    "package_digest": "e805d74901bb121224de4116b47839dc6318a9ccf9613e2bca075ea80cbd54ca",
+    "change_digest": "020879cf3ace4698481ce8d39492d4ae71d0091aed1a551676a631e1872b132c",
+    "preview_expected_authority_revision": 8,
+    "preview_conflicts": 0,
+    "preview_warnings": 0,
+    "commit_revision": 9,
+    "accepted_plan_revision_id": "accepted-020879cf3ace4698481ce8d39492d4ae71d0091aed1a551676a631e1872b132c",
+    "commit_receipt_id": "receipt-785ed21e761f4c0883db3fbdff3b2706"
+  },
+  "work": {
+    "work_item_id": "milestone-1",
+    "required_check": "milestone-1-native",
+    "required_command": ["cmake", "--workflow", "--preset", "native-check"],
+    "verification_performed": false,
+    "outcome_reported": false,
+    "accepted": false
+  },
+  "claim_observation": {
+    "frontdoor": "next_task returned attention_required / native_operation_rejected",
+    "native_state": "workspace effect finalized and run-less attempt admitted; private workflow journal reached context_pending",
+    "context_error": "ContextScopeError: run, assignment, and attempt context must be supplied together",
+    "recovery_inspection": "source_safety_unproven; source and process unknown; no recovery intents offered at observation",
+    "execution_handle_available": false,
+    "limits": "The admitted attempt and managed workspace are preserved. No release, completion, acceptance, integration, or manual repair was performed."
+  },
+  "local_execution": {
+    "authorized_without_handle": true,
+    "user_instruction": "Ignore the project control error. Work anyway. No handle required",
+    "native_build_tests": "passed locally; not a native verification receipt",
+    "sanitizers_and_shared_consumers": "passed locally",
+    "numerical_evidence": "tests/results/milestone-1.json",
+    "performance_evidence": "benchmarks/results/milestone-1.json",
+    "module_build_evidence": "benchmarks/results/module-build.json"
+  }
+}

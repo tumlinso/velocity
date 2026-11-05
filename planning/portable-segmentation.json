@@ -1,0 +1,376 @@
+{
+  "format": "velocity.portable-source-segmentation",
+  "version": 1,
+  "recorded_at_utc": "2026-11-05T12:47:39.682425+00:00",
+  "status": "segmented_without_runtime_validation",
+  "scope": "Separate portable velocity source/support from CUDA and ISA implementations ahead of the later first-party Cellerator move.",
+  "authorization": "User requested segmentation only, explicitly without testing.",
+  "portable_component_files": [
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "README.md",
+    "STYLE.md",
+    "THIRD_PARTY_NOTICES.md",
+    "benchmarks/precision_qualification.cpp",
+    "benchmarks/qualification.cpp",
+    "benchmarks/stochastic_qualification.cpp",
+    "cmake/test-installed-consumer.cmake",
+    "cmake/velocityConfig.cmake.in",
+    "cmake/velocityModuleProvider.cmake",
+    "examples/selective_precision.cpp",
+    "examples/steady_state.cpp",
+    "examples/stochastic.cpp",
+    "src/detail/cpu_kernels.cpp",
+    "src/detail/cpu_kernels.hh",
+    "src/detail/fit.cpp",
+    "src/detail/fit.hh",
+    "src/detail/neighborhood.cpp",
+    "src/detail/prepared.cpp",
+    "src/detail/prepared.hh",
+    "src/detail/scientific.hh",
+    "src/detail/scientific_adapters.hh",
+    "src/detail/sensitivity.hh",
+    "src/detail/stochastic_fit.cpp",
+    "src/detail/stochastic_fit.hh",
+    "src/precision.cpp",
+    "src/velocity.cpp",
+    "src/velocity.cppm",
+    "src/velocity.precision.cppm",
+    "tests/consumer/CMakeLists.txt",
+    "tests/consumer/main.cpp",
+    "tests/interop_driver.cpp",
+    "tests/precision_interop_driver.cpp",
+    "tests/sensitivity_driver.cpp",
+    "tests/stochastic_interop_driver.cpp",
+    "tests/test_cpu_kernels.cpp",
+    "tests/test_customization.cpp",
+    "tests/test_precision.cpp",
+    "tests/test_precision_cpu.cpp",
+    "tests/test_reference.cpp",
+    "tests/test_stochastic.cpp",
+    "tests/test_stochastic_customization.cpp",
+    "tools/benchmark_reference.py",
+    "tools/benchmark_stochastic.py",
+    "tools/build_anndata.sh",
+    "tools/measure_build.py",
+    "tools/qualify.py",
+    "tools/qualify_sensitivity.py",
+    "tools/qualify_stochastic.py",
+    "tools/run_benchmarks.py",
+    "tools/run_stochastic_benchmarks.py"
+  ],
+  "portable_edits_sha256": {
+    "CMakeLists.txt": "237a8bd8ee4a26e262ff293c146887f7bc6fefcca1340291b2ec8b7b1b7940a4",
+    "cmake/velocityConfig.cmake.in": "f234a18f05b863f0460083d7127d07fdeba7f7a6f3f351f8823ea93f3f6e211c",
+    "src/detail/cpu_kernels.cpp": "25876233fe6badb9c386bf4f2671939e47b53ae5befb23fcb36a85aad21974c5",
+    "src/detail/cpu_kernels.hh": "ff2602903a70de95e2565e8f6c7a28df4b33cf09462ef3a0a5f729a66db7ca1c",
+    "src/detail/scientific.hh": "d75f3c7a2876dec1614acb3ec396f6b90a1723d0c374ac7544e0e11a2a1f4fec",
+    "src/detail/sensitivity.hh": "f4bff44e8096feb2c7ed3cd96485c04218b44caf4d7dfac86fbc9b4371426af3",
+    "src/velocity.cppm": "ecdc631c12efa7e71198c974010dc069fdcbe231d8fb4eea9f82a8b5be56af77",
+    "src/velocity.cpp": "576a2e106e4edeecdc02d348d63109b6284368e9040e34b56797f100c77db2c7",
+    "tests/test_cpu_kernels.cpp": "9a34bd515d95d0211cdcb18d93c88f62d8165aee3c62d4e08b400a0d1a041ed3",
+    "tests/precision_interop_driver.cpp": "7bdb73413be1d8a9836b57acc3229aed4197c8ff57848080aaf0aea0127bfe91",
+    "benchmarks/precision_qualification.cpp": "20affa0466df657fb7615e2f4b328f9ca292dec342d3d75ef466a3c73133b8aa"
+  },
+  "quarantine": {
+    "path": "quarantine/velocity-accelerators",
+    "files": [
+      {
+        "original": "src/detail/cpu_kernels.cpp",
+        "quarantine": "quarantine/velocity-accelerators/avx2/src/detail/cpu_kernels.cpp",
+        "sha256": "c6601a8cb1bee2b40c65a1fafbe44bcba957b885cac872c439d441684161ab41",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "src/detail/cpu_kernels.hh",
+        "quarantine": "quarantine/velocity-accelerators/avx2/src/detail/cpu_kernels.hh",
+        "sha256": "25ecd283466a7b52192c0564ff6113f97a410c425cc6f719db8953b50ba1a9ee",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "tests/test_cpu_kernels.cpp",
+        "quarantine": "quarantine/velocity-accelerators/avx2/tests/test_cpu_kernels.cpp",
+        "sha256": "d48d18942d30be18fba95f889dbffd7422f5bfecb7daa426f50f6771db6d6341",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "benchmarks/precision_cuda_qualification.cpp",
+        "quarantine": "quarantine/velocity-accelerators/cuda/benchmarks/precision_cuda_qualification.cpp",
+        "sha256": "3600d282af11ab5858e568e7df0464c385e760271cb63bdb4422f22d6262f1bc",
+        "operation": "move"
+      },
+      {
+        "original": "cmake/test-installed-cuda-consumer.cmake",
+        "quarantine": "quarantine/velocity-accelerators/cuda/cmake/test-installed-cuda-consumer.cmake",
+        "sha256": "4d469212f4c2f5055bb36ec76680678931219633e4f8a1463c240380db5b279c",
+        "operation": "move"
+      },
+      {
+        "original": "cmake/velocityCuda.cmake",
+        "quarantine": "quarantine/velocity-accelerators/cuda/cmake/velocityCuda.cmake",
+        "sha256": "d124e1881d843e07d32e052aba055fae1d909249482dad5b53fc2d51a03548c0",
+        "operation": "move"
+      },
+      {
+        "original": "cmake/velocityCudaConfig.cmake",
+        "quarantine": "quarantine/velocity-accelerators/cuda/cmake/velocityCudaConfig.cmake",
+        "sha256": "a00f759625cbb473de7c20cb2be328191cf4c051d8d49f63e4b7169d20551908",
+        "operation": "move"
+      },
+      {
+        "original": "docs/cuda.md",
+        "quarantine": "quarantine/velocity-accelerators/cuda/docs/cuda.md",
+        "sha256": "329efe0fb7279c778827ca8d28be6000173cf3ef0fd553b582496f60ac25e1cb",
+        "operation": "move"
+      },
+      {
+        "original": "docs/draft.md",
+        "quarantine": "quarantine/velocity-accelerators/cuda/docs/draft.md",
+        "sha256": "33ddc2c8fcf5d59ac41f16bce4639c81840678a6b44a5cf7b0210895a7d1ab0f",
+        "operation": "move"
+      },
+      {
+        "original": "src/cuda.cpp",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/cuda.cpp",
+        "sha256": "d038eea1573bfe69ae91b484c7a08d1aa4161580b61c655094afcb3d53f1c070",
+        "operation": "move"
+      },
+      {
+        "original": "src/cuda/bridge.hh",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/cuda/bridge.hh",
+        "sha256": "239dec941938b4075f609ca466fc16757c979de1ed3af1595b863f080cb373eb",
+        "operation": "move"
+      },
+      {
+        "original": "src/cuda/kernels.cu",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/cuda/kernels.cu",
+        "sha256": "2649b6f1d5d89b1abc0c514b6097e82a4fe2e32c591db4a59edd9f7603aa57a7",
+        "operation": "move"
+      },
+      {
+        "original": "src/cuda/sensitivity.cu",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/cuda/sensitivity.cu",
+        "sha256": "d99b5fc8c459ed4ac774262dfb4ac87e8a39f38f0f308461536a6b938bbfafa1",
+        "operation": "move"
+      },
+      {
+        "original": "src/cuda/sensitivity_bridge.hh",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/cuda/sensitivity_bridge.hh",
+        "sha256": "d82c4ec52cd4eaf93c7ddb49b56b057dc906e3fdb6fd627c2b78aa3f47548e6f",
+        "operation": "move"
+      },
+      {
+        "original": "src/detail/scientific.hh",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/detail/scientific.hh",
+        "sha256": "ca89ed7977ca90daee02c95140525f0c4e47f8e18f48c25aca3992beefd2bdc4",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "src/detail/sensitivity.hh",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/detail/sensitivity.hh",
+        "sha256": "44e3636a3b142d728e2e98d9a34a0f168f1f03403c967da45af9870a4d50a1df",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "src/velocity.cuda.cppm",
+        "quarantine": "quarantine/velocity-accelerators/cuda/src/velocity.cuda.cppm",
+        "sha256": "144b0f1c9bb68d044236f1bd1bb2e9c3f1a02a0f6e325d318769a6b2e85ee89d",
+        "operation": "move"
+      },
+      {
+        "original": "tests/cuda_consumer/CMakeLists.txt",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tests/cuda_consumer/CMakeLists.txt",
+        "sha256": "2fce6ba84bb55555e8cae144e27088b39cb4795adca00a07f464e3e8d3b0a4f8",
+        "operation": "move"
+      },
+      {
+        "original": "tests/cuda_consumer/device_abi.cu",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tests/cuda_consumer/device_abi.cu",
+        "sha256": "5ca5d867226a5ee5c0c1d6f1da5225c9aee8885b1a6717360a2052955752ea55",
+        "operation": "move"
+      },
+      {
+        "original": "tests/cuda_consumer/main.cpp",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tests/cuda_consumer/main.cpp",
+        "sha256": "8b8dfb6ee6ff6dbf37f8b352a05371fbebec865908f518d4a5ec605831d12f30",
+        "operation": "move"
+      },
+      {
+        "original": "tests/test_cuda.cpp",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tests/test_cuda.cpp",
+        "sha256": "a3e31f1aee3f920a1616af62fee9afb3ba66cc489936bca230d08a2f1cd1f1f4",
+        "operation": "move"
+      },
+      {
+        "original": "tests/test_cuda_batches.cpp",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tests/test_cuda_batches.cpp",
+        "sha256": "ddc20b508fa3d66ef397e23e0835148fac8de433a1d890260482702c313e6b5f",
+        "operation": "move"
+      },
+      {
+        "original": "tests/test_precision_cuda.cpp",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tests/test_precision_cuda.cpp",
+        "sha256": "8ca9a954f243b5262769542c7ecf017bc5347cebf68cd1efc92fcf7ef2e3f258",
+        "operation": "move"
+      },
+      {
+        "original": "tools/benchmark_precision_cuda.py",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tools/benchmark_precision_cuda.py",
+        "sha256": "cea9389dae70675b9d41fcacaf8831b553a475f51b719e7c7d8fa2a96b6c8459",
+        "operation": "move"
+      },
+      {
+        "original": "tools/cuda_sanitizers.py",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tools/cuda_sanitizers.py",
+        "sha256": "590e704aa239e033eb8e6f0d0eedc7a0520fc539910a340fb1d59f4dad0def77",
+        "operation": "move"
+      },
+      {
+        "original": "tools/run_cuda_job.py",
+        "quarantine": "quarantine/velocity-accelerators/cuda/tools/run_cuda_job.py",
+        "sha256": "911f38e63d59b37b6c717847188721a0206fe3711d4c0896d731ca1acc4f1fde",
+        "operation": "move"
+      },
+      {
+        "original": "CMakeLists.txt",
+        "quarantine": "quarantine/velocity-accelerators/support/CMakeLists.txt",
+        "sha256": "f95c03ebe094b241ae0fa35ce66f8590dfa91a720f6c8c94e209c86ca83a51ca",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "benchmarks/precision_qualification.cpp",
+        "quarantine": "quarantine/velocity-accelerators/support/benchmarks/precision_qualification.cpp",
+        "sha256": "f08879dd92db160161745ec5d7feda51c41a3e2f48d8640b26f030099fdea0fe",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "benchmarks/results/milestone-3.json",
+        "quarantine": "quarantine/velocity-accelerators/support/benchmarks/results/milestone-3.json",
+        "sha256": "ed28144ee0b9578781bd270550505c629c3f9d8212499cdd25ad477b1b95222c",
+        "operation": "historical_evidence_copy"
+      },
+      {
+        "original": "benchmarks/results/module-build-milestone-3.json",
+        "quarantine": "quarantine/velocity-accelerators/support/benchmarks/results/module-build-milestone-3.json",
+        "sha256": "ed45b56966ac1328055c3c8cf713740943cf420bbb83a35602237a9dc7b2ca0e",
+        "operation": "historical_evidence_copy"
+      },
+      {
+        "original": "cmake/velocityConfig.cmake.in",
+        "quarantine": "quarantine/velocity-accelerators/support/cmake/velocityConfig.cmake.in",
+        "sha256": "456fda99b9bda82b490a422e3fb748824c3898fef3b11899d03704908f536312",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "planning/milestone-3.json",
+        "quarantine": "quarantine/velocity-accelerators/support/planning/milestone-3.json",
+        "sha256": "35f87454b7081088f3583b523679df76db64cdd9cba6b087720bc746b6408dd0",
+        "operation": "historical_evidence_copy"
+      },
+      {
+        "original": "src/velocity.cpp",
+        "quarantine": "quarantine/velocity-accelerators/support/src/velocity.cpp",
+        "sha256": "33b2ab0b1f36850911f322d94fcee2ae7ada5a7e5c8886ea37d95685cfa88197",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "src/velocity.cppm",
+        "quarantine": "quarantine/velocity-accelerators/support/src/velocity.cppm",
+        "sha256": "b3b46e59077d8cf9f22a26179746479e790f1f0fc05b7d287487fa5de74bc9d3",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "tests/precision_interop_driver.cpp",
+        "quarantine": "quarantine/velocity-accelerators/support/tests/precision_interop_driver.cpp",
+        "sha256": "c8ca7dbcfded9b8b907a699988276920f44a722ae00eb13766b62a5fd3bcd64a",
+        "operation": "snapshot_before_portable_edit"
+      },
+      {
+        "original": "tests/results/milestone-3.json",
+        "quarantine": "quarantine/velocity-accelerators/support/tests/results/milestone-3.json",
+        "sha256": "a72e1c8a2d73fc25164199c9d6face05fac61da403b1315dac123305043326e5",
+        "operation": "historical_evidence_copy"
+      },
+      {
+        "original": "tests/results/precision-errors.json",
+        "quarantine": "quarantine/velocity-accelerators/support/tests/results/precision-errors.json",
+        "sha256": "1774844ff55402bb8ff4bb687e15a0435d9f5f3c7fe3e5e0742fac9cc3be940f",
+        "operation": "historical_evidence_copy"
+      },
+      {
+        "original": "tests/results/selective-precision.json",
+        "quarantine": "quarantine/velocity-accelerators/support/tests/results/selective-precision.json",
+        "sha256": "d2da71a718c7152790f557cd272c94b6533efa6b7d0f767c46b99f68e869e50c",
+        "operation": "historical_evidence_copy"
+      },
+      {
+        "original": "tools/benchmark_precision.py",
+        "quarantine": "quarantine/velocity-accelerators/support/tools/benchmark_precision.py",
+        "sha256": "bdacfceed0098d1fa25cc61feca376f3e3e186a53d48c4d25c4cd971045e7709",
+        "operation": "move"
+      },
+      {
+        "original": "tools/measure_precision_build.py",
+        "quarantine": "quarantine/velocity-accelerators/support/tools/measure_precision_build.py",
+        "sha256": "0213db35eec851a3b752be42d2b4e3f810a18dfb3ab014cabf0cd8b9cb058a2f",
+        "operation": "move"
+      },
+      {
+        "original": "tools/qualify_precision.py",
+        "quarantine": "quarantine/velocity-accelerators/support/tools/qualify_precision.py",
+        "sha256": "b3a4fb9d0704c45008c1a1334be91e06d08173ff4c1273e01e63e94ac917ce54",
+        "operation": "move"
+      },
+      {
+        "original": "tools/summarize_precision_errors.py",
+        "quarantine": "quarantine/velocity-accelerators/support/tools/summarize_precision_errors.py",
+        "sha256": "ea9201cac7a97038f870b13cede06926cdcfbb84e93313d70757d9d0d5e93843",
+        "operation": "move"
+      }
+    ],
+    "role": "Excluded frozen sources/support/evidence; no active build target or package component."
+  },
+  "fp16": {
+    "storage_and_encodings": "External data package, refactored/renamed by another agent; untouched here.",
+    "retained_in_velocity": [
+      "portable binary16-to-FP32 conversion",
+      "mixed FP16/FP32/FP64 W/S/U storage consumption",
+      "FP32/FP64 arithmetic and outputs",
+      "source promotion and advisory sensitivity"
+    ],
+    "excluded": [
+      "AVX2/F16C conversion and kernels",
+      "CUDA half conversion and device implementation"
+    ]
+  },
+  "interface_changes": [
+    "Removed ISA-specific avx2_enabled availability query.",
+    "Retained velocity::cpu operation entrypoints using portable helpers.",
+    "Precision benchmark backend name cpu replaces avx2.",
+    "Removed CUDA and ISA build options and CUDA exports."
+  ],
+  "future_move": {
+    "portable_destination": "Cellerator/src/velocity/",
+    "quarantine_destination": "Cellerator/quarantine/velocity-accelerators/",
+    "performed": false
+  },
+  "preservation": {
+    "anndata_sources_modified": false,
+    "cellerator_sources_modified": false,
+    "existing_history_and_raw_artifacts": "Preserved; compact historical reports retained and copied to quarantine support.",
+    "native_authority_modified": false
+  },
+  "execution": {
+    "configured": false,
+    "compiled": false,
+    "tests_run": false,
+    "benchmarks_run": false,
+    "gpu_jobs_run": false,
+    "numerical_requalification_claimed": false
+  },
+  "notes": [
+    "Dependency names deliberately unchanged pending the other agent rename.",
+    "Portable support inventory excludes historical evidence/docs; those remain preserved separately.",
+    "Quarantine copies retain original relative-path assumptions and are not advertised as a maintained standalone build."
+  ]
+}

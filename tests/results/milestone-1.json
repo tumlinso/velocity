@@ -1,0 +1,197 @@
+{
+  "source_commit": "4706c4115963b7cae68883d110d351a29904bc24",
+  "source_hashes": {
+    "scvelo/tools/velocity.py": "13fdc0d785ec835e8f63dbd4562312cf5aa6d69bb457b96c34a6c3943eb656e8",
+    "scvelo/core/_linear_models.py": "1c6eea7ce5277e9b44a3188e6a3004b1df5adb5326e21373f07c38a0a26d738a",
+    "scvelo/core/_arithmetic.py": "18f281e8016f4bf9916b57742e57c089c0904ecdce7e2cda6b74cd1cdfaa61f5",
+    "scvelo/tools/utils.py": "78ad0be1dc6121e9ea716c173209037e21ff79ee4db9a73a04b6057e83265715"
+  },
+  "native_driver_sha256": "e0f2407eae0b0778408e8a83c911c6162378ef04e8858a1c57e8f7beaddabd0d",
+  "native_sources_sha256": {
+    "src/detail/fit.cpp": "74a67bae4d2dde93d4da3652d1976de0cf443ae9bfce6642075a34aab8252e34",
+    "src/detail/fit.hh": "ffd1896f35b6bf5538641153194b5d2730c568c5ed8882610a21acf001b2556a",
+    "src/detail/neighborhood.cpp": "57fa850d4a53ee43ab6c5cd27bac168617fc2b69737a91eb7a3f724526dea06e",
+    "src/detail/prepared.cpp": "403a6ff81adec0ffe481299fc81579ebee44cedde8773347ae093af158d68749",
+    "src/detail/prepared.hh": "f567cb2d60dc3dee19ad1902a88d5d124224a7c4096a349977fec8d02e67d60a",
+    "src/velocity.cpp": "b37eb251a67b87a3f26934241c3bb2abf0726be7e1e50f3ca86a6b3ae913300a",
+    "src/velocity.cppm": "1a506ff47681a5a00389614e7e97fb264e058d744370a41e1cc76c51f706fd7f"
+  },
+  "source_loading": "original AST definitions with numerical helpers; logging suppressed; Scanpy wrapper not loaded",
+  "versions": {
+    "numpy": "2.2.6",
+    "scipy": "1.17.1",
+    "anndata": "0.13.4"
+  },
+  "recipe": "finalized spliced/unspliced; positive graph support + self + row normalization, float32 W and scVelo moments; no normalization or neighbor construction",
+  "cases": [
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 4.099925632772283e-05,
+        "mu": 1.9848346710205078e-05,
+        "gamma": 3.766049111675329e-06,
+        "offset": 0.0,
+        "r2": 4.459899646924725e-06,
+        "velocity": 2.3424625396728516e-05
+      },
+      "fixture": "pancreas",
+      "fixture_sha256": "0ce63b03e47a86cdea52bde776a0f56637f6d09dadeac4757688aa20e57e5a6d",
+      "input_sha256": "fd9e8f83b590178cb6f58d92df0c1511af48c45716556bd33ea25eda3a90e8e7",
+      "variant": "all",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 3682
+    },
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 4.099925632772283e-05,
+        "mu": 1.9848346710205078e-05,
+        "gamma": 1.4162422949937081e-06,
+        "offset": 0.0,
+        "r2": 5.785822320802936e-06,
+        "velocity": 2.5510787963867188e-05
+      },
+      "fixture": "pancreas",
+      "fixture_sha256": "0ce63b03e47a86cdea52bde776a0f56637f6d09dadeac4757688aa20e57e5a6d",
+      "input_sha256": "fd9e8f83b590178cb6f58d92df0c1511af48c45716556bd33ea25eda3a90e8e7",
+      "variant": "fit_subset_hvg",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 3682
+    },
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 8.944955002476718e-06,
+        "mu": 9.665958904392369e-07,
+        "gamma": 3.5251706513861336e-06,
+        "offset": 0.0,
+        "r2": 6.967970506366328e-06,
+        "velocity": 1.5497207641601562e-06
+      },
+      "fixture": "dentategyrus",
+      "fixture_sha256": "46033b23d673e2ff7e8fd6e75b619706861ad8418b6723989300b91ee9e870d8",
+      "input_sha256": "d32a5bc589fdfaff52ede000af9425a298fd88584ed3c5508c8041dd5f73af85",
+      "variant": "all",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 4120
+    },
+    {
+      "pass_all": true,
+      "checks": {
+        "moments": true,
+        "gamma": true,
+        "offset": true,
+        "velocity": true,
+        "r2": true,
+        "selected_away_from_margin": true,
+        "finite": true
+      },
+      "status_ok": 200,
+      "status_counts": {
+        "0": 200
+      },
+      "r2_well_conditioned": 200,
+      "mask_flips": 0,
+      "mask_flips_away_from_margin": 0,
+      "scvelo_fallback_mask_differences": 0,
+      "max_abs": {
+        "ms": 8.944955002476718e-06,
+        "mu": 9.665958904392369e-07,
+        "gamma": 2.306593341216967e-06,
+        "offset": 0.0,
+        "r2": 4.81676846320056e-06,
+        "velocity": 1.430511474609375e-06
+      },
+      "fixture": "dentategyrus",
+      "fixture_sha256": "46033b23d673e2ff7e8fd6e75b619706861ad8418b6723989300b91ee9e870d8",
+      "input_sha256": "d32a5bc589fdfaff52ede000af9425a298fd88584ed3c5508c8041dd5f73af85",
+      "variant": "fit_subset_hvg",
+      "observations": 100,
+      "genes": 200,
+      "graph_nnz": 4120
+    }
+  ],
+  "degenerate": {
+    "pass_all": true,
+    "status": [
+      2,
+      2,
+      4,
+      0
+    ],
+    "gamma": [
+      0.0,
+      0.0,
+      0.0,
+      1.5
+    ],
+    "r2": [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "selected": [
+      false,
+      false,
+      false,
+      true
+    ],
+    "finite": true
+  },
+  "pass_all": true
+}

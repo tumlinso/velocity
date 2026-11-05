@@ -1,0 +1,439 @@
+{
+  "schema": "velocity.stochastic-benchmark.v1",
+  "run_id": "20261104T065204.154996Z",
+  "mode": "paired_canonical",
+  "host": {
+    "cpu_model": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+    "kernel": "6.8.0-147-generic",
+    "python": "3.13.11",
+    "numpy": "2.2.6",
+    "scipy": "1.17.1"
+  },
+  "scvelo_source_commit": "4706c4115963b7cae68883d110d351a29904bc24",
+  "workload_sha256": "6fa09fa09631b892c2caafd0cc75ecff92c20659805c6e0b9241ac5ccad7a564",
+  "generation": {
+    "file": "/home/tumlinson/velocity.cppm/benchmarks/artifacts/stochastic-canonical.bin",
+    "n": 4096,
+    "g": 2048,
+    "k": 32,
+    "density": 0.01,
+    "seed": 20261103,
+    "nnz": [
+      83462,
+      83482,
+      134653
+    ],
+    "bytes": 2511144
+  },
+  "native_sha256": "330faa8c051c3c684834847221083de3c5895ee856dd81e75ebad54d0b56e7bc",
+  "benchmark_source_sha256": "dc99cffd0d194f62d70599b3e3f8b178a2a9f7e38cd0dbea2aa186dedbb3d948",
+  "runner_sha256": "a4e991583bfc730b8d91f6a188d13ffb7a7b3afa10e7156587616ff9d118f211",
+  "worker_sha256": "10e3f8752e3c0270aa03c738dd352fc1147c32b9ae05f8eaabcb57d871a8ea8b",
+  "native_sources_sha256": {
+    "src/detail/fit.cpp": "74a67bae4d2dde93d4da3652d1976de0cf443ae9bfce6642075a34aab8252e34",
+    "src/detail/fit.hh": "ffd1896f35b6bf5538641153194b5d2730c568c5ed8882610a21acf001b2556a",
+    "src/detail/neighborhood.cpp": "57fa850d4a53ee43ab6c5cd27bac168617fc2b69737a91eb7a3f724526dea06e",
+    "src/detail/prepared.cpp": "d184e45329add82a12bf5e4f40b5b3d7fad635fc0be1c069bec047f2cc270fb1",
+    "src/detail/prepared.hh": "f163741f9c23d0bae3a71d660b263066e43b45f578855f7ce86ab5b1abdedb2d",
+    "src/detail/stochastic_fit.cpp": "022ba3d925d8c7d5e2d32bcb27e32706e9dd27bb157c12c63a4230bde1d2cb26",
+    "src/detail/stochastic_fit.hh": "bb5849a07dfa2b1dcbd6204f711ffd6888e33d0a6d757c566d8923876d9c26c4",
+    "src/velocity.cpp": "dca3f30c40ef83e72e2779e5f89834831baee5df37fa8541d7e45a5442a8fb13",
+    "src/velocity.cppm": "2c4fc9a9c27a984b3e76370df7c78dd30724e51f27ca0e50f8dc62c3e0c4be8f"
+  },
+  "options": {
+    "min_r2": -100.0,
+    "min_ratio": -100.0,
+    "initialization_percentile": [
+      5,
+      95
+    ],
+    "stochastic_percentile": [
+      5,
+      95
+    ],
+    "fit_intercept": false,
+    "fit_second_intercept": false,
+    "refit_all_if_none": false,
+    "block_genes": 64,
+    "output": "stream velocity and second residual",
+    "selection_threshold_note": "The benchmark explicitly sets min_r2=-100 and min_ratio=-100 to include all genes with nonzero spliced and unspliced moments; the resulting 2048 genes were successfully refined in both implementations in every pair."
+  },
+  "constraints": {
+    "cpu": 0,
+    "threads": 1,
+    "per_process_timeout_seconds": 30,
+    "per_process_virtual_memory_limit_bytes": 2147483648,
+    "fresh_process": true,
+    "pairs": 3,
+    "input_loading_and_preparation_in_cold_time": true,
+    "peak_metric": "process HWM minus RSS immediately after common input load; includes preparation, execution and sink"
+  },
+  "summary": {
+    "reference_median_cold_s": 2.2779241770003864,
+    "native_median_cold_s": 1.965745863,
+    "cold_runtime_ratio": 0.8629549143240278,
+    "reference_median_execute_sink_s": 2.2758478300002025,
+    "native_median_execute_sink_s": 1.94663447,
+    "execute_runtime_ratio": 0.8553447398105816,
+    "reference_median_incremental_peak_bytes": 690081792,
+    "native_median_incremental_peak_bytes": 18214912,
+    "incremental_memory_reduction": 37.885540814031934,
+    "memory_gate": true,
+    "cold_runtime_gate": true,
+    "selected_gene_counts": {
+      "scvelo": [
+        2048,
+        2048,
+        2048
+      ],
+      "native": [
+        2048,
+        2048,
+        2048
+      ]
+    },
+    "successfully_refined_counts": {
+      "scvelo": [
+        2048,
+        2048,
+        2048
+      ],
+      "native": [
+        2048,
+        2048,
+        2048
+      ]
+    },
+    "successful_refinement_counts_match": true,
+    "selected_mask_hashes": {
+      "scvelo": [
+        "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2",
+        "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2",
+        "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2"
+      ],
+      "native": [
+        "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2",
+        "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2",
+        "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2"
+      ]
+    },
+    "selection_match": true,
+    "checksum_gates": {
+      "velocity": true,
+      "second_residual": true,
+      "gamma": true,
+      "offset": true,
+      "offset2": true
+    },
+    "all_workers_finite": true,
+    "nonzero_refinement": true,
+    "execute_runtime_is_diagnostic_only": true,
+    "runtime_interpretation": "Median no-regression gate passed; sample ranges overlap, so these three pairs do not support a robust runtime speedup claim."
+  },
+  "source_allocation_accounting": "NumPy/SciPy allocations were not intercepted; HWM and identified materialized array sizes are recorded.",
+  "raw_events": "benchmarks/artifacts/milestone-2-events-20261104T065204.154996Z.jsonl",
+  "scvelo_samples": [
+    {
+      "mode": "scvelo_production_source",
+      "shape": [
+        4096,
+        2048
+      ],
+      "input_sha256": "6fa09fa09631b892c2caafd0cc75ecff92c20659805c6e0b9241ac5ccad7a564",
+      "selected_genes": 2048,
+      "attempted_refinements": 2048,
+      "successful_refinements": 2048,
+      "selected_mask_sha256": "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2",
+      "finite": true,
+      "velocity_checksum": 415123.21907451184,
+      "velocity_absolute_checksum": 427408.3941201476,
+      "second_residual_checksum": 321349.68928421644,
+      "second_residual_absolute_checksum": 487633.6232322262,
+      "gamma_checksum": 42.65100579895079,
+      "offset_checksum": 0.0,
+      "offset2_checksum": 0.0,
+      "cold_total_s": 2.321968203999859,
+      "execute_sink_s": 2.3199909360000674,
+      "load_s": 0.0019772679997913656,
+      "incremental_peak_including_preparation_bytes": 690462720,
+      "process_peak_bytes": 804884480,
+      "input_storage_bytes": 2461940,
+      "logical_velocity_bytes": 33554432,
+      "source_materialized_fields": {
+        "first_moments_bytes": 67108864,
+        "raw_second_moments_bytes": 67108864,
+        "first_residual_bytes": 33554432,
+        "gsl_doubled_design_and_response_bytes": 134217728,
+        "final_velocity_bytes": 33554432
+      }
+    },
+    {
+      "mode": "scvelo_production_source",
+      "shape": [
+        4096,
+        2048
+      ],
+      "input_sha256": "6fa09fa09631b892c2caafd0cc75ecff92c20659805c6e0b9241ac5ccad7a564",
+      "selected_genes": 2048,
+      "attempted_refinements": 2048,
+      "successful_refinements": 2048,
+      "selected_mask_sha256": "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2",
+      "finite": true,
+      "velocity_checksum": 415123.21907451184,
+      "velocity_absolute_checksum": 427408.3941201476,
+      "second_residual_checksum": 321349.68928421644,
+      "second_residual_absolute_checksum": 487633.6232322262,
+      "gamma_checksum": 42.65100579895079,
+      "offset_checksum": 0.0,
+      "offset2_checksum": 0.0,
+      "cold_total_s": 2.2779241770003864,
+      "execute_sink_s": 2.2758478300002025,
+      "load_s": 0.002076347000183887,
+      "incremental_peak_including_preparation_bytes": 690024448,
+      "process_peak_bytes": 804732928,
+      "input_storage_bytes": 2461940,
+      "logical_velocity_bytes": 33554432,
+      "source_materialized_fields": {
+        "first_moments_bytes": 67108864,
+        "raw_second_moments_bytes": 67108864,
+        "first_residual_bytes": 33554432,
+        "gsl_doubled_design_and_response_bytes": 134217728,
+        "final_velocity_bytes": 33554432
+      }
+    },
+    {
+      "mode": "scvelo_production_source",
+      "shape": [
+        4096,
+        2048
+      ],
+      "input_sha256": "6fa09fa09631b892c2caafd0cc75ecff92c20659805c6e0b9241ac5ccad7a564",
+      "selected_genes": 2048,
+      "attempted_refinements": 2048,
+      "successful_refinements": 2048,
+      "selected_mask_sha256": "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2",
+      "finite": true,
+      "velocity_checksum": 415123.21907451184,
+      "velocity_absolute_checksum": 427408.3941201476,
+      "second_residual_checksum": 321349.68928421644,
+      "second_residual_absolute_checksum": 487633.6232322262,
+      "gamma_checksum": 42.65100579895079,
+      "offset_checksum": 0.0,
+      "offset2_checksum": 0.0,
+      "cold_total_s": 2.114928533999773,
+      "execute_sink_s": 2.1131326749991786,
+      "load_s": 0.0017958590005946462,
+      "incremental_peak_including_preparation_bytes": 690081792,
+      "process_peak_bytes": 804741120,
+      "input_storage_bytes": 2461940,
+      "logical_velocity_bytes": 33554432,
+      "source_materialized_fields": {
+        "first_moments_bytes": 67108864,
+        "raw_second_moments_bytes": 67108864,
+        "first_residual_bytes": 33554432,
+        "gsl_doubled_design_and_response_bytes": 134217728,
+        "final_velocity_bytes": 33554432
+      }
+    }
+  ],
+  "native_samples": [
+    {
+      "shape": [
+        4096,
+        2048
+      ],
+      "selected_genes": 2048,
+      "successful_refinements": 2048,
+      "finite": true,
+      "velocity_checksum": 415123.21940109314,
+      "velocity_absolute_checksum": 427408.39400318224,
+      "second_residual_checksum": 321349.69230902405,
+      "second_residual_absolute_checksum": 487633.62097216723,
+      "gamma_checksum": 42.65100360019375,
+      "offset_checksum": 0,
+      "offset2_checksum": 0,
+      "cold_total_s": 2.180505039,
+      "execute_sink_s": 2.159006007,
+      "load_s": 0.003029171,
+      "incremental_peak_including_preparation_bytes": 18214912,
+      "process_peak_bytes": 24510464,
+      "input_storage_bytes": 2511104,
+      "prepared_bytes": 7127496,
+      "workspace_scratch_bytes": 10588160,
+      "fit_result_bytes": 153600,
+      "logical_velocity_bytes": 33554432,
+      "logical_second_residual_bytes": 33554432,
+      "stream_block_bytes": 2097152,
+      "prep_global_new_calls": 424,
+      "prep_global_new_requested_bytes": 17919746,
+      "execution_global_new_calls": 61,
+      "execution_global_new_requested_bytes": 156720,
+      "selected_mask_sha256": "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2"
+    },
+    {
+      "shape": [
+        4096,
+        2048
+      ],
+      "selected_genes": 2048,
+      "successful_refinements": 2048,
+      "finite": true,
+      "velocity_checksum": 415123.21940109314,
+      "velocity_absolute_checksum": 427408.39400318224,
+      "second_residual_checksum": 321349.69230902405,
+      "second_residual_absolute_checksum": 487633.62097216723,
+      "gamma_checksum": 42.65100360019375,
+      "offset_checksum": 0,
+      "offset2_checksum": 0,
+      "cold_total_s": 1.965745863,
+      "execute_sink_s": 1.94663447,
+      "load_s": 0.002781136,
+      "incremental_peak_including_preparation_bytes": 18198528,
+      "process_peak_bytes": 24535040,
+      "input_storage_bytes": 2511104,
+      "prepared_bytes": 7127496,
+      "workspace_scratch_bytes": 10588160,
+      "fit_result_bytes": 153600,
+      "logical_velocity_bytes": 33554432,
+      "logical_second_residual_bytes": 33554432,
+      "stream_block_bytes": 2097152,
+      "prep_global_new_calls": 424,
+      "prep_global_new_requested_bytes": 17919746,
+      "execution_global_new_calls": 61,
+      "execution_global_new_requested_bytes": 156720,
+      "selected_mask_sha256": "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2"
+    },
+    {
+      "shape": [
+        4096,
+        2048
+      ],
+      "selected_genes": 2048,
+      "successful_refinements": 2048,
+      "finite": true,
+      "velocity_checksum": 415123.21940109314,
+      "velocity_absolute_checksum": 427408.39400318224,
+      "second_residual_checksum": 321349.69230902405,
+      "second_residual_absolute_checksum": 487633.62097216723,
+      "gamma_checksum": 42.65100360019375,
+      "offset_checksum": 0,
+      "offset2_checksum": 0,
+      "cold_total_s": 1.772552715,
+      "execute_sink_s": 1.755968453,
+      "load_s": 0.002251261,
+      "incremental_peak_including_preparation_bytes": 18214912,
+      "process_peak_bytes": 24514560,
+      "input_storage_bytes": 2511104,
+      "prepared_bytes": 7127496,
+      "workspace_scratch_bytes": 10588160,
+      "fit_result_bytes": 153600,
+      "logical_velocity_bytes": 33554432,
+      "logical_second_residual_bytes": 33554432,
+      "stream_block_bytes": 2097152,
+      "prep_global_new_calls": 424,
+      "prep_global_new_requested_bytes": 17919746,
+      "execution_global_new_calls": 61,
+      "execution_global_new_requested_bytes": 156720,
+      "selected_mask_sha256": "7c7d2eb358671b401d2a5e59bf56e7163e16994a170d4788faad9be5d82363b2"
+    }
+  ],
+  "raw_runs": "benchmarks/artifacts/milestone-2-runs-20261104T065204.154996Z.json",
+  "shape_scaling": {
+    "run_id": "20261104T065224.213275Z",
+    "mode": "shape_scaling",
+    "source_sha256": {
+      "native": "330faa8c051c3c684834847221083de3c5895ee856dd81e75ebad54d0b56e7bc",
+      "benchmark": "a4e991583bfc730b8d91f6a188d13ffb7a7b3afa10e7156587616ff9d118f211",
+      "cpp": "dc99cffd0d194f62d70599b3e3f8b178a2a9f7e38cd0dbea2aa186dedbb3d948"
+    },
+    "constraints": {
+      "cpu": 0,
+      "threads": 1,
+      "per_process_timeout_seconds": 30,
+      "per_process_virtual_memory_limit_bytes": 2147483648,
+      "fresh_process": true,
+      "samples_per_shape": 1
+    },
+    "ratios": {
+      "same_n_gene_scratch": 1.0,
+      "doubled_n_scratch": 2.0
+    },
+    "checks": {
+      "scratch_independent_of_genes": true,
+      "scratch_linear_in_cells": true,
+      "gene_diagnostics_reported_separately": true,
+      "workers_finite": true,
+      "nonzero_refinement": true
+    },
+    "limitations": "Single bounded samples establish workspace scaling only; they do not establish runtime or memory reduction against scVelo.",
+    "shapes": [
+      {
+        "shape": [
+          256,
+          256
+        ],
+        "workload_sha256": "63b2b5ba5c67deb0d44f4f6e365b4c76104ae8f0dd81d884b618990a55c3233f",
+        "workspace_scratch_bytes": 661760,
+        "prepared_bytes": 287432,
+        "fit_result_bytes": 19200,
+        "incremental_peak_including_preparation_bytes": 1245184,
+        "selected_genes": 221,
+        "successful_refinements": 221
+      },
+      {
+        "shape": [
+          256,
+          8192
+        ],
+        "workload_sha256": "44be99d30ac11ed42bf3283a368a805eccac92fe6e87bd7a32fa97d865a2c764",
+        "workspace_scratch_bytes": 661760,
+        "prepared_bytes": 1124696,
+        "fit_result_bytes": 614400,
+        "incremental_peak_including_preparation_bytes": 2711552,
+        "selected_genes": 6976,
+        "successful_refinements": 6976
+      },
+      {
+        "shape": [
+          4096,
+          256
+        ],
+        "workload_sha256": "a0ad69eeef92d7f89726f9581b5adefe8a2e8314c22c2840943e19c5bd4e6eb7",
+        "workspace_scratch_bytes": 10588160,
+        "prepared_bytes": 4747208,
+        "fit_result_bytes": 19200,
+        "incremental_peak_including_preparation_bytes": 15679488,
+        "selected_genes": 256,
+        "successful_refinements": 256
+      },
+      {
+        "shape": [
+          8192,
+          256
+        ],
+        "workload_sha256": "6401bf75f60e3203954001431ca3d72a68e663cab07b91816ea036fe55effe53",
+        "workspace_scratch_bytes": 21176320,
+        "prepared_bytes": 9504440,
+        "fit_result_bytes": 19200,
+        "incremental_peak_including_preparation_bytes": 31014912,
+        "selected_genes": 256,
+        "successful_refinements": 256
+      }
+    ]
+  },
+  "runner_current_sha256": "6c51f864f73677e1ec844d32d21548b06f1933270905da53b99916419377d4a1",
+  "runner_post_measurement_change": "After the campaign, serialization was changed to keep large selected-mask bitstrings and full per-shape measurements only in raw artifacts; the compact result keeps mask SHA-256 values and essential counters. Workload, worker commands, timing, measurements, and gates were unchanged.",
+  "sample_spread": {
+    "scvelo_cold_seconds": {
+      "min": 2.114928533999773,
+      "max": 2.321968203999859,
+      "median": 2.2779241770003864
+    },
+    "native_cold_seconds": {
+      "min": 1.772552715,
+      "max": 2.180505039,
+      "median": 1.965745863
+    },
+    "cold_ranges_overlap": true
+  }
+}

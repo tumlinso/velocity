@@ -1,0 +1,330 @@
+{
+  "host": {
+    "cpu_model": "Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz",
+    "kernel": "6.8.0-147-generic",
+    "python": "3.12.3",
+    "numpy": "2.2.6",
+    "scipy": "1.17.1",
+    "compiler": "Ubuntu clang version 18.1.3 (1ubuntu1)"
+  },
+  "workload_sha256": "6fa09fa09631b892c2caafd0cc75ecff92c20659805c6e0b9241ac5ccad7a564",
+  "native_sha256": "d2b0853089f46ddb53823b28cf1c7e218cb358fa1aa27070ff4ca132e697b548",
+  "benchmark_source_sha256": "9caec87e92e7e4bb76cfb7ae829259b3c71c9c00cfb6727c925cd07a600c6cef",
+  "reference_worker_sha256": "aa82f5e54cad4286e2d1389cf99244f9927d10798bebb404e3ca4bb7a63b7336",
+  "native_sources_sha256": {
+    "src/detail/fit.cpp": "74a67bae4d2dde93d4da3652d1976de0cf443ae9bfce6642075a34aab8252e34",
+    "src/detail/fit.hh": "ffd1896f35b6bf5538641153194b5d2730c568c5ed8882610a21acf001b2556a",
+    "src/detail/neighborhood.cpp": "57fa850d4a53ee43ab6c5cd27bac168617fc2b69737a91eb7a3f724526dea06e",
+    "src/detail/prepared.cpp": "403a6ff81adec0ffe481299fc81579ebee44cedde8773347ae093af158d68749",
+    "src/detail/prepared.hh": "f567cb2d60dc3dee19ad1902a88d5d124224a7c4096a349977fec8d02e67d60a",
+    "src/velocity.cpp": "b37eb251a67b87a3f26934241c3bb2abf0726be7e1e50f3ca86a6b3ae913300a",
+    "src/velocity.cppm": "1a506ff47681a5a00389614e7e97fb264e058d744370a41e1cc76c51f706fd7f"
+  },
+  "constraints": {
+    "cpu": 0,
+    "threads": 1,
+    "per_process_timeout_seconds": 30,
+    "per_process_virtual_memory_limit_bytes": 2147483648,
+    "fresh_process": true,
+    "incremental_peak": "process HWM minus RSS immediately after common input load; includes preparation and sink",
+    "cold_timing": "common input file load, preparation, computation and sink; excludes interpreter startup/import"
+  },
+  "summary": {
+    "reference_median_cold_s": 0.4904315149979084,
+    "native_median_cold_s": 0.482064367,
+    "runtime_ratio_native_over_reference": 0.9829392122201933,
+    "reference_median_prepared_execution_s": 0.48881827799777966,
+    "native_median_prepared_execution_s": 0.468124101,
+    "prepared_execution_ratio_native_over_reference": 0.9576648870771693,
+    "reference_median_incremental_peak_bytes": 301973504,
+    "native_median_incremental_peak_bytes": 12693504,
+    "incremental_memory_reduction": 23.789609551468217,
+    "memory_gate": true,
+    "cold_runtime_gate": true,
+    "prepared_runtime_gate": true,
+    "reference_checksum": 252560.98421910318,
+    "native_checksum": 252560.98596646727,
+    "approximate_checksum_pass": true
+  },
+  "controls": {
+    "csr_stream_b8": {
+      "output": "stream",
+      "expression": "csr",
+      "graph": "csr",
+      "block_genes": 8,
+      "cold_total_s": 0.430229435,
+      "execute_sink_s": 0.420011654,
+      "process_peak_bytes": 14413824,
+      "incremental_peak_including_preparation_bytes": 8097792,
+      "prepared_bytes": 7127496,
+      "workspace_scratch_bytes": 692224,
+      "logical_velocity_bytes": 33554432,
+      "retained_output_bytes": 53248,
+      "sink_sum_fp64": 252560.98596646736
+    },
+    "csr_stream_b32": {
+      "output": "stream",
+      "expression": "csr",
+      "graph": "csr",
+      "block_genes": 32,
+      "cold_total_s": 0.499039861,
+      "execute_sink_s": 0.487705067,
+      "process_peak_bytes": 16465920,
+      "incremental_peak_including_preparation_bytes": 10088448,
+      "prepared_bytes": 7127496,
+      "workspace_scratch_bytes": 2658304,
+      "logical_velocity_bytes": 33554432,
+      "retained_output_bytes": 53248,
+      "sink_sum_fp64": 252560.9859664673
+    },
+    "csr_retain_b64": {
+      "output": "retain",
+      "expression": "csr",
+      "graph": "csr",
+      "block_genes": 64,
+      "cold_total_s": 0.535738085,
+      "execute_sink_s": 0.523060423,
+      "process_peak_bytes": 52637696,
+      "incremental_peak_including_preparation_bytes": 46260224,
+      "prepared_bytes": 7127496,
+      "workspace_scratch_bytes": 5279744,
+      "logical_velocity_bytes": 33554432,
+      "retained_output_bytes": 33607680,
+      "sink_sum_fp64": 252560.98596646727
+    },
+    "csc_stream_b64": {
+      "output": "stream",
+      "expression": "csc",
+      "graph": "csr",
+      "block_genes": 64,
+      "cold_total_s": 0.476795714,
+      "execute_sink_s": 0.462763201,
+      "process_peak_bytes": 16359424,
+      "incremental_peak_including_preparation_bytes": 9981952,
+      "prepared_bytes": 4456392,
+      "workspace_scratch_bytes": 5279744,
+      "logical_velocity_bytes": 33554432,
+      "retained_output_bytes": 53248,
+      "sink_sum_fp64": 252560.98596646727
+    },
+    "dense_stream_b64": {
+      "output": "stream",
+      "expression": "dense",
+      "graph": "csr",
+      "block_genes": 64,
+      "cold_total_s": 1.367643463,
+      "execute_sink_s": 1.326382298,
+      "process_peak_bytes": 82059264,
+      "incremental_peak_including_preparation_bytes": 75718656,
+      "prepared_bytes": 4423608,
+      "workspace_scratch_bytes": 5279744,
+      "logical_velocity_bytes": 33554432,
+      "retained_output_bytes": 53248,
+      "sink_sum_fp64": 252560.98596646727
+    }
+  },
+  "source_low_signal_diagnostic": {
+    "explicit_filter_selected": 0,
+    "source_final_selected": 410,
+    "selection_differences": 410,
+    "interpretation": "Source fallback is triggered; the reference worker explicitly reapplies default filters. Timed comparison checks velocity checksum, not mask equality; the separate real-fixture oracle checks masks."
+  },
+  "limitations": [
+    "Three paired samples; the 1.7% cold median difference is small relative to observed sample spread and does not establish a robust runtime speedup.",
+    "Global new allocation counts omit malloc and OS mappings; Python allocation counts are not measured.",
+    "Peak deltas use process high-water RSS minus current RSS after file loading; absolute process peak is also reported.",
+    "Control modes have one sample each and establish coverage rather than runtime claims."
+  ],
+  "native_samples": [
+    {
+      "cold_total_s": 0.486824187,
+      "execute_sink_s": 0.472733052,
+      "process_peak_bytes": 19070976,
+      "incremental_peak_including_preparation_bytes": 12693504
+    },
+    {
+      "cold_total_s": 0.482064367,
+      "execute_sink_s": 0.468124101,
+      "process_peak_bytes": 19046400,
+      "incremental_peak_including_preparation_bytes": 12664832
+    },
+    {
+      "cold_total_s": 0.476968032,
+      "execute_sink_s": 0.463541606,
+      "process_peak_bytes": 19079168,
+      "incremental_peak_including_preparation_bytes": 12705792
+    }
+  ],
+  "reference_samples": [
+    {
+      "cold_total_s": 0.48992610599816544,
+      "execute_sink_s": 0.4881710259942338,
+      "total_process_peak_bytes": 424411136,
+      "incremental_execution_peak_bytes": 301985792
+    },
+    {
+      "cold_total_s": 0.5022174350015121,
+      "execute_sink_s": 0.5004739900032291,
+      "total_process_peak_bytes": 424824832,
+      "incremental_execution_peak_bytes": 301973504
+    },
+    {
+      "cold_total_s": 0.4904315149979084,
+      "execute_sink_s": 0.48881827799777966,
+      "total_process_peak_bytes": 424169472,
+      "incremental_execution_peak_bytes": 301961216
+    }
+  ],
+  "allocation_accounting": {
+    "native_canonical_input_storage_bytes": 2511104,
+    "native_canonical_prepared_bytes": 7127496,
+    "native_canonical_workspace_bytes": 5279744,
+    "native_fit_result_bytes": 53248,
+    "logical_velocity_bytes": 33554432,
+    "native_preparation_global_new_calls": 224,
+    "native_preparation_global_new_requested_bytes": 12587768,
+    "native_execution_global_new_calls": 26,
+    "native_execution_global_new_requested_bytes": 54616,
+    "scope": "C++ global new only; excludes malloc and OS mappings. Reference Python allocation counts unavailable."
+  },
+  "raw_evidence": "benchmarks/artifacts/milestone-1-runs.json and milestone-1-events.jsonl",
+  "shape_scaling": {
+    "samples": [
+      {
+        "shape": [
+          4096,
+          256
+        ],
+        "workload_sha256": "a0ad69eeef92d7f89726f9581b5adefe8a2e8314c22c2840943e19c5bd4e6eb7",
+        "generation": {
+          "file": "/home/tumlinson/velocity.cppm/benchmarks/artifacts/scaling-n4096-g256.bin",
+          "n": 4096,
+          "g": 256,
+          "k": 32,
+          "density": 0.01,
+          "seed": 20261103,
+          "nnz": [
+            10436,
+            10424,
+            134655
+          ],
+          "bytes": 1342488
+        },
+        "measurement": {
+          "schema": "velocity.qualification.v1",
+          "mode": "canonical",
+          "input": "/home/tumlinson/velocity.cppm/benchmarks/artifacts/scaling-n4096-g256.bin",
+          "input_file_bytes": 1342488,
+          "input_payload_bytes": 1342448,
+          "shape": [
+            4096,
+            256
+          ],
+          "expression": "csr",
+          "graph": "csr",
+          "output": "stream",
+          "block_genes": 64,
+          "threads": 1,
+          "input_storage_bytes": 1342448,
+          "accounted_preparation_bytes": 6089656,
+          "prepared_bytes": 4747208,
+          "workspace_scratch_bytes": 5279744,
+          "prep_global_new_calls": 224,
+          "prep_global_new_requested_bytes": 10178808,
+          "execution_global_new_calls": 26,
+          "execution_global_new_requested_bytes": 8024,
+          "logical_velocity_bytes": 4194304,
+          "fit_result_bytes": 6656,
+          "accounted_output_bytes": 4200960,
+          "retained_output_bytes": 6656,
+          "sink_values": 1048576,
+          "sink_sum_fp64": 31713.96063789708,
+          "finite_output": true,
+          "load_s": 0.001290356,
+          "prepare_s": 0.007979137,
+          "execute_sink_s": 0.05948188,
+          "cold_total_s": 0.068843163,
+          "rss_before_bytes": 3850240,
+          "rss_loaded_bytes": 5201920,
+          "rss_prepared_bytes": 15433728,
+          "process_peak_bytes": 15499264,
+          "preparation_peak_from_loaded_bytes": 10231808,
+          "incremental_execution_peak_bytes": 65536,
+          "incremental_peak_including_preparation_bytes": 10297344
+        }
+      },
+      {
+        "shape": [
+          8192,
+          256
+        ],
+        "workload_sha256": "6401bf75f60e3203954001431ca3d72a68e663cab07b91816ea036fe55effe53",
+        "generation": {
+          "file": "/home/tumlinson/velocity.cppm/benchmarks/artifacts/scaling-n8192-g256.bin",
+          "n": 8192,
+          "g": 256,
+          "k": 32,
+          "density": 0.01,
+          "seed": 20261103,
+          "nnz": [
+            20868,
+            20857,
+            269814
+          ],
+          "bytes": 2688984
+        },
+        "measurement": {
+          "schema": "velocity.qualification.v1",
+          "mode": "canonical",
+          "input": "/home/tumlinson/velocity.cppm/benchmarks/artifacts/scaling-n8192-g256.bin",
+          "input_file_bytes": 2688984,
+          "input_payload_bytes": 2688944,
+          "shape": [
+            8192,
+            256
+          ],
+          "expression": "csr",
+          "graph": "csr",
+          "output": "stream",
+          "block_genes": 64,
+          "threads": 1,
+          "input_storage_bytes": 2688944,
+          "accounted_preparation_bytes": 12193384,
+          "prepared_bytes": 9504440,
+          "workspace_scratch_bytes": 10559488,
+          "prep_global_new_calls": 224,
+          "prep_global_new_requested_bytes": 20346856,
+          "execution_global_new_calls": 26,
+          "execution_global_new_requested_bytes": 8024,
+          "logical_velocity_bytes": 8388608,
+          "fit_result_bytes": 6656,
+          "accounted_output_bytes": 8395264,
+          "retained_output_bytes": 6656,
+          "sink_values": 2097152,
+          "sink_sum_fp64": 63074.81272460698,
+          "finite_output": true,
+          "load_s": 0.002481107,
+          "prepare_s": 0.017089884,
+          "execute_sink_s": 0.122882179,
+          "cold_total_s": 0.142545275,
+          "rss_before_bytes": 3850240,
+          "rss_loaded_bytes": 6549504,
+          "rss_prepared_bytes": 26923008,
+          "process_peak_bytes": 26988544,
+          "preparation_peak_from_loaded_bytes": 20373504,
+          "incremental_execution_peak_bytes": 65536,
+          "incremental_peak_including_preparation_bytes": 20439040
+        }
+      }
+    ],
+    "canonical_shape": [
+      4096,
+      2048
+    ],
+    "canonical_scratch_bytes": 5279744,
+    "same_n_gene_scaling_scratch_ratio": 1.0,
+    "double_n_scratch_ratio": 2.0,
+    "limitations": "One sample per shape; workspace comparisons only, no runtime claim. Finite sink output was checked; these scaling inputs were not compared to the numerical oracle. The native mode field denotes the canonical layout and block configuration, not the canonical shape.",
+    "runner_sha256": "3bf69751a9f6f57b4a77e4fa76e734fa4f0d8666c99da23ae7eeff6647cdb1a6"
+  }
+}
