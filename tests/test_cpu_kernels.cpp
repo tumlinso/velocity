@@ -4,7 +4,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -47,7 +46,7 @@ template<class T> void weighted_add_case() {
             volatile T product = w*x[i];
             e[i] = e[i] + product;
         }
-        velocity::detail::cpu::weighted_add(x, w, y, n);
+        velocitypp::detail::cpu::weighted_add(x, w, y, n);
         for (std::size_t i = 0; i < n; ++i) same(y[i], e[i], "weighted_add multiply-then-add parity");
     }
     std::vector<T> x(lanes+1,T(1)-std::numeric_limits<T>::epsilon());
@@ -58,7 +57,7 @@ template<class T> void weighted_add_case() {
         volatile T product = w*xp[i];
         same(yp[i] + product,T(0),"weighted_add FMA witness setup");
     }
-    velocity::detail::cpu::weighted_add(xp,w,yp,lanes);
+    velocitypp::detail::cpu::weighted_add(xp,w,yp,lanes);
     for (std::size_t i = 0; i < lanes; ++i) same(yp[i],T(0),"weighted_add does not fuse multiply and add");
 }
 
@@ -69,15 +68,15 @@ template<class T> void products_case() {
         T* s = sv.data() + 1; T* u = uv.data() + 2;
         T* a = ss.data() + 2; T* b = su.data() + 3; T* c = uu.data() + 4;
         for (std::size_t i = 0; i < n; ++i) { s[i] = value<T>(i, 1); u[i] = value<T>(i, 3); }
-        velocity::detail::cpu::products(s, u, a, b, c, n);
+        velocitypp::detail::cpu::products(s, u, a, b, c, n);
         for (std::size_t i = 0; i < n; ++i) {
             same(a[i], s[i]*s[i], "products ss"); same(b[i], s[i]*u[i], "products su");
             same(c[i], u[i]*u[i], "products uu");
         }
         if (n) {
-            velocity::detail::cpu::products(s, nullptr, a, nullptr, nullptr, n);
-            velocity::detail::cpu::products(nullptr, u, nullptr, nullptr, c, n);
-            velocity::detail::cpu::products(s, u, nullptr, b, nullptr, n);
+            velocitypp::detail::cpu::products(s, nullptr, a, nullptr, nullptr, n);
+            velocitypp::detail::cpu::products(nullptr, u, nullptr, nullptr, c, n);
+            velocitypp::detail::cpu::products(s, u, nullptr, b, nullptr, n);
             for (std::size_t i = 0; i < n; ++i) {
                 same(a[i], s[i]*s[i], "products optional ss"); same(c[i], u[i]*u[i], "products optional uu");
                 same(b[i], s[i]*u[i], "products optional su");
@@ -100,15 +99,15 @@ template<class T> void residuals_case() {
             volatile T product = g[j]*s[i*genes+j];
             e[i*genes+j] = (u[i*genes+j]-product)-a[j];
         }
-        velocity::detail::cpu::residuals(s,u,g,a,v,rows,genes);
+        velocitypp::detail::cpu::residuals(s,u,g,a,v,rows,genes);
         for (std::size_t i = 0; i < n; ++i) same(v[i],e[i],"residuals multiply-subtract order");
     }
-    velocity::detail::cpu::residuals(static_cast<const T*>(nullptr),static_cast<const T*>(nullptr),
+    velocitypp::detail::cpu::residuals(static_cast<const T*>(nullptr),static_cast<const T*>(nullptr),
         static_cast<const T*>(nullptr),static_cast<const T*>(nullptr),static_cast<T*>(nullptr),7,0);
     std::vector<T> s(lanes+1,T(1)-std::numeric_limits<T>::epsilon());
     std::vector<T> u(lanes+1,T(0)), g(lanes+1,T(1)+std::numeric_limits<T>::epsilon());
     std::vector<T> a(lanes+1,T(-1)), out(lanes+1,T(1));
-    velocity::detail::cpu::residuals(s.data()+1,u.data()+1,g.data()+1,a.data()+1,out.data()+1,1,lanes);
+    velocitypp::detail::cpu::residuals(s.data()+1,u.data()+1,g.data()+1,a.data()+1,out.data()+1,1,lanes);
     for (std::size_t j = 0; j < lanes; ++j) same(out[j+1],T(0),"residuals do not fuse multiply and subtract");
 }
 
@@ -133,62 +132,20 @@ template<class T> void column_sums_case() {
                 for (std::size_t i = 0; i < rows; ++i) sum += logical0[std::ptrdiff_t(i)*row_stride+std::ptrdiff_t(j)];
                 ref[j] = sum;
             }
-            velocity::detail::cpu::column_sums(logical0,rows,genes,row_stride,out);
+            velocitypp::detail::cpu::column_sums(logical0,rows,genes,row_stride,out);
             for (std::size_t j = 0; j < genes; ++j) same(out[j],ref[j],"column_sums ascending row order and signed stride");
         }
         std::vector<T> zeros(genes+1,T(1));
-        velocity::detail::cpu::column_sums(static_cast<const T*>(nullptr),0,genes,
+        velocitypp::detail::cpu::column_sums(static_cast<const T*>(nullptr),0,genes,
             std::ptrdiff_t(stride),zeros.data()+1);
         for (std::size_t j = 0; j < genes; ++j) same(zeros[j+1],T(0),"zero-row column_sums");
     }
 }
 
-float expected_half(std::uint16_t h) {
-    const bool negative = (h & 0x8000) != 0;
-    const unsigned exponent = (h >> 10) & 0x1f, fraction = h & 0x3ff;
-    if (exponent == 31) {
-        if (fraction) return std::bit_cast<float>(std::uint32_t(0x7fc00000));
-        return std::bit_cast<float>((negative ? 0x80000000u : 0u) | 0x7f800000u);
-    }
-    float x = exponent ? std::ldexp(float(1024+fraction), int(exponent)-25)
-                       : std::ldexp(float(fraction), -24);
-    return std::copysign(x, negative ? -1.0f : 1.0f);
-}
-
-void half_case() {
-    std::vector<std::uint16_t> h(65537);
-    std::vector<float> out(65537);
-    auto* source = h.data()+1; auto* result = out.data()+1;
-    for (std::size_t i = 0; i < 65536; ++i) source[i] = std::uint16_t(i);
-    velocity::detail::cpu::half_to_float(source,2,result,65536);
-    for (std::size_t i = 0; i < 65536; ++i) same(result[i],expected_half(std::uint16_t(i)),"binary16 exhaustive conversion");
-
-    constexpr std::size_t n = 19;
-    std::vector<unsigned char> bytes(n*3+8);
-    std::vector<float> strided(n+2);
-    auto* p = bytes.data()+1;
-    for (std::size_t i = 0; i < n; ++i) {
-        auto x = std::uint16_t((i*4099u + 0x8001u) & 0xffffu);
-        std::memcpy(p+3*i,&x,2);
-    }
-    velocity::detail::cpu::half_to_float(reinterpret_cast<const std::uint16_t*>(p),3,strided.data()+1,n);
-    for (std::size_t i = 0; i < n; ++i) {
-        std::uint16_t x; std::memcpy(&x,p+3*i,2);
-        same(strided[i+1],expected_half(x),"binary16 positive byte stride");
-    }
-    velocity::detail::cpu::half_to_float(reinterpret_cast<const std::uint16_t*>(p+3*(n-1)),-3,strided.data()+1,n);
-    for (std::size_t i = 0; i < n; ++i) {
-        std::uint16_t x; std::memcpy(&x,p+3*(n-1-i),2);
-        same(strided[i+1],expected_half(x),"binary16 negative byte stride");
-    }
-}
-
 void run() {
-    velocity::detail::cpu::weighted_add(static_cast<const float*>(nullptr),0.0f,static_cast<float*>(nullptr),0);
-    velocity::detail::cpu::products(static_cast<const double*>(nullptr),static_cast<const double*>(nullptr),
+    velocitypp::detail::cpu::weighted_add(static_cast<const float*>(nullptr),0.0f,static_cast<float*>(nullptr),0);
+    velocitypp::detail::cpu::products(static_cast<const double*>(nullptr),static_cast<const double*>(nullptr),
         static_cast<double*>(nullptr),static_cast<double*>(nullptr),static_cast<double*>(nullptr),0);
-    velocity::detail::cpu::half_to_float(nullptr,2,nullptr,0);
-    half_case();
     weighted_add_case<float>(); weighted_add_case<double>();
     products_case<float>(); products_case<double>();
     residuals_case<float>(); residuals_case<double>();

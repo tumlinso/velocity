@@ -7,9 +7,9 @@
        "CMAKE_PREFIX_PATH": "${sourceDir}/build/deps/install"}},
     {"name": "native-check", "inherits": "debug", "binaryDir": "${sourceDir}/build/native"},
     {"name": "release", "inherits": "debug", "binaryDir": "${sourceDir}/build/release",
-     "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "VELOCITY_BUILD_QUALIFICATION": "ON"}},
+     "cacheVariables": {"CMAKE_BUILD_TYPE": "Release", "VELOCITYPP_BUILD_QUALIFICATION": "ON"}},
     {"name": "sanitizers", "inherits": "debug", "binaryDir": "${sourceDir}/build/sanitizers",
-     "cacheVariables": {"VELOCITY_ENABLE_SANITIZERS": "ON"}},
+     "cacheVariables": {"VELOCITYPP_ENABLE_SANITIZERS": "ON"}},
     {"name": "shared", "inherits": "debug", "binaryDir": "${sourceDir}/build/shared",
      "cacheVariables": {"BUILD_SHARED_LIBS": "ON"}}
   ],

@@ -1,15 +1,15 @@
 # Native API and execution contracts
 
-`import velocity;` exports the velocity interfaces, numeric view types, and
-`anndatapp.core`. AnnData++ remains required for core arrays, axes, and dataset
-access. Its integer arrays are not FP16 storage. `velocity::NumericView` and
-`NumericEdit` accept FP32/FP64 AnnData views implicitly and expose FP16 through
-explicit raw-bit factories. C++20 named modules and `velocity::velocity` are
-the public package; the target aliases `Cellerator::velocity` in-tree.
+`import velocitypp;` exports the standalone velocity interfaces and
+`anndatapp.core`. The public modules are `velocitypp` and
+`velocitypp.precision`, the C++ namespace is `velocitypp`, and the installed
+CMake target is `velocitypp::velocitypp`. Inputs and outputs use AnnData++
+`ArrayView`, `ArrayEdit`, and `DType` directly. The supported expression and
+graph storage types are FP32 and FP64.
 
 ## Acquisition and preparation
 
-`Input` contains spliced/unspliced and weight `NumericView`s, an
+`Input` contains spliced/unspliced and weight `anndatapp::ArrayView`s, an
 `anndatapp::Axis` gene selection, and optional AnnData fit-row and gene masks.
 `from_anndata()` acquires the named layers and pairwise array without changing
 the dataset; its default keys are `spliced`, `unspliced`, and `connectivities`.
@@ -18,13 +18,12 @@ fit-row/gene masks remain AnnData types; fit diagnostics are AnnData arrays.
 Call `reference::prepare_neighborhood()` explicitly to obtain positive-support,
 self-linked, row-normalized scVelo-style weights.
 
-`PreparedInput` retains the numeric views and prepares traversal metadata.
-AnnData-backed FP32/FP64 arrays adapt directly. FP16 values must be supplied
-through the explicit factories below; an integer AnnData array is not a
-substitute. Dense signed strides and unselected CSR/CSC layouts are supported.
-Sparse selections and irregular dense gathers require the caller's explicit
-copy; alternatively select genes through `Input::genes` while passing the
-original views. Sparse index and offset widths are acquired independently.
+`PreparedInput` retains AnnData++ array views and prepares traversal metadata.
+Pass FP32/FP64 views directly; no additional numeric view wrapper is needed.
+Dense signed strides and unselected CSR/CSC layouts are supported. Sparse
+selections and irregular dense gathers require the caller's explicit copy;
+alternatively select genes through `Input::genes` while passing the original
+views. Sparse index and offset widths are acquired independently.
 
 Owned arrays remain alive through retained descriptors. Wrapping external
 borrowed storage does not transfer ownership: keep its bytes alive. Keep shapes,
@@ -32,33 +31,17 @@ strides, topology and selected coordinates fixed during preparation and use;
 structural changes require re-preparation. Value updates may occur between
 runs, never concurrently with execution.
 
-### Explicit FP16 views and edits
+### Direct AnnData++ array views
 
-`StorageType` is `{float16, float32, float64}`. Dense FP16 input uses
-`NumericView::borrow_dense_f16(bits, shape, strides)` or
-`NumericView::retain_dense_f16(bits, shape, strides, owner)`. `bits` points to
-caller-owned `std::uint16_t` binary16 encodings; strides are in elements.
-`NumericBytes::stride_bytes()` reports byte strides, while
-`NumericDense::stride()` reports element strides. Retained views keep the
-supplied `std::shared_ptr<const void>` owner alive.
-`NumericView::dense<std::uint16_t>()` exposes the stored bits directly.
+Use `anndatapp::ArrayView` for expression, weights, and optional masks, and use
+`anndatapp::ArrayEdit` for caller-owned writable outputs. `anndatapp::DType`
+describes the underlying array type. This package accepts FP32 and FP64 numeric
+arrays; unsupported dtypes are rejected during checked preparation.
 
-Sparse input uses `SparseF16{values, values_count, indices, indices_count,
-index_type, offsets, offsets_count, offset_type}` with counts in elements, then
-`NumericView::borrow_sparse_f16(layout, rows, columns, nnz, buffers)` or
-`NumericView::retain_sparse_f16(layout, rows, columns, nnz, buffers, owner)`.
-`NumericEdit::borrow_dense_f16(bits, shape, strides)` and
-`NumericEdit::retain_dense_f16(bits, shape, strides, owner)` provide mutable
-dense-output views.
-`ArrayView` and `ArrayEdit` remain convenient implicit adapters for ordinary
-FP32/FP64 data.
-
-`cellerator::numeric::load_f16()` converts one stored value for computation;
-`round_f16()` writes a requested half result directly to the caller's output.
-These are direct helper calls within bounded loops, not a per-element callback
-layer. The reference path does not create a full widened input or output.
-AnnData integer arrays must not be used to disguise half bits, and this view
-contract does not define a persistent FP16 file format.
+AnnData++ owns array descriptor, stride, sparse-layout, and value-access
+semantics. Keep externally borrowed storage alive for every view that uses it.
+Preserve array structure and selected coordinates for the prepared run; changes
+to values may occur between runs, not concurrently with execution.
 
 Full validation checks values at construction and at each reference run.
 `Validation::none` omits optional value-content scans; necessary shape/layout and
@@ -74,16 +57,12 @@ diagnostics, and caller-retained outputs are separate costs.
 
 `reference::steady_state()` emits requested fields to `BlockSink` and returns
 `FitResult`. `reference::steady_state_into()` writes to a caller-supplied dense
-`NumericEdit`. Velocity is requested by default; moment output is opt-in. The
+`anndatapp::ArrayEdit`. Velocity is requested by default; moment output is opt-in. The
 default sink velocity dtype is FP32 for FP32 computation, and otherwise the
-widest expression dtype with a minimum of FP32. FP16 output requires an
-explicit `output_dtype` request or a caller-supplied FP16 `NumericEdit` for
-`steady_state_into`; values are rounded directly into that output. The output
-dtype comes from that `NumericEdit`. `RunOptions::compute_precision` chooses
-FP32 or FP64 for moments, fitting, reductions, and diagnostics. `automatic`
-chooses FP32 when any W/S/U input is FP16 and none is FP64, and FP64
-otherwise. Explicit computation precision wins. Gene order is the requested
-order.
+widest expression dtype with a minimum of FP32. `RunOptions::output_dtype` uses
+`anndatapp::DType` to select an FP32 or FP64 output.
+`RunOptions::compute_precision` chooses FP32 or FP64 for moments, fitting,
+reductions, and diagnostics. Gene order is the requested order.
 
 Sink views alias reusable workspace and must be consumed before the callback
 returns. Copy explicitly when retaining a block. Execution is synchronous and
@@ -113,7 +92,7 @@ host numerical buffers from them. See the customization test for both routes.
 
 `reference::steady_state()` uses fixed compiled reference stages independently
 of custom operations. No global registration or runtime backend switch can
-intercept its nested mathematics. Future Cellerator code can replace or fuse
+intercept its nested mathematics. The root `ccell` wrappers can replace or fuse
 operations while retaining this explicit comparison/fallback path.
 
 The standalone `reference::moments`, `fit_gene`, and `residuals` primitives expose
@@ -124,8 +103,8 @@ governs qualification.
 
 The existing double primitives and stage aliases remain available. `Basic<T>`
 blocks and the `32` stage aliases expose FP32 computation without templates for
-the scientific implementation in consumer modules. `velocity::cpu` calls
-compiled portable CPU helpers; `velocity::reference` calls scalar kernels. See
+the scientific implementation in consumer modules. `velocitypp::cpu` calls
+compiled portable CPU helpers; `velocitypp::reference` calls scalar kernels. See
 [precision](precision.md) for source overrides and sensitivity diagnostics,
 and [segmentation](segmentation.md) for the excluded accelerator archive.
 
@@ -193,7 +172,7 @@ The public interface names these contracts directly:
 - `StochasticMomentBlock` carries row-major pointers and an explicit row stride
   for `Ms`, `Mu`, `Mss`, `Mus`, and optionally `Muu`. Its addresses are borrowed
   for the stage operation. `StochasticOutputBlock` exposes only requested
-  outputs as `NumericView`s. Sink views alias reusable workspace and
+  outputs as `anndatapp::ArrayView`s. Sink views alias reusable workspace and
   must be consumed before the callback returns.
 
 `StochasticReferenceStages` is the replaceable pipeline contract. The caller
@@ -205,7 +184,7 @@ Custom stages may return opaque handles through `stochastic_with`; they do not
 need to expose host numerical buffers. A fused `process_block` operation may
 replace the second pass. `reference::stochastic()` is the compiled reference
 composition. `reference::stochastic_into()` writes caller-owned dense
-FP16/FP32/FP64 velocity and optionally second-residual outputs with shape cells
+FP32/FP64 velocity and optionally second-residual outputs with shape cells
 by prepared gene order;
 output arrays must not overlap each other, input, or workspace.
 

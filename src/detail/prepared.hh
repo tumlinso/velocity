@@ -1,17 +1,17 @@
 #pragma once
 
 // Include <cstddef>, <vector>, and <memory> before this header in the global
-// module fragment; import anndata before including it in a module unit.
-namespace velocity::detail {
+// module fragment; import anndatapp.core before including it in a module unit.
+namespace velocitypp::detail {
 
 struct Entry {
     std::size_t index, position;
 };
 
 struct Matrix {
-    NumericView view;
+    anndatapp::ArrayView view;
     anndatapp::Layout layout = anndatapp::Layout::dense;
-    StorageType dtype = StorageType::float32;
+    anndatapp::DType dtype = anndatapp::DType::float32;
     const std::byte* values = nullptr;
     const std::byte* indices = nullptr;
     std::size_t index_width = 0, nnz = 0;
@@ -23,7 +23,7 @@ struct Matrix {
 };
 
 struct PreparedInputs {
-    PreparedInputs(NumericView w, NumericView s, NumericView u);
+    PreparedInputs(anndatapp::ArrayView w, anndatapp::ArrayView s, anndatapp::ArrayView u);
 
     [[nodiscard]] inline std::size_t n_obs() const noexcept { return n_; }
     [[nodiscard]] inline std::size_t n_vars() const noexcept { return g_; }
@@ -40,8 +40,8 @@ struct PreparedInputs {
         C* ms, C* mu, C* mss, C* mus, C* muu,
         C* source_s, C* source_u, bool compiled = false) const;
 
-    template<class C> void moments_from(NumericView s,NumericView u,C* ms,C* mu,std::size_t stride,bool checked) const;
-    template<class C> void second_moments_from(NumericView s,NumericView u,C* ms,C* mu,C* mss,C* mus,C* muu,C* source_s,C* source_u,std::size_t stride,bool checked) const;
+    template<class C> void moments_from(anndatapp::ArrayView s,anndatapp::ArrayView u,C* ms,C* mu,std::size_t stride,bool checked) const;
+    template<class C> void second_moments_from(anndatapp::ArrayView s,anndatapp::ArrayView u,C* ms,C* mu,C* mss,C* mus,C* muu,C* source_s,C* source_u,std::size_t stride,bool checked) const;
 
 private:
     std::size_t n_ = 0, g_ = 0;

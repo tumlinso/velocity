@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <vector>
 
-import velocity;
+import velocitypp;
 
 namespace {
 struct Matrix {
@@ -54,16 +54,16 @@ int main(int argc, char** argv) try {
     auto sa = s.array(n, g), ua = u.array(n, g), wa = w.array(n, n);
     auto fa = anndatapp::Array::borrow_dense(fit.data(), {n}, {1});
     auto ga = anndatapp::Array::borrow_dense(genes.data(), {g}, {1});
-    velocity::Input input{sa.view(), ua.view(), wa.view()};
+    velocitypp::Input input{sa.view(), ua.view(), wa.view()};
     input.fit_mask = fa.view(); input.gene_mask = ga.view();
-    velocity::PreparedInput prepared(input);
-    velocity::RunOptions run;
+    velocitypp::PreparedInput prepared(input);
+    velocitypp::RunOptions run;
     run.block_genes = 16;
-    velocity::Workspace workspace(prepared, run);
+    velocitypp::Workspace workspace(prepared, run);
     std::vector<double> ms(n*g), mu(n*g);
-    velocity::reference::moments(prepared, 0, g, ms.data(), mu.data());
+    velocitypp::reference::moments(prepared, 0, g, ms.data(), mu.data());
     auto v = anndatapp::Array::empty<float>({n, g});
-    auto result = velocity::reference::steady_state_into(prepared, workspace, v.edit());
+    auto result = velocitypp::reference::steady_state_into(prepared, workspace, v.edit());
     std::ofstream out(argv[3], std::ios::binary);
     if (!out) throw std::runtime_error("cannot open output");
     write(out, ms.data(), ms.size()); write(out, mu.data(), mu.size());

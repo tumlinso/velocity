@@ -42,7 +42,7 @@ def main():
     command('configure', ['cmake', '-S', str(source), '-B', str(build), '-G', 'Ninja',
         '-DCMAKE_CXX_COMPILER=clang++-18', '-DCMAKE_BUILD_TYPE=Release',
         f'-DCMAKE_PREFIX_PATH={args.anndatapp_prefix.resolve()}',
-        '-DVELOCITY_BUILD_TESTS=OFF', '-DVELOCITY_BUILD_QUALIFICATION=OFF'])
+        '-DVELOCITYPP_BUILD_TESTS=OFF', '-DVELOCITYPP_BUILD_QUALIFICATION=OFF'])
     invocation = ['cmake', '--build', str(build), '--parallel', '2', '--verbose']
     cold = command('fresh-build', invocation)
     example = source/'examples/steady_state.cpp'
@@ -51,12 +51,12 @@ def main():
     bmis = sorted(build.rglob('*.pcm'))
     if not bmis:
         raise RuntimeError('No module artifacts found in measured build')
-    objects = sorted(build.glob('CMakeFiles/velocity*example.dir/examples/*.cpp.o'))
+    objects = sorted(build.glob('CMakeFiles/velocitypp*example.dir/examples/*.cpp.o'))
     if not objects:
         raise RuntimeError('No consumer objects found in measured build')
     before_bmis = {str(p.relative_to(build)): identity(p) for p in bmis}
     before_objects = {str(p.relative_to(build)): identity(p) for p in objects}
-    private = source/'src/velocity.cpp'
+    private = source/'src/velocitypp.cpp'
     private.write_text(private.read_text()+'\n// Isolated private implementation rebuild measurement.\n')
     private_time = command('private-rebuild', invocation)
     after_bmis = {str(p.relative_to(build)): identity(p) for p in bmis}

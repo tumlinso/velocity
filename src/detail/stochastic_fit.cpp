@@ -6,12 +6,12 @@ module;
 #include <limits>
 #include "scientific.hh"
 
-module velocity;
+module velocitypp;
 import anndatapp.core;
 #include "stochastic_fit.hh"
 #include "scientific_adapters.hh"
 
-namespace velocity::detail {
+namespace velocitypp::detail {
 namespace {
 template<class T> BasicStochasticScales<T> scales_impl(const T* ms, const T* mu,
     const T* mss, const T* mus, std::size_t rows, std::ptrdiff_t stride,
@@ -27,10 +27,10 @@ template<class T> BasicStochasticGeneFit<T> fit_impl(const T* ms, const T* mu,
     return {r.gamma, r.offset, r.offset2, {r.scales.first, r.scales.second, StochasticStatus(r.scales.status)}, StochasticStatus(r.status), r.objective};
 }
 }
-#define VELOCITY_STOCHASTIC_WRAPPERS(T) \
+#define VELOCITYPP_STOCHASTIC_WRAPPERS(T) \
 BasicStochasticScales<T> stochastic_scales(const T* ms, const T* mu, const T* mss, const T* mus, std::size_t rows, std::ptrdiff_t stride, const BasicGeneFit<T>& initial, const StochasticOptions& options, const std::uint8_t* mask) { return scales_impl(ms,mu,mss,mus,rows,stride,initial,options,mask); } \
 BasicStochasticGeneFit<T> stochastic_fit_gene(const T* ms, const T* mu, const T* mss, const T* mus, std::size_t rows, std::ptrdiff_t stride, const BasicGeneFit<T>& initial, BasicStochasticScales<T> scales, const StochasticOptions& options, T* scratch, const std::uint8_t* mask) { return fit_impl(ms,mu,mss,mus,rows,stride,initial,scales,options,scratch,mask); }
-VELOCITY_STOCHASTIC_WRAPPERS(float)
-VELOCITY_STOCHASTIC_WRAPPERS(double)
-#undef VELOCITY_STOCHASTIC_WRAPPERS
+VELOCITYPP_STOCHASTIC_WRAPPERS(float)
+VELOCITYPP_STOCHASTIC_WRAPPERS(double)
+#undef VELOCITYPP_STOCHASTIC_WRAPPERS
 }

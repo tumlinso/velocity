@@ -3,10 +3,10 @@ module;
 #include <cstdint>
 #include <memory>
 
-export module velocity.precision;
-export import velocity;
+export module velocitypp.precision;
+export import velocitypp;
 
-export namespace velocity::precision {
+export namespace velocitypp::precision {
 
 struct SensitivityOptions {
     double band = .5, prediction_limit = .1, r2_limit = .05;
@@ -61,12 +61,12 @@ SensitivityReport32 sensitivity_gene(const float* spliced, const float* unsplice
     bool gene_enabled = true, SensitivityOptions = {});
 
 enum class PromotionStatus : std::uint8_t { not_requested, promoted, unavailable };
-struct OriginalColumn { NumericView spliced, unspliced; };
+struct OriginalColumn { anndatapp::ArrayView spliced, unspliced; };
 struct OriginalSource {
     void* context = nullptr;
     // Called only for explicitly requested source genes. Return false when the
     // original pair is unavailable. Each returned view is dense N by 1.
-    // Promotion requires both columns in FP32/FP64; FP16 is unavailable.
+    // Promotion requires both columns in FP32/FP64.
     // Sum sparse duplicates while materializing a column. Owners and values
     // remain valid until consumed; later acquisitions must reproduce them.
     bool (*acquire)(void*, std::size_t source_gene, OriginalColumn&) = nullptr;
@@ -75,11 +75,11 @@ struct OriginalSource {
 };
 
 // Retains dense array views and returns zero-copy single-gene views on demand.
-// Borrowed raw storage still requires its owner. FP16 originals are reported
-// unavailable for promotion. Keep this object alive while source() is in use.
+// Borrowed raw storage still requires its owner. Keep this object alive while
+// source() is in use.
 class OriginalArraySource {
 public:
-    OriginalArraySource(NumericView spliced, NumericView unspliced);
+    OriginalArraySource(anndatapp::ArrayView spliced, anndatapp::ArrayView unspliced);
     OriginalArraySource(const OriginalArraySource&) = delete;
     OriginalArraySource& operator=(const OriginalArraySource&) = delete;
     OriginalArraySource(OriginalArraySource&&) = delete;
@@ -87,7 +87,7 @@ public:
     OriginalSource source() noexcept;
 private:
     static bool acquire(void*, std::size_t, OriginalColumn&);
-    NumericView spliced_, unspliced_;
+    anndatapp::ArrayView spliced_, unspliced_;
 };
 struct PromotionOptions {
     // Host mask, indexed by source gene; keep immutable throughout the run.

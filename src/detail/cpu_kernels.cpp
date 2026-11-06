@@ -1,11 +1,10 @@
 #include "cpu_kernels.hh"
 
-#include <Cellerator/ops/numeric/binary16.hh>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 
-namespace velocity::detail::cpu {
+namespace velocitypp::detail::cpu {
 namespace {
 
 template<class T> void weighted_add_scalar(const T* source, T weight, T* output, std::size_t count) noexcept {
@@ -51,16 +50,6 @@ template<class T> void column_sums_scalar(const T* values, std::size_t rows, std
 
 }
 
-void half_to_float(const std::uint16_t* source, std::ptrdiff_t stride_bytes,
-                   float* output, std::size_t count) noexcept {
-    auto* p = reinterpret_cast<const unsigned char*>(source);
-    for (std::size_t i = 0; i < count; ++i) {
-        std::uint16_t h;
-        std::memcpy(&h, p, 2);
-        output[i] = cellerator::numeric::load_f16(h);
-        p += stride_bytes;
-    }
-}
 
 void weighted_add(const float* source, float weight, float* output, std::size_t count) noexcept {
     weighted_add_scalar(source, weight, output, count);

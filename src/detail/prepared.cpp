@@ -1,5 +1,4 @@
 module;
-#include <Cellerator/ops/numeric/binary16.hh>
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -13,11 +12,11 @@ module;
 #include <type_traits>
 #include "cpu_kernels.hh"
 
-module velocity;
+module velocitypp;
 import anndatapp;
 #include "prepared.hh"
 
-namespace velocity::detail {
+namespace velocitypp::detail {
 namespace {
 
 template<class T> T load(const std::byte* p) {
@@ -27,9 +26,7 @@ template<class T> T load(const std::byte* p) {
 }
 
 template<class C, class Storage> C numeric(const std::byte* p) {
-    if constexpr (std::is_same_v<Storage, std::uint16_t>) {
-        return C(cellerator::numeric::load_f16(load<Storage>(p)));
-    } else return C(load<Storage>(p));
+    return C(load<Storage>(p));
 }
 
 std::size_t integer(const std::byte* p, std::size_t width, std::size_t i) {
@@ -47,11 +44,11 @@ void prefix(std::vector<std::size_t>& offsets) {
     for (std::size_t i = 1; i < offsets.size(); ++i) offsets[i] += offsets[i - 1];
 }
 
-Matrix acquire(NumericView view) {
+Matrix acquire(anndatapp::ArrayView view) {
     view.validate();
     if (view.rank() != 2) throw std::invalid_argument("matrix must have rank two");
-    if (view.dtype() != StorageType::float16 && view.dtype() != StorageType::float32 && view.dtype() != StorageType::float64)
-        throw std::invalid_argument("matrix values must be float16, float32 or float64");
+    if (view.dtype() != anndatapp::DType::float32 && view.dtype() != anndatapp::DType::float64)
+        throw std::invalid_argument("matrix values must be float32 or float64");
     Matrix m;
     m.view = std::move(view); m.layout = m.view.layout(); m.dtype = m.view.dtype();
     if (m.layout == anndatapp::Layout::dense) {
@@ -113,8 +110,7 @@ template<class T> void check_matrix(const Matrix& m, std::size_t rows, std::size
 }
 
 void check_matrix(const Matrix& m, std::size_t rows, std::size_t cols) {
-    if (m.dtype == StorageType::float16) check_matrix<std::uint16_t>(m, rows, cols);
-    else if (m.dtype == StorageType::float32) check_matrix<float>(m, rows, cols);
+    if (m.dtype == anndatapp::DType::float32) check_matrix<float>(m, rows, cols);
     else check_matrix<double>(m, rows, cols);
 }
 
@@ -130,17 +126,6 @@ template<class C, class W, class T, bool Selected> void dense_moments(const Matr
                 const auto* source=v+std::ptrdiff_t(first)*x.column_stride;
                 if(compiled && x.column_stride==sizeof(C) && reinterpret_cast<std::uintptr_t>(source)%alignof(C)==0) {
                     cpu::weighted_add(reinterpret_cast<const C*>(source),w,out+i*stride,count);continue;
-                }
-            }
-            if constexpr(!Selected && std::is_same_v<C,float> && std::is_same_v<T,std::uint16_t>) {
-                if(compiled && x.column_stride==sizeof(std::uint16_t)) {
-                    float values[64];
-                    for(std::size_t begin=0;begin<count;begin+=64) {
-                        auto length=std::min<std::size_t>(64,count-begin);
-                        cpu::half_to_float(reinterpret_cast<const std::uint16_t*>(v+std::ptrdiff_t(first+begin)*x.column_stride),sizeof(std::uint16_t),values,length);
-                        cpu::weighted_add(values,w,out+i*stride+begin,length);
-                    }
-                    continue;
                 }
             }
             for (std::size_t j = 0; j < count; ++j) {
@@ -182,17 +167,6 @@ template<class C, class W, class T, bool Selected> void dense_graph_dense(const 
             const auto* source=row+std::ptrdiff_t(first)*x.column_stride;
             if(compiled && x.column_stride==sizeof(C) && reinterpret_cast<std::uintptr_t>(source)%alignof(C)==0) {
                 cpu::weighted_add(reinterpret_cast<const C*>(source),weight,out+i*stride,count);continue;
-            }
-        }
-        if constexpr(!Selected && std::is_same_v<C,float> && std::is_same_v<T,std::uint16_t>) {
-            if(compiled && x.column_stride==sizeof(std::uint16_t)) {
-                float values[64];
-                for(std::size_t begin=0;begin<count;begin+=64) {
-                    auto length=std::min<std::size_t>(64,count-begin);
-                    cpu::half_to_float(reinterpret_cast<const std::uint16_t*>(row+std::ptrdiff_t(first+begin)*x.column_stride),sizeof(std::uint16_t),values,length);
-                    cpu::weighted_add(values,weight,out+i*stride+begin,length);
-                }
-                continue;
             }
         }
         for (std::size_t j = 0; j < count; ++j) {
@@ -263,21 +237,16 @@ template<class C, class W, bool Selected> void apply_matrix(const Matrix& graph,
     const std::vector<std::size_t>& rows, const std::vector<Entry>& row_edges,
     const std::vector<std::size_t>& columns, const std::vector<Entry>& column_edges,
     std::size_t n, std::size_t first, const std::size_t* genes, std::size_t count, std::size_t stride, C* out, bool compiled) {
-    if (x.dtype == StorageType::float16)
-        apply_matrix<C, W, std::uint16_t, Selected>(graph, x, rows, row_edges, columns, column_edges, n, first, genes, count, stride, out, compiled);
-    else if (x.dtype == StorageType::float32)
+    if (x.dtype == anndatapp::DType::float32)
         apply_matrix<C, W, float, Selected>(graph, x, rows, row_edges, columns, column_edges, n, first, genes, count, stride, out, compiled);
     else apply_matrix<C, W, double, Selected>(graph, x, rows, row_edges, columns, column_edges, n, first, genes, count, stride, out, compiled);
 }
 
 // Gather one logical source column. Accumulating coordinates first is required
 // before weighting and nonlinear products when compressed input has duplicates.
-template<class C, class T> void source_column(const Matrix& x, std::size_t n, std::size_t gene, C* out, bool compiled) {
+template<class C, class T> void source_column(const Matrix& x, std::size_t n, std::size_t gene, C* out, bool /*compiled*/) {
     if (x.layout == anndatapp::Layout::dense) {
         const auto* p = x.values + std::ptrdiff_t(gene)*x.column_stride;
-        if constexpr(std::is_same_v<C,float> && std::is_same_v<T,std::uint16_t>) {
-            if(compiled) {cpu::half_to_float(reinterpret_cast<const std::uint16_t*>(p),x.row_stride,out,n);return;}
-        }
         for (std::size_t i = 0; i < n; ++i)
             out[i] = numeric<C, T>(p + std::ptrdiff_t(i)*x.row_stride);
         return;
@@ -295,8 +264,7 @@ template<class C, class T> void source_column(const Matrix& x, std::size_t n, st
 }
 
 template<class C> void source_column(const Matrix& x, std::size_t n, std::size_t gene, C* out, bool compiled) {
-    if (x.dtype == StorageType::float16) source_column<C, std::uint16_t>(x, n, gene, out, compiled);
-    else if (x.dtype == StorageType::float32) source_column<C, float>(x, n, gene, out, compiled);
+    if (x.dtype == anndatapp::DType::float32) source_column<C, float>(x, n, gene, out, compiled);
     else source_column<C, double>(x, n, gene, out, compiled);
 }
 
@@ -338,7 +306,7 @@ template<class C, class W> void second_products(const Matrix& graph, const std::
 
 }
 
-PreparedInputs::PreparedInputs(NumericView w, NumericView s, NumericView u)
+PreparedInputs::PreparedInputs(anndatapp::ArrayView w, anndatapp::ArrayView s, anndatapp::ArrayView u)
     : graph_(acquire(std::move(w))), spliced_(acquire(std::move(s))), unspliced_(acquire(std::move(u))) {
     n_ = spliced_.view.extent(0); g_ = spliced_.view.extent(1);
     if (graph_.view.extent(0) != n_ || graph_.view.extent(1) != n_)
@@ -417,9 +385,7 @@ template<class C> void PreparedInputs::second_calculate(const std::size_t* genes
         if (need_s) source_column(spliced,n_,gene,source_s,compiled);
         if (need_u) source_column(unspliced,n_,gene,source_u,compiled);
         auto* s=need_s?source_s:nullptr;auto* u=need_u?source_u:nullptr;
-        if (graph_.dtype==StorageType::float16)
-            second_products<C,std::uint16_t>(graph_,graph_columns_,column_edges_,n_,stride,j,s,u,ms,mu,mss,mus,muu,compiled);
-        else if (graph_.dtype==StorageType::float32)
+        if (graph_.dtype==anndatapp::DType::float32)
             second_products<C,float>(graph_,graph_columns_,column_edges_,n_,stride,j,s,u,ms,mu,mss,mus,muu,compiled);
         else second_products<C,double>(graph_,graph_columns_,column_edges_,n_,stride,j,s,u,ms,mu,mss,mus,muu,compiled);
     }
@@ -438,11 +404,10 @@ template<class C> void PreparedInputs::calculate(std::size_t first, const std::s
         apply_matrix<C,W,Selected>(graph_,unspliced,graph_rows_,row_edges_,graph_columns_,column_edges_,n_,first,genes,count,stride,mu,compiled);
     };
     auto dispatch=[&]<class W>() {if(genes) apply.template operator()<W,true>();else apply.template operator()<W,false>();};
-    if(graph_.dtype==StorageType::float16) dispatch.template operator()<std::uint16_t>();
-    else if(graph_.dtype==StorageType::float32) dispatch.template operator()<float>();
+    if(graph_.dtype==anndatapp::DType::float32) dispatch.template operator()<float>();
     else dispatch.template operator()<double>();
 }
-template<class C> void PreparedInputs::moments_from(NumericView s,NumericView u,
+template<class C> void PreparedInputs::moments_from(anndatapp::ArrayView s,anndatapp::ArrayView u,
     C* ms,C* mu,std::size_t stride,bool checked) const {
     auto a=acquire(s),b=acquire(u);auto count=s.extent(1);
     if(s.extent(0)!=n_ || u.extent(0)!=n_ || u.extent(1)!=count || stride<count)
@@ -451,7 +416,7 @@ template<class C> void PreparedInputs::moments_from(NumericView s,NumericView u,
     if(checked) {check_matrix(a,n_,count);check_matrix(b,n_,count);}
     calculate(0,nullptr,count,ms,mu,stride,a,b,false);
 }
-template<class C> void PreparedInputs::second_moments_from(NumericView s,NumericView u,
+template<class C> void PreparedInputs::second_moments_from(anndatapp::ArrayView s,anndatapp::ArrayView u,
     C* ms,C* mu,C* mss,C* mus,C* muu,C* source_s,C* source_u,std::size_t stride,bool checked) const {
     auto a=acquire(s),b=acquire(u);auto count=s.extent(1);
     if(s.extent(0)!=n_ || u.extent(0)!=n_ || u.extent(1)!=count || stride<count)
@@ -460,13 +425,13 @@ template<class C> void PreparedInputs::second_moments_from(NumericView s,Numeric
     if(checked) {check_matrix(a,n_,count);check_matrix(b,n_,count);}
     second_calculate(nullptr,count,ms,mu,mss,mus,muu,source_s,source_u,stride,a,b,false);
 }
-#define VELOCITY_PREPARED_INSTANTIATE(C) \
+#define VELOCITYPP_PREPARED_INSTANTIATE(C) \
 template void PreparedInputs::moments<C>(std::size_t,std::size_t,C*,C*,bool) const; \
 template void PreparedInputs::moments_selected<C>(const std::size_t*,std::size_t,C*,C*,bool) const; \
 template void PreparedInputs::second_moments_selected<C>(const std::size_t*,std::size_t,C*,C*,C*,C*,C*,C*,C*,bool) const; \
-template void PreparedInputs::moments_from<C>(NumericView,NumericView,C*,C*,std::size_t,bool) const; \
-template void PreparedInputs::second_moments_from<C>(NumericView,NumericView,C*,C*,C*,C*,C*,C*,C*,std::size_t,bool) const;
-VELOCITY_PREPARED_INSTANTIATE(float)
-VELOCITY_PREPARED_INSTANTIATE(double)
-#undef VELOCITY_PREPARED_INSTANTIATE
+template void PreparedInputs::moments_from<C>(anndatapp::ArrayView,anndatapp::ArrayView,C*,C*,std::size_t,bool) const; \
+template void PreparedInputs::second_moments_from<C>(anndatapp::ArrayView,anndatapp::ArrayView,C*,C*,C*,C*,C*,C*,C*,std::size_t,bool) const;
+VELOCITYPP_PREPARED_INSTANTIATE(float)
+VELOCITYPP_PREPARED_INSTANTIATE(double)
+#undef VELOCITYPP_PREPARED_INSTANTIATE
 }

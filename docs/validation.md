@@ -1,15 +1,29 @@
 # Numerical validation and efficiency evidence
 
-Historical results below describe recorded source snapshots before the current
-[portable segmentation](segmentation.md) and FP16 ownership migration.
-CUDA/AVX2 sources and support are quarantined and excluded from the active
-build. Historical reports and raw artifacts are preserved unchanged; they do
-not qualify the current `NumericView`, `NumericEdit`, or `CelleratorBinary16`
-path. Current migration checks are recorded separately below.
+## Current Velocity++ direct-view source checks (2026-11-06)
 
-## FP16 numeric-view ownership migration
+Fresh Debug and ASan/UBSan builds each passed the full native CTest suite:
+12/12 tests, including the installed consumer. Seven qualification driver
+executables compiled. In the sanitizer run, the AnnData++ dependency binary was
+Release and uninstrumented; the Velocity++ library, tests, and installed
+consumer were instrumented. LeakSanitizer was not run (`detect_leaks=0`).
 
-The current CPU implementation passed all 12 native debug tests and all 12
+No independent Python/reference fixture campaign was rerun, and no benchmark or
+GPU run was performed. These checks establish current native build, sanitizer,
+and installed-consumer coverage only; they do not refresh numerical or
+performance qualification. The build and CTest logs remain in `build/native-check` and
+`build/sanitizers`.
+
+## Historical source-bound qualification
+
+All following numerical, memory, package, FP16, AVX2, and CUDA records describe
+their recorded earlier source snapshots. Raw artifacts and JSON receipts are
+preserved unchanged. They do not qualify the current direct-view `velocitypp`
+source.
+
+## Historical FP16 numeric-view ownership migration
+
+The recorded CPU implementation passed all 12 native debug tests and all 12
 ASan/UBSan tests with `detect_leaks=0`; this is not a LeakSanitizer result. Two
 installed-module consumers exercised explicit mixed FP16/FP64 inputs and direct
 FP16 output. The actual Cellerator root-integrated velocity target built and
@@ -26,7 +40,7 @@ The [Milestone 3 receipt](../tests/results/milestone-3.json) binds an older
 source snapshot, binaries, commands, package checks, and Scheduler receipts.
 Its companion records describe the then-tested AnnData++ and velocity builds;
 they are historical evidence only and do not describe current AnnData++ storage,
-device APIs, or the velocity FP16 numeric-view contract. The receipt and its
+device APIs, or the former velocity FP16 numeric-view contract. The receipt and its
 companion artifacts remain unchanged.
 
 The full numerical matrix ran 64 cases and 192 driver executions across the
@@ -78,8 +92,7 @@ separately.
 The historical V100 receipt records that the then-built AnnData++ and
 velocity device suites passed CUDA memcheck, racecheck, and synccheck, and that
 installed mixed Clang/NVCC consumers ran. Those builds are quarantined and
-their receipts do not qualify the active CPU-only component or current FP16
-ownership. The recorded checks remain bounded to the V100, toolchain, and
+their receipts do not qualify the current direct-view Velocity++ component. The recorded checks remain bounded to the V100, toolchain, and
 fixtures; they do not establish general biological validity or qualification
 on other GPUs.
 
@@ -87,7 +100,7 @@ The [precision measurement record](../benchmarks/results/milestone-3.json)
 separates CPU, resident GPU, transfers, packing, allocation, and end-to-end
 costs. Ordinary C++ remains the default: paired scalar/AVX2 timings overlap
 on the qualified sparse workload, with no demonstrated gain from specialized
-vector kernels. AVX2 remains an explicit build option. Performance observations
+vector kernels. AVX2 was an explicit build option in that source snapshot. Performance observations
 are bounded to the recorded workloads, with every worker capped at 30 seconds.
 
 Three paired samples on the 4,096-cell, 2,048-gene sparse workload produced
@@ -120,7 +133,7 @@ objects by hash and timestamp. Cold configure/build totals increased from
 AVX2, and 36.025 s for CUDA. Additional compiled implementations increase the
 cold build while leaving ordinary consumer iteration effectively unchanged.
 
-## Milestone 2 acceptance contract
+## Historical Milestone 2 acceptance contract
 
 Stochastic velocity uses the pinned scVelo production `compute_stochastic`,
 `second_order_moments`, and `leastsq_generalized` definitions as ordinary-case
@@ -143,7 +156,7 @@ Record prepared storage, accounted scratch, output retention, allocation counts,
 and process peaks separately. Fixed-block shape controls must establish scratch
 independence from total gene count and linear scaling in cell count.
 
-## Milestone 2 implementation evidence
+## Historical Milestone 2 implementation evidence
 
 - [Native/package checks](../tests/results/milestone-2-native.json)
 - [Stochastic numerical comparison](../tests/results/milestone-2.json)
@@ -227,7 +240,7 @@ private edit. Operating-system caches were uncontrolled; the report establishes
 recompilation isolation and records build cost without a cross-library speed
 claim.
 
-## Milestone 1 evidence
+## Historical Milestone 1 evidence
 
 Milestone 1 has native, installed-consumer, sanitizer, numerical-reference, and
 bounded memory/runtime qualification. Machine-readable records retain source,
@@ -356,8 +369,10 @@ launch, and end-to-end costs. Use the authorized Scheduler and isolate
 measurements. The coordinated milestone above records the bounded CUDA checks;
 historical Milestone 1/2 reports contain CPU evidence only.
 
-## Native and development checks
+## Validation guidance for native and development checks
 
-The native suite covers numerical/ownership contracts, ASan/UBSan, true custom
-stages, and independent installed C++20 module consumers. Build probes run in
-isolated source copies so measurements never edit the live implementation.
+Earlier native suites covered numerical/ownership contracts, ASan/UBSan, custom
+stages, and independent installed C++20 module consumers. This describes the
+historical records above; it is not a claim that those checks qualify the
+current source. Build probes should use isolated source copies so measurements
+do not edit the live implementation.

@@ -1,14 +1,16 @@
 # Architecture and design constraints
 
-The portable CPU component now lives under `Cellerator/src/velocity/` and can
-be built independently. Cellerator parent-build integration is optional and
-disabled by default. CUDA and AVX2/F16C code is preserved in an excluded
-quarantine. See [the current boundary](segmentation.md); references below to the
-coordinated CUDA milestone describe its historical implementation.
+Velocity++ is the standalone C++20 package in this `velocity` checkout. Its
+public modules are `velocitypp` and `velocitypp.precision`, and its installed
+target is `velocitypp::velocitypp`. It depends on AnnData++ 1.0 or newer and
+uses FP32/FP64 `anndatapp::ArrayView`, `ArrayEdit`, and `DType` directly.
+Earlier FP16, AVX2, and CUDA source and qualification records are historical;
+they do not describe the current package. See
+[the current boundary](segmentation.md).
 
 ## Purpose and current boundary
 
-velocity is intended to make RNA velocity mathematics directly composable
+Velocity++ makes RNA velocity mathematics directly composable
 in native C++20. Its reference implementation should substantially improve on
 scVelo's efficiency, especially memory use, while retaining explicit scientific
 contracts. Efficient operation and understandable calculations are requirements
@@ -21,14 +23,15 @@ Their output differences must be assessed using scientifically meaningful
 quantities and tolerances chosen during planning, rather than an assumed demand
 to reproduce every intermediate or source-level numerical choice.
 
-Milestone 1 implements first moments and steady-state velocity. Milestone 2
-adds second-order neighborhood moments and stochastic fitting; its precise
-scientific and API contract is in the [native API](api.md) and
-[milestone record](../planning/milestone-2.json). Dynamical and Bayesian
-fitting, velocity graphs, backed orchestration, Python runtime bindings, and
-GPU implementations remain outside Milestone 2. The coordinated
-[precision milestone](../planning/milestone-3.json) adds those implementations
-for the existing methods; it does not introduce another velocity algorithm.
+The scientific baseline includes first moments and steady-state velocity,
+followed by second-order neighborhood moments and stochastic fitting. The
+precise scientific and API contract is in the [native API](api.md); the
+[Milestone 1](../planning/milestone-1.json) and
+[Milestone 2](../planning/milestone-2.json) records describe earlier source
+snapshots. Dynamical and Bayesian fitting, velocity graphs, backed orchestration,
+and Python runtime bindings remain outside this standalone package. The
+coordinated [Milestone 3](../planning/milestone-3.json) receipt records older
+precision and device work, not current package capabilities.
 
 Stochastic refinement uses the deterministic fit to initialize parameters and
 select genes. By default it refines selected genes only; if none qualify, the
@@ -82,19 +85,18 @@ The reference should be stable in its declared behavior and reproducible test
 cases. It can evolve with deliberate contract changes and updated evidence;
 stability does not require prematurely freezing every C++ interface.
 
-## Deep Cellerator control and explicit fallback
+## ccell integration and explicit fallback
 
-Cellerator's GPU-accelerated and custom velocity implementations are planned.
-Existing Cellerator numerical mechanisms and accelerated-ports probes supply
-evidence and possible reuse; they do not establish a complete implementation
-of this toolkit.
+The root `ccell` wrappers provide `ccell.velocity`, and preprocessing remains
+owned by `ccell`. Velocity++ supplies the standalone numerical algorithms and
+explicit reference path; it does not depend on ccell or the Cellerator runtime.
 
 Downstream code must be able to reuse or replace meaningful internal parts:
 model evaluation, objectives and derivatives where applicable, statistics,
 parameter updates, convergence checks, fitting strategies, batching, and memory
-management. A whole-operation replacement must also remain possible. Cellerator
-may change layouts, fuse stages, keep device-resident state, and omit unrequested
-intermediates while preserving the operation's declared results.
+management. A whole-operation replacement must also remain possible. A
+downstream ccell implementation may change layouts and fuse stages while
+preserving the operation's declared results.
 
 Keep reference invocation explicit and independent of downstream substitutions.
 A comparison or fallback must be able to run the same declared method and input
@@ -133,52 +135,33 @@ surfaces and independently compiled implementations. Keep heavy dependencies
 private. Fast imports and incremental consumer compilation are important
 deliverables to measure, rather than assume from the use of modules.
 
-The CPU library remains usable without Python, Torch, CUDA, or the full
-Cellerator runtime. It depends on AnnData++ for core arrays, axes, and AnnData
-access, and on Cellerator's small CPU-only binary16 conversion helper. The
-helper target is `Cellerator::binary16`; its installed CONFIG package is
-`CelleratorBinary16`, found transitively by the installed velocity package.
-This helper is not the full Cellerator runtime.
+The standalone library is usable without Python, Torch, CUDA, or ccell. Its
+data dependency is AnnData++ 1.0 or newer.
 
 Use [AnnData++](https://github.com/tumlinso/anndatapp) for supported AnnData
 access and serialization. Its FP32/FP64 arrays and views are native inputs and
-outputs, including externally borrowed storage. AnnData++ integer arrays are
-not an FP16 representation, and its storage codecs and device operations are
-not part of the velocity FP16 contract. The required in-tree CMake targets are
-`anndatapp::anndatapp` and `Cellerator::binary16`; velocity re-exports
-`anndatapp.core` and its numeric-view types through the public named modules.
+outputs, including externally borrowed storage. Velocity++ imports
+`anndatapp.core` and uses `anndatapp::ArrayView`, `ArrayEdit`, and `DType`
+directly. It has no separate numeric-view adapter or binary16 dependency.
 
 ## Storage and arithmetic
 
-Storage and computation are separate choices. W, S, and U may independently
-use FP16, FP32, or FP64 storage. FP16 is supplied as explicit raw-bit
-`NumericView`s for dense or CSR/CSC host data; `NumericEdit` supports direct
-dense half output. FP32/FP64 AnnData views adapt implicitly. The numerical
-kernels call `cellerator::numeric::load_f16(std::uint16_t)` when acquiring half
-values and `round_f16(float/double)` when a caller requests half output. The
-header-only helper is CPU-only and has no dependency on the full Cellerator
-runtime. Velocity does not allocate a full FP32 shadow of half inputs or
-outputs, and conversion stays within its bounded numerical traversal.
+Storage and computation are separate choices. Graph weights and expression
+arrays may use FP32 or FP64 storage, passed directly as AnnData++ views.
+Numerical blocks use FP32 or FP64 for products, moments, scales, fitting, and
+diagnostics. Explicit computation precision wins. An optional selective
+precision composition can acquire chosen original FP64 columns; original data
+must match the prepared cell order, normalization, and units. The sensitivity
+report is advisory and never promotes genes automatically.
 
-Numerical blocks use FP32 or FP64 for conversion, duplicate summation,
-products, moments, scales, fitting, and diagnostics. Automatic computation
-selects FP32 when any W/S/U input is FP16 and none is FP64; otherwise it selects
-FP64. Explicit computation precision wins. FP16 output requires a caller
-request. The ordinary FP16/FP32 path does not acquire original sources, screen
-genes, or retry at higher precision. Selective precision remains a separately
-composed CPU path; original sources for promotion must be FP32/FP64.
-
-The scalar reference remains explicitly callable. `velocity::cpu` uses compiled
-portable CPU helpers, with no ISA selection or persistent CPU packing contract.
-The former CUDA module and its copies of shared arithmetic are in
-quarantine (`Cellerator/quarantine/velocity-accelerators/` in the parent checkout). The active
-public interfaces and private arithmetic have no CUDA annotations or intrinsic
-headers. The CPU package does not discover a toolkit, allocate device storage,
-or export accelerator targets. The historical accelerator archive and receipts
-do not qualify the current FP16 view/helper path.
+The scalar reference remains explicitly callable. `velocitypp::cpu` uses
+compiled portable CPU helpers, with no ISA selection or persistent CPU packing
+contract. The standalone package has no CUDA or AVX2 implementation, toolkit
+discovery, device allocation, or accelerator target. Historical GPU receipts
+and source archives do not qualify this package.
 
 [Selective precision](precision.md) is an independent stage composition.
-Only a caller mask requests originals. Available requested columns replace
-expression moments before global selection and remain fixed for refinement;
-missing originals retain half storage. W is unchanged. The optional trimming
-sensitivity report is advisory and never promotes genes automatically.
+Only a caller mask requests original columns. Available requested columns
+replace expression moments before global selection and remain fixed for
+refinement. W is unchanged. The optional trimming sensitivity report is
+advisory and never promotes genes automatically.

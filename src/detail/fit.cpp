@@ -7,12 +7,12 @@ module;
 #include <stdexcept>
 #include "scientific.hh"
 
-module velocity;
+module velocitypp;
 import anndatapp.core;
 #include "fit.hh"
 #include "scientific_adapters.hh"
 
-namespace velocity::detail {
+namespace velocitypp::detail {
 namespace {
 bool valid_options(const FitOptions& o) {
     if (std::isnan(o.ratio_min) || std::isnan(o.ratio_max) || o.ratio_min > o.ratio_max ||
@@ -45,7 +45,7 @@ GeneFit32 fit_gene(const float* x, const float* y, std::size_t n, std::ptrdiff_t
     return fit_gene_impl(x, y, n, stride, o, scratch, mask, enabled);
 }
 }
-namespace velocity::reference {
+namespace velocitypp::reference {
 GeneFit fit_gene(const double* x, const double* y, std::size_t n, std::ptrdiff_t stride,
     const FitOptions& o, double* scratch, const std::uint8_t* mask, bool enabled) {
     return detail::fit_gene(x, y, n, stride, o, scratch, mask, enabled);

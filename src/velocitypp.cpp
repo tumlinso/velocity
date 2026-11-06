@@ -1,5 +1,4 @@
 module;
-#include <Cellerator/ops/numeric/binary16.hh>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -17,12 +16,12 @@ module;
 #include <type_traits>
 #include "detail/cpu_kernels.hh"
 
-module velocity;
+module velocitypp;
 import anndatapp.core;
 #include "detail/prepared.hh"
 #include "detail/stochastic_fit.hh"
 
-namespace velocity {
+namespace velocitypp {
 namespace detail {
 
 std::size_t add(std::size_t a, std::size_t b) {
@@ -35,12 +34,10 @@ std::size_t mul(std::size_t a, std::size_t b) {
 }
 
 template<class O,class T> O output_cast(T value) {
-    if constexpr(std::is_same_v<O,std::uint16_t>) return cellerator::numeric::round_f16(value);
-    else return O(value);
+    return O(value);
 }
-template<class F> void output_dispatch(StorageType type,F&& f) {
-    if(type==StorageType::float16) f.template operator()<std::uint16_t>();
-    else if(type==StorageType::float32) f.template operator()<float>();
+template<class F> void output_dispatch(anndatapp::DType type,F&& f) {
+    if(type==anndatapp::DType::float32) f.template operator()<float>();
     else f.template operator()<double>();
 }
 struct Mask {
@@ -67,16 +64,16 @@ struct Mask {
 
 struct PreparedState {
     PreparedInputs input;
-    NumericView weights, spliced, unspliced;
+    anndatapp::ArrayView weights, spliced, unspliced;
     std::vector<std::size_t> genes;
     Mask fit_mask, gene_mask;
-    StorageType output_type;
+    anndatapp::DType output_type;
     bool checked;
     PreparedState(Input in, anndatapp::Validation validation) : input(in.weights, in.spliced, in.unspliced),
         weights(in.weights), spliced(in.spliced), unspliced(in.unspliced),
         fit_mask(std::move(in.fit_mask), input.n_obs()), gene_mask(std::move(in.gene_mask), input.n_vars()),
-        output_type(in.spliced.dtype() == StorageType::float64 || in.unspliced.dtype() == StorageType::float64
-                    ? StorageType::float64 : StorageType::float32), checked(validation == anndatapp::Validation::full) {
+        output_type(in.spliced.dtype() == anndatapp::DType::float64 || in.unspliced.dtype() == anndatapp::DType::float64
+                    ? anndatapp::DType::float64 : anndatapp::DType::float32), checked(validation == anndatapp::Validation::full) {
         // Selection validates Axis arithmetic and bounds before unchecked index().
         auto selected = in.spliced.select({anndatapp::Axis::all(), in.genes});
         auto n = selected.extent(1);
@@ -89,24 +86,23 @@ struct PreparedState {
 template<class T> struct BasicWorkspaceState {
     const PreparedState* owner;
     RunOptions options;
-    StorageType output_type;
+    anndatapp::DType output_type;
     std::size_t n, genes, block, scratch, width, slots;
     std::vector<T> ms, mu, score;
     std::vector<double> out64;
-    std::vector<std::uint16_t> out16;
     bool compiled = false;
     std::vector<float> out32;
     std::vector<std::uint8_t> mask;
-    std::vector<NumericView> views;
+    std::vector<anndatapp::ArrayView> views;
 
     BasicWorkspaceState(const PreparedInput& p, const PreparedState& s, RunOptions o)
-        : owner(&s), options(o), output_type(o.output_dtype.value_or(std::is_same_v<T,float> ? StorageType::float32 : s.output_type)),
+        : owner(&s), options(o), output_type(o.output_dtype.value_or(std::is_same_v<T,float> ? anndatapp::DType::float32 : s.output_type)),
           n(s.input.n_obs()), genes(s.genes.size()), block(0), scratch(0), width(0), slots(0) {
         (void)p;
-        if (output_type != StorageType::float16 && output_type != StorageType::float32 && output_type != StorageType::float64)
+        if (output_type != anndatapp::DType::float32 && output_type != anndatapp::DType::float64)
             throw std::invalid_argument("output dtype must be float32 or float64");
         if (!o.block_genes) throw std::invalid_argument("block_genes must be positive");
-        width = output_type == StorageType::float16 ? 2 : output_type == StorageType::float32 ? sizeof(float) : sizeof(double);
+        width = output_type == anndatapp::DType::float32 ? sizeof(float) : sizeof(double);
         slots = std::size_t(o.velocity) + std::size_t(o.spliced_moments) + std::size_t(o.unspliced_moments);
         auto fixed = add(mul(std::max(n, genes), sizeof(T)), n);
         auto per_gene = add(mul(n, add(2*sizeof(T), mul(slots, width))), sizeof(std::size_t));
@@ -119,10 +115,9 @@ template<class T> struct BasicWorkspaceState {
         auto elements = mul(n, block);
         ms.resize(elements); mu.resize(elements); score.resize(std::max(n, genes)); mask.resize(n);
         if (width == sizeof(float)) out32.resize(mul(elements, slots));
-        else if (width == 2) out16.resize(mul(elements, slots));
         else out64.resize(mul(elements, slots));
         scratch = add(add(mul(add(ms.capacity(), add(mu.capacity(), score.capacity())), sizeof(T)), mask.capacity()),
-                      add(mul(out32.capacity(), sizeof(float)), add(mul(out64.capacity(), sizeof(double)),mul(out16.capacity(),sizeof(std::uint16_t)))));
+                      add(mul(out32.capacity(), sizeof(float)), mul(out64.capacity(), sizeof(double))));
         if (scratch > o.workspace_bytes) throw std::invalid_argument("allocated workspace exceeds budget");
         views.reserve(mul(slots, block + 1));
         for (std::size_t slot = 0; slot < slots; ++slot) {
@@ -130,12 +125,11 @@ template<class T> struct BasicWorkspaceState {
             for (std::size_t count = 1; count <= block; ++count) {
                 auto off = mul(slot, elements);
                 if (width == sizeof(float)) views.push_back(anndatapp::Array::borrow_dense(n ? out32.data() + off : nullptr, {n, count}, {std::ptrdiff_t(count), 1}).view());
-                else if(width==2) views.push_back(NumericView::borrow_dense_f16(n ? out16.data()+off : nullptr, {n,count}, {std::ptrdiff_t(count),1}));
                 else views.push_back(anndatapp::Array::borrow_dense(n ? out64.data() + off : nullptr, {n, count}, {std::ptrdiff_t(count), 1}).view());
             }
         }
     }
-    NumericView view(std::size_t slot, std::size_t count) const { return views[slot*(block + 1) + count]; }
+    anndatapp::ArrayView view(std::size_t slot, std::size_t count) const { return views[slot*(block + 1) + count]; }
 };
 
 template<class T> struct BasicStagesState {
@@ -173,22 +167,21 @@ template<class T> struct BasicStagesState {
 template<class T> struct BasicStochasticWorkspaceState {
     const PreparedState* owner;
     StochasticRunOptions options;
-    StorageType dtype;
+    anndatapp::DType dtype;
     std::size_t n, block, bytes, slots, elements;
     std::vector<T> ms, mu, mss, mus, muu, source_s, source_u, score;
     std::vector<double> out64;
-    std::vector<std::uint16_t> out16;
     bool compiled = false;
     std::vector<float> out32;
     std::vector<std::uint8_t> mask;
-    std::vector<NumericView> views;
+    std::vector<anndatapp::ArrayView> views;
     BasicStochasticWorkspaceState(const PreparedState& p, StochasticRunOptions o)
-        : owner(&p), options(o), dtype(o.output_dtype.value_or(std::is_same_v<T,float> ? StorageType::float32 : p.output_type)), n(p.input.n_obs()) {
-        if (!o.block_genes || (dtype != StorageType::float16 && dtype != StorageType::float32 && dtype != StorageType::float64))
+        : owner(&p), options(o), dtype(o.output_dtype.value_or(std::is_same_v<T,float> ? anndatapp::DType::float32 : p.output_type)), n(p.input.n_obs()) {
+        if (!o.block_genes || (dtype != anndatapp::DType::float32 && dtype != anndatapp::DType::float64))
             throw std::invalid_argument("invalid stochastic workspace options");
         slots = std::size_t(o.velocity) + o.second_residual + o.spliced_moments + o.unspliced_moments
               + o.spliced_second + o.cross + o.unspliced_second;
-        auto width = dtype == StorageType::float16 ? 2 : dtype == StorageType::float32 ? sizeof(float) : sizeof(double);
+        auto width = dtype == anndatapp::DType::float32 ? sizeof(float) : sizeof(double);
         auto fixed = add(mul(n, 3*sizeof(T)), n);
         auto per_gene = mul(n, add(mul(4 + std::size_t(o.unspliced_second), sizeof(T)), mul(slots, width)));
         if (fixed > o.workspace_bytes || (!p.genes.empty() && per_gene > o.workspace_bytes - fixed))
@@ -200,8 +193,8 @@ template<class T> struct BasicStochasticWorkspaceState {
         ms.resize(elements); mu.resize(elements); mss.resize(elements); mus.resize(elements);
         if (o.unspliced_second) muu.resize(elements);
         source_s.resize(n); source_u.resize(n); score.resize(n); mask.resize(n);
-        if (width == sizeof(float)) out32.resize(mul(elements, slots)); else if(width==2) out16.resize(mul(elements,slots)); else out64.resize(mul(elements, slots));
-        bytes = add(mask.capacity(), add(mul(out32.capacity(), sizeof(float)), add(mul(out64.capacity(),sizeof(double)),mul(out16.capacity(),sizeof(std::uint16_t)))));
+        if (width == sizeof(float)) out32.resize(mul(elements, slots)); else out64.resize(mul(elements, slots));
+        bytes = add(mask.capacity(), add(mul(out32.capacity(), sizeof(float)), mul(out64.capacity(),sizeof(double))));
         for (auto* v : {&ms, &mu, &mss, &mus, &muu, &source_s, &source_u, &score}) bytes = add(bytes, mul(v->capacity(), sizeof(T)));
         if (bytes > o.workspace_bytes) throw std::invalid_argument("allocated stochastic workspace exceeds budget");
         views.reserve(mul(slots, block + 1));
@@ -210,12 +203,11 @@ template<class T> struct BasicStochasticWorkspaceState {
             for (std::size_t count = 1; count <= block; ++count) {
                 auto off = slot*elements;
                 if (width == sizeof(float)) views.push_back(anndatapp::Array::borrow_dense(n ? out32.data() + off : nullptr, {n,count}, {std::ptrdiff_t(count),1}).view());
-                else if(width==2) views.push_back(NumericView::borrow_dense_f16(n ? out16.data()+off : nullptr,{n,count},{std::ptrdiff_t(count),1}));
                 else views.push_back(anndatapp::Array::borrow_dense(n ? out64.data() + off : nullptr, {n,count}, {std::ptrdiff_t(count),1}).view());
             }
         }
     }
-    NumericView view(std::size_t slot, std::size_t count) const { return views[slot*(block + 1) + count]; }
+    anndatapp::ArrayView view(std::size_t slot, std::size_t count) const { return views[slot*(block + 1) + count]; }
 };
 template<class T> struct BasicStochasticStagesState {
     const PreparedState* p;
@@ -258,11 +250,8 @@ template<class T> struct BasicStochasticStagesState {
 };
 ComputePrecision resolve_precision(const PreparedState& p,ComputePrecision requested) {
     if(requested!=ComputePrecision::automatic)return requested;
-    bool half=false,wide=false;
-    for(auto type:{p.weights.dtype(),p.spliced.dtype(),p.unspliced.dtype()}) {
-        half|=type==StorageType::float16;wide|=type==StorageType::float64;
-    }
-    return half&&!wide ? ComputePrecision::float32 : ComputePrecision::float64;
+    (void)p;
+    return ComputePrecision::float64;
 }
 template<class T> constexpr ComputePrecision precision_of = std::is_same_v<T,float> ? ComputePrecision::float32 : ComputePrecision::float64;
 struct WorkspaceState {
@@ -345,11 +334,11 @@ template<class View> bool aliases(View v, Span target) {
            overlaps(target, contiguous_span(b.offsets(), mul(add(major, 1), b.offset_size())));
 }
 
-void check_output_shape(NumericView v, std::size_t rows, std::size_t cols) {
+void check_output_shape(anndatapp::ArrayView v, std::size_t rows, std::size_t cols) {
     v.validate();
     if (v.layout() != anndatapp::Layout::dense || v.rank() != 2 || v.extent(0) != rows || v.extent(1) != cols ||
-        (v.dtype() != StorageType::float16 && v.dtype() != StorageType::float32 && v.dtype() != StorageType::float64))
-        throw std::invalid_argument("output must be a matching dense float16, float32 or float64 array");
+        (v.dtype() != anndatapp::DType::float32 && v.dtype() != anndatapp::DType::float64))
+        throw std::invalid_argument("output must be a matching dense float32 or float64 array");
     auto b = v.bytes(); auto rs = magnitude(b.stride_bytes(0)), cs = magnitude(b.stride_bytes(1));
     if ((rows > 1 && !rs) || (cols > 1 && !cs)) throw std::invalid_argument("output elements overlap");
     if (rows > 1 && cols > 1) {
@@ -408,7 +397,7 @@ std::size_t PreparedInput::gene_index(std::size_t i) const {
     return state_->genes[i];
 }
 std::size_t PreparedInput::storage_bytes() const noexcept { return state_->input.prepared_bytes() + state_->genes.capacity()*sizeof(std::size_t); }
-StorageType PreparedInput::output_dtype() const noexcept { return state_->output_type; }
+anndatapp::DType PreparedInput::output_dtype() const noexcept { return state_->output_type; }
 void PreparedInput::validate_values() const { state_->input.check_values(); }
 
 Workspace::Workspace(const PreparedInput& p, RunOptions o) : state_(std::make_unique<detail::WorkspaceState>(p, detail::Access::get(p), o)) {}
@@ -428,9 +417,9 @@ std::size_t StochasticWorkspace::scratch_bytes() const noexcept { return state_-
 
 ComputePrecision Workspace::compute_precision() const noexcept {return state_->precision;}
 ComputePrecision StochasticWorkspace::compute_precision() const noexcept {return state_->precision;}
-NumericView PreparedInput::spliced() const {return state_->spliced;}
-NumericView PreparedInput::unspliced() const {return state_->unspliced;}
-NumericView PreparedInput::weights() const {return state_->weights;}
+anndatapp::ArrayView PreparedInput::spliced() const {return state_->spliced;}
+anndatapp::ArrayView PreparedInput::unspliced() const {return state_->unspliced;}
+anndatapp::ArrayView PreparedInput::weights() const {return state_->weights;}
 std::optional<anndatapp::ArrayView> PreparedInput::fit_mask() const {return state_->fit_mask.view;}
 std::optional<anndatapp::ArrayView> PreparedInput::gene_mask() const {return state_->gene_mask.view;}
 template<class T> BasicReferenceStages<T>::BasicReferenceStages(const PreparedInput& p, Workspace& w, FitOptions o, BlockSink b) {
@@ -487,8 +476,7 @@ template<class T> void BasicReferenceStages<T>::emit(BasicMomentBlock<T> m, Basi
             detail::output_dispatch(w.output_type,[&]<class O>() {
                 O* dest;
                 if constexpr(std::is_same_v<O,float>) dest=w.out32.data()+slot*w.n*w.block;
-                else if constexpr(std::is_same_v<O,double>) dest=w.out64.data()+slot*w.n*w.block;
-                else dest=w.out16.data()+slot*w.n*w.block;
+                else dest=w.out64.data()+slot*w.n*w.block;
                 if constexpr(Velocity && std::is_same_v<O,T>) {
                     if(w.compiled && m.stride==std::ptrdiff_t(m.count)) {
                         detail::cpu::residuals(m.spliced,m.unspliced,s.gamma+m.first,s.offset+m.first,dest,m.rows,m.count);
@@ -662,8 +650,7 @@ template<class T> void BasicStochasticReferenceStages<T>::emit(BasicStochasticMo
             detail::output_dispatch(w.dtype,[&]<class O>() {
                 O* dest;
                 if constexpr(std::is_same_v<O,float>) dest=w.out32.data()+slot*w.elements;
-                else if constexpr(std::is_same_v<O,double>) dest=w.out64.data()+slot*w.elements;
-                else dest=w.out16.data()+slot*w.elements;
+                else dest=w.out64.data()+slot*w.elements;
                 if constexpr(std::is_same_v<O,T>) {
                     if(field==0 && w.compiled && m.stride==std::ptrdiff_t(m.count)) {
                         detail::cpu::residuals(m.spliced,m.unspliced,s.gamma+m.first,s.offset+m.first,dest,m.rows,m.count);
@@ -726,7 +713,7 @@ template<class T> FitResult steady_state_impl(const PreparedInput& p, Workspace&
     return steady_state_with(stages, p.n_genes(), w.block_genes());
 }
 
-template<class T> void residuals_impl(const BasicMomentBlock<T>& m, const BasicFitBlock<T>& fit, NumericEdit output) {
+template<class T> void residuals_impl(const BasicMomentBlock<T>& m, const BasicFitBlock<T>& fit, anndatapp::ArrayEdit output) {
     if (m.count != fit.count || m.first != fit.first || m.stride < std::ptrdiff_t(m.count) ||
         (m.rows && m.count && (!m.spliced || !m.unspliced || !fit.gamma || !fit.offset)))
         throw std::invalid_argument("incompatible moment and fit blocks");
@@ -751,7 +738,7 @@ template<class T> void residuals_impl(const BasicMomentBlock<T>& m, const BasicF
     detail::output_dispatch(output.view().dtype(),write);
 }
 
-template<class T> FitResult steady_state_into_impl(const PreparedInput& p, Workspace& w, NumericEdit output, FitOptions options) {
+template<class T> FitResult steady_state_into_impl(const PreparedInput& p, Workspace& w, anndatapp::ArrayEdit output, FitOptions options) {
     detail::check_output_shape(output.view(), p.n_cells(), p.n_genes());
     auto dst = output.bytes();
     auto target = detail::span(dst.data(), p.n_cells(), p.n_genes(), dst.stride_bytes(0), dst.stride_bytes(1), dst.element_size());
@@ -823,8 +810,8 @@ template<class T> BasicStochasticGeneFit<T> stochastic_fit_gene_impl(const T* ms
     if (rows && o.initialization.trimming!=Trimming::none && !scratch) throw std::invalid_argument("stochastic fitting scratch is null");
     return detail::stochastic_fit_gene(ms,mu,mss,mus,rows,stride,initial,scales,o,scratch,mask);
 }
-template<class T> void stochastic_residuals_impl(const BasicStochasticMomentBlock<T>& m,const BasicStochasticFitBlock<T>& f,NumericEdit velocity,
-                          std::optional<NumericEdit> second) {
+template<class T> void stochastic_residuals_impl(const BasicStochasticMomentBlock<T>& m,const BasicStochasticFitBlock<T>& f,anndatapp::ArrayEdit velocity,
+                          std::optional<anndatapp::ArrayEdit> second) {
     detail::check_output_shape(velocity.view(),m.rows,m.count);
     if(second) detail::check_output_shape(second->view(),m.rows,m.count);
     if(f.first!=m.first || f.count!=m.count) throw std::invalid_argument("incompatible stochastic fit block");
@@ -837,7 +824,7 @@ template<class T> void stochastic_residuals_impl(const BasicStochasticMomentBloc
         (m.rows>1 && detail::magnitude(m.stride)>(limit-(m.count-1))/(m.rows-1)))
         throw std::invalid_argument("stochastic residual stride overflows");
     std::array<detail::Span,2> targets{};
-    auto target=[&](NumericEdit dest) {
+    auto target=[&](anndatapp::ArrayEdit dest) {
         auto b=dest.bytes();
         return detail::span(b.data(),m.rows,m.count,b.stride_bytes(0),b.stride_bytes(1),b.element_size());
     };
@@ -854,7 +841,7 @@ template<class T> void stochastic_residuals_impl(const BasicStochasticMomentBloc
         if(detail::overlaps(dest,detail::contiguous_span(reinterpret_cast<const std::byte*>(f.status),m.count)))
             throw std::invalid_argument("stochastic residual output aliases status");
     }
-    auto write=[&](NumericEdit dest,bool second_field) {
+    auto write=[&](anndatapp::ArrayEdit dest,bool second_field) {
         auto b=dest.bytes();
         detail::output_dispatch(dest.view().dtype(),[&]<class O>() {
         for(std::size_t i=0;i<m.rows;++i) for(std::size_t j=0;j<m.count;++j) {
@@ -875,11 +862,11 @@ template<class T> StochasticFitResult stochastic_impl(const PreparedInput& p,Sto
     detail::Access::get(stages).w->compiled=compiled;
     return stochastic_with(stages,p.n_genes(),w.block_genes());
 }
-template<class T> StochasticFitResult stochastic_into_impl(const PreparedInput& p,StochasticWorkspace& w,NumericEdit output,
-                                   StochasticOptions o,std::optional<NumericEdit> second) {
+template<class T> StochasticFitResult stochastic_into_impl(const PreparedInput& p,StochasticWorkspace& w,anndatapp::ArrayEdit output,
+                                   StochasticOptions o,std::optional<anndatapp::ArrayEdit> second) {
     auto& ps=detail::Access::get(p); auto& ws=detail::Access::get(w).get<T>();
     if(ws.owner!=&ps) throw std::invalid_argument("stochastic workspace belongs to another input");
-    auto check=[&](NumericEdit dest) {
+    auto check=[&](anndatapp::ArrayEdit dest) {
         detail::check_output_shape(dest.view(),p.n_cells(),p.n_genes());
         auto b=dest.bytes(); auto target=detail::span(b.data(),p.n_cells(),p.n_genes(),b.stride_bytes(0),b.stride_bytes(1),b.element_size());
         detail::check_input_alias(ps,target);
@@ -887,7 +874,6 @@ template<class T> StochasticFitResult stochastic_into_impl(const PreparedInput& 
             if(detail::overlaps(target,detail::contiguous_span(reinterpret_cast<const std::byte*>(v->data()),detail::mul(v->size(),sizeof(T)))))
                 throw std::invalid_argument("stochastic output aliases workspace");
         if(detail::overlaps(target,detail::contiguous_span(reinterpret_cast<const std::byte*>(ws.out64.data()),detail::mul(ws.out64.size(),sizeof(double))))) throw std::invalid_argument("stochastic output aliases workspace");
-        if(detail::overlaps(target,detail::contiguous_span(reinterpret_cast<const std::byte*>(ws.out16.data()),detail::mul(ws.out16.size(),sizeof(std::uint16_t))))) throw std::invalid_argument("stochastic output aliases workspace");
         if(detail::overlaps(target,detail::contiguous_span(reinterpret_cast<const std::byte*>(ws.out32.data()),detail::mul(ws.out32.size(),sizeof(float)))))
             throw std::invalid_argument("stochastic output aliases workspace");
         return target;
@@ -903,7 +889,7 @@ template<class T> StochasticFitResult stochastic_into_impl(const PreparedInput& 
     for(std::size_t first=0;first<p.n_genes();) {
         auto count=std::min(w.block_genes(),p.n_genes()-first); auto m=stages.moments(first,count);
         auto f=stages.fit(m,stages.scales(m));
-        auto write=[&](NumericEdit dest,bool second_field) {
+        auto write=[&](anndatapp::ArrayEdit dest,bool second_field) {
             auto b=dest.bytes();
         detail::output_dispatch(dest.view().dtype(),[&]<class O>() {
             for(std::size_t i=0;i<m.rows;++i) for(std::size_t j=0;j<count;++j) {
@@ -925,22 +911,22 @@ template<class T> StochasticFitResult stochastic_into_impl(const PreparedInput& 
 }
 
 }
-namespace velocity::reference {
-#define VELOCITY_PRIMITIVE_WRAPPERS(T) \
+namespace velocitypp::reference {
+#define VELOCITYPP_PRIMITIVE_WRAPPERS(T) \
 void moments(const PreparedInput& p,std::size_t first,std::size_t count,T* ms,T* mu){moments_impl(p,first,count,ms,mu);} \
-void residuals(const BasicMomentBlock<T>& m,const BasicFitBlock<T>& f,NumericEdit o){residuals_impl(m,f,o);} \
+void residuals(const BasicMomentBlock<T>& m,const BasicFitBlock<T>& f,anndatapp::ArrayEdit o){residuals_impl(m,f,o);} \
 void second_moments(const PreparedInput& p,std::size_t first,std::size_t count,T* ms,T* mu,T* mss,T* mus,T* muu,T* ss,T* su){second_moments_impl(p,first,count,ms,mu,mss,mus,muu,ss,su);} \
 BasicStochasticScales<T> stochastic_scales(const T* ms,const T* mu,const T* mss,const T* mus,std::size_t rows,std::ptrdiff_t stride,const BasicGeneFit<T>& initial,const StochasticOptions& o,T* scratch,const std::uint8_t* mask){return stochastic_scales_impl(ms,mu,mss,mus,rows,stride,initial,o,scratch,mask);} \
 BasicStochasticGeneFit<T> stochastic_fit_gene(const T* ms,const T* mu,const T* mss,const T* mus,std::size_t rows,std::ptrdiff_t stride,const BasicGeneFit<T>& initial,BasicStochasticScales<T> scales,const StochasticOptions& o,T* scratch,const std::uint8_t* mask){return stochastic_fit_gene_impl(ms,mu,mss,mus,rows,stride,initial,scales,o,scratch,mask);} \
-void stochastic_residuals(const BasicStochasticMomentBlock<T>& m,const BasicStochasticFitBlock<T>& f,NumericEdit output,std::optional<NumericEdit> second){stochastic_residuals_impl(m,f,output,second);}
-VELOCITY_PRIMITIVE_WRAPPERS(float)
-VELOCITY_PRIMITIVE_WRAPPERS(double)
-#undef VELOCITY_PRIMITIVE_WRAPPERS
+void stochastic_residuals(const BasicStochasticMomentBlock<T>& m,const BasicStochasticFitBlock<T>& f,anndatapp::ArrayEdit output,std::optional<anndatapp::ArrayEdit> second){stochastic_residuals_impl(m,f,output,second);}
+VELOCITYPP_PRIMITIVE_WRAPPERS(float)
+VELOCITYPP_PRIMITIVE_WRAPPERS(double)
+#undef VELOCITYPP_PRIMITIVE_WRAPPERS
 FitResult steady_state(const PreparedInput& p,Workspace& w,FitOptions o,BlockSink b){
     if(w.compute_precision()==ComputePrecision::float32)return steady_state_impl<float>(p,w,o,b);
     return steady_state_impl<double>(p,w,o,b);
 }
-FitResult steady_state_into(const PreparedInput& p,Workspace& w,NumericEdit output,FitOptions o){
+FitResult steady_state_into(const PreparedInput& p,Workspace& w,anndatapp::ArrayEdit output,FitOptions o){
     if(w.compute_precision()==ComputePrecision::float32)return steady_state_into_impl<float>(p,w,output,o);
     return steady_state_into_impl<double>(p,w,output,o);
 }
@@ -948,12 +934,12 @@ StochasticFitResult stochastic(const PreparedInput& p,StochasticWorkspace& w,Sto
     if(w.compute_precision()==ComputePrecision::float32)return stochastic_impl<float>(p,w,o,b);
     return stochastic_impl<double>(p,w,o,b);
 }
-StochasticFitResult stochastic_into(const PreparedInput& p,StochasticWorkspace& w,NumericEdit output,StochasticOptions o,std::optional<NumericEdit> second){
+StochasticFitResult stochastic_into(const PreparedInput& p,StochasticWorkspace& w,anndatapp::ArrayEdit output,StochasticOptions o,std::optional<anndatapp::ArrayEdit> second){
     if(w.compute_precision()==ComputePrecision::float32)return stochastic_into_impl<float>(p,w,output,o,second);
     return stochastic_into_impl<double>(p,w,output,o,second);
 }
 }
-namespace velocity::cpu {
+namespace velocitypp::cpu {
 FitResult steady_state(const PreparedInput& p,Workspace& w,FitOptions o,BlockSink b){
     if(w.compute_precision()==ComputePrecision::float32)return reference::steady_state_impl<float>(p,w,o,b,true);
     return reference::steady_state_impl<double>(p,w,o,b,true);
@@ -963,9 +949,9 @@ StochasticFitResult stochastic(const PreparedInput& p,StochasticWorkspace& w,Sto
     return reference::stochastic_impl<double>(p,w,o,b,true);
 }
 }
-namespace velocity {
+namespace velocitypp {
 namespace detail {
-template<class T,class Block> void check_replacement(const Block& m,std::size_t offset,std::size_t count,NumericView s,NumericView u) {
+template<class T,class Block> void check_replacement(const Block& m,std::size_t offset,std::size_t count,anndatapp::ArrayView s,anndatapp::ArrayView u) {
     s.validate();u.validate();
     if(offset>m.count || count>m.count-offset || s.layout()!=anndatapp::Layout::dense || u.layout()!=anndatapp::Layout::dense || s.rank()!=2 || u.rank()!=2 || s.extent(0)!=m.rows || u.extent(0)!=m.rows || s.extent(1)!=count || u.extent(1)!=count || m.stride<std::ptrdiff_t(m.count))
         throw std::invalid_argument("invalid alternate source block or destination range");
@@ -982,19 +968,19 @@ template<class T,class Block> void check_replacement(const Block& m,std::size_t 
     }
 }
 }
-template<class T> void BasicReferenceStages<T>::replace_moments(BasicMomentBlock<T>& m,std::size_t offset,std::size_t count,NumericView a,NumericView b) {
+template<class T> void BasicReferenceStages<T>::replace_moments(BasicMomentBlock<T>& m,std::size_t offset,std::size_t count,anndatapp::ArrayView a,anndatapp::ArrayView b) {
     auto& s=*state_;detail::check_block(s,m);detail::check_replacement<T>(m,offset,count,a,b);
     if(!count || !m.rows)return;
     s.p->input.moments_from(a,b,m.spliced+offset,m.unspliced+offset,std::size_t(m.stride),s.p->checked);
 }
-template<class T> void BasicStochasticReferenceStages<T>::replace_moments(BasicMomentBlock<T>& m,std::size_t offset,std::size_t count,NumericView a,NumericView b) {
+template<class T> void BasicStochasticReferenceStages<T>::replace_moments(BasicMomentBlock<T>& m,std::size_t offset,std::size_t count,anndatapp::ArrayView a,anndatapp::ArrayView b) {
     auto& s=*state_;detail::check_stochastic_range(s,m.first,m.count,false);
     if(m.rows!=s.w->n || (m.rows && (!m.spliced||!m.unspliced)))throw std::invalid_argument("invalid initialization moments");
     detail::check_replacement<T>(m,offset,count,a,b);
     if(!count || !m.rows)return;
     s.p->input.moments_from(a,b,m.spliced+offset,m.unspliced+offset,std::size_t(m.stride),s.p->checked);
 }
-template<class T> void BasicStochasticReferenceStages<T>::replace_moments(BasicStochasticMomentBlock<T>& m,std::size_t offset,std::size_t count,NumericView a,NumericView b) {
+template<class T> void BasicStochasticReferenceStages<T>::replace_moments(BasicStochasticMomentBlock<T>& m,std::size_t offset,std::size_t count,anndatapp::ArrayView a,anndatapp::ArrayView b) {
     auto& s=*state_;detail::check_stochastic_block(s,m);detail::check_replacement<T>(m,offset,count,a,b);
     if(!count || !m.rows)return;
     for(auto* scratch:{s.w->source_s.data(),s.w->source_u.data()}) {
@@ -1005,7 +991,7 @@ template<class T> void BasicStochasticReferenceStages<T>::replace_moments(BasicS
         m.unspliced_second?m.unspliced_second+offset:nullptr,s.w->source_s.data(),s.w->source_u.data(),std::size_t(m.stride),s.p->checked);
 }
 namespace reference {
-template<class T> void moments_from(const PreparedInput& p,NumericView s,NumericView u,T* ms,T* mu,std::size_t stride) {
+template<class T> void moments_from(const PreparedInput& p,anndatapp::ArrayView s,anndatapp::ArrayView u,T* ms,T* mu,std::size_t stride) {
     auto& state=detail::Access::get(p);s.validate();u.validate();
     if(s.rank()!=2 || u.rank()!=2 || s.extent(0)!=p.n_cells() || u.extent(0)!=p.n_cells() || s.extent(1)!=u.extent(1) || stride<s.extent(1))throw std::invalid_argument("invalid alternate source shapes or stride");
     if(stride>std::size_t(std::numeric_limits<std::ptrdiff_t>::max())/sizeof(T))throw std::invalid_argument("alternate destination stride overflows byte offsets");
@@ -1018,7 +1004,7 @@ template<class T> void moments_from(const PreparedInput& p,NumericView s,Numeric
     detail::check_input_alias(state,a);detail::check_input_alias(state,b);
     state.input.moments_from(s,u,ms,mu,stride,state.checked);
 }
-template<class T> void second_moments_from(const PreparedInput& p,NumericView s,NumericView u,T* ms,T* mu,T* mss,T* mus,T* muu,T* source_s,T* source_u,std::size_t stride) {
+template<class T> void second_moments_from(const PreparedInput& p,anndatapp::ArrayView s,anndatapp::ArrayView u,T* ms,T* mu,T* mss,T* mus,T* muu,T* source_s,T* source_u,std::size_t stride) {
     auto& state=detail::Access::get(p);s.validate();u.validate();
     if(s.rank()!=2 || u.rank()!=2 || s.extent(0)!=p.n_cells() || u.extent(0)!=p.n_cells() || s.extent(1)!=u.extent(1) || stride<s.extent(1))throw std::invalid_argument("invalid alternate source shapes or stride");
     if(stride>std::size_t(std::numeric_limits<std::ptrdiff_t>::max())/sizeof(T))throw std::invalid_argument("alternate destination stride overflows byte offsets");
@@ -1037,15 +1023,15 @@ template<class T> void second_moments_from(const PreparedInput& p,NumericView s,
     }
     state.input.second_moments_from(s,u,ms,mu,mss,mus,muu,source_s,source_u,stride,state.checked);
 }
-#define VELOCITY_ALTERNATE_INSTANTIATE(T) \
-template void moments_from<T>(const PreparedInput&,NumericView,NumericView,T*,T*,std::size_t); \
-template void second_moments_from<T>(const PreparedInput&,NumericView,NumericView,T*,T*,T*,T*,T*,T*,T*,std::size_t);
-VELOCITY_ALTERNATE_INSTANTIATE(float)
-VELOCITY_ALTERNATE_INSTANTIATE(double)
-#undef VELOCITY_ALTERNATE_INSTANTIATE
+#define VELOCITYPP_ALTERNATE_INSTANTIATE(T) \
+template void moments_from<T>(const PreparedInput&,anndatapp::ArrayView,anndatapp::ArrayView,T*,T*,std::size_t); \
+template void second_moments_from<T>(const PreparedInput&,anndatapp::ArrayView,anndatapp::ArrayView,T*,T*,T*,T*,T*,T*,T*,std::size_t);
+VELOCITYPP_ALTERNATE_INSTANTIATE(float)
+VELOCITYPP_ALTERNATE_INSTANTIATE(double)
+#undef VELOCITYPP_ALTERNATE_INSTANTIATE
 }
 }
-namespace velocity {
+namespace velocitypp {
 template<class T> bool BasicReferenceStages<T>::bound_to(const PreparedInput& p,const Workspace& w) const noexcept {
     auto* ws=detail::Access::pointer(w);
     if(!state_||!ws||state_->p!=detail::Access::pointer(p))return false;
@@ -1059,7 +1045,7 @@ template<class T> bool BasicStochasticReferenceStages<T>::bound_to(const Prepare
     else return state_->w==ws->f64.get();
 }
 }
-template class velocity::BasicReferenceStages<float>;
-template class velocity::BasicReferenceStages<double>;
-template class velocity::BasicStochasticReferenceStages<float>;
-template class velocity::BasicStochasticReferenceStages<double>;
+template class velocitypp::BasicReferenceStages<float>;
+template class velocitypp::BasicReferenceStages<double>;
+template class velocitypp::BasicStochasticReferenceStages<float>;
+template class velocitypp::BasicStochasticReferenceStages<double>;

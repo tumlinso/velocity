@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(anndatapp 1.0 CONFIG)
+include("${CMAKE_CURRENT_LIST_DIR}/velocityppModuleProvider.cmake")
+if(NOT TARGET velocitypp::velocitypp)
+  include("${CMAKE_CURRENT_LIST_DIR}/velocityppTargets.cmake")
+  _velocitypp_module_provider(velocitypp::velocitypp velocitypp::velocitypp_binary
+    velocitypp_module_interfaces anndatapp::anndatapp)
+endif()
+check_required_components(velocitypp)

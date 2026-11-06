@@ -1,4 +1,4 @@
-import velocity;
+import velocitypp;
 
 int main() {
     auto data = anndatapp::AnnData::empty(3, 1);
@@ -12,9 +12,9 @@ int main() {
     data.set_layer("spliced", static_cast<anndatapp::Array&&>(s));
     data.set_layer("unspliced", static_cast<anndatapp::Array&&>(u));
     data.set_obsp("connectivities", static_cast<anndatapp::Array&&>(w));
-    velocity::PreparedInput input(velocity::from_anndata(data));
-    velocity::Workspace workspace(input);
+    velocitypp::PreparedInput input(velocitypp::from_anndata(data));
+    velocitypp::Workspace workspace(input);
     auto v = anndatapp::Array::empty<float>({3, 1});
-    auto fit = velocity::reference::steady_state_into(input, workspace, v.edit());
+    auto fit = velocitypp::reference::steady_state_into(input, workspace, v.edit());
     return fit.gamma.view().dense<double>().data()[0] == 2 ? 0 : 1;
 }

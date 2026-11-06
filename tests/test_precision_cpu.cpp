@@ -1,9 +1,7 @@
 #include <array>
-#include <Cellerator/ops/numeric/binary16.hh>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -11,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-import velocity;
+import velocitypp;
 
 namespace {
 
@@ -51,48 +49,36 @@ struct DenseFixture {
         for (std::size_t i = 0; i < n; ++i) w[i * n + i] = 1.0;
         return anndatapp::Array::borrow_dense(w.data(), {n, n}, {std::ptrdiff_t(n), 1});
     }();
-    velocity::PreparedInput prepared{{sa.view(), ua.view(), wa.view()}};
+    velocitypp::PreparedInput prepared{{sa.view(), ua.view(), wa.view()}};
 };
 
-velocity::FitOptions fit_options() {
-    velocity::FitOptions options;
-    options.trimming = velocity::Trimming::none;
+velocitypp::FitOptions fit_options() {
+    velocitypp::FitOptions options;
+    options.trimming = velocitypp::Trimming::none;
     options.fit_intercept = true;
     options.positive_intercept = false;
     options.min_r2 = 0;
     options.min_ratio = 0;
-    options.low_signal = velocity::LowSignal::keep_filters;
+    options.low_signal = velocitypp::LowSignal::keep_filters;
     return options;
 }
 
-std::vector<double> floating_values(velocity::NumericView view) {
+std::vector<double> floating_values(anndatapp::ArrayView view) {
     const auto rows = view.extent(0);
     const auto columns = view.rank() == 1 ? std::size_t(1) : view.extent(1);
-    const auto bytes = view.bytes();
     std::vector<double> values(rows * columns);
-    for (std::size_t i = 0; i < rows; ++i) for (std::size_t j = 0; j < columns; ++j) {
-        const auto* p = bytes.data() + std::ptrdiff_t(i) * bytes.stride_bytes(0) +
-                        (view.rank() == 1 ? 0 : std::ptrdiff_t(j) * bytes.stride_bytes(1));
-        if (view.dtype() == velocity::StorageType::float16) {
-            std::uint16_t x;
-            std::memcpy(&x, p, sizeof x);
-            values[i * columns + j] = cellerator::numeric::load_f16(x);
-        } else if (view.dtype() == velocity::StorageType::float32) {
-            float x;
-            std::memcpy(&x, p, sizeof x);
-            values[i * columns + j] = x;
-        } else if (view.dtype() == velocity::StorageType::float64) {
-            double x;
-            std::memcpy(&x, p, sizeof x);
-            values[i * columns + j] = x;
-        } else {
-            throw std::runtime_error("expected floating array");
-        }
-    }
+    auto copy = [&](auto typed) {
+        for (std::size_t i = 0; i < rows; ++i) for (std::size_t j = 0; j < columns; ++j)
+            values[i * columns + j] = typed.data()[std::ptrdiff_t(i) * typed.stride(0) +
+                (view.rank() == 1 ? 0 : std::ptrdiff_t(j) * typed.stride(1))];
+    };
+    if (view.dtype() == anndatapp::DType::float32) copy(view.dense<float>());
+    else if (view.dtype() == anndatapp::DType::float64) copy(view.dense<double>());
+    else throw std::runtime_error("expected float32 or float64 array");
     return values;
 }
 
-bool numeric_arrays_match(velocity::NumericView a, velocity::NumericView b, double tol) {
+bool numeric_arrays_match(anndatapp::ArrayView a, anndatapp::ArrayView b, double tol) {
     if (a.dtype() != b.dtype() || a.rank() != b.rank()) return false;
     for (std::size_t d = 0; d < a.rank(); ++d)
         if (a.extent(d) != b.extent(d)) return false;
@@ -116,7 +102,7 @@ bool byte_arrays_match(anndatapp::ArrayView a, anndatapp::ArrayView b) {
     return true;
 }
 
-bool fit_results_match(const velocity::FitResult& a, const velocity::FitResult& b, double tol) {
+bool fit_results_match(const velocitypp::FitResult& a, const velocitypp::FitResult& b, double tol) {
     if (!numeric_arrays_match(a.gamma.view(), b.gamma.view(), tol) ||
         !numeric_arrays_match(a.offset.view(), b.offset.view(), tol) ||
         !numeric_arrays_match(a.r2.view(), b.r2.view(), tol)) return false;
@@ -128,8 +114,8 @@ bool fit_results_match(const velocity::FitResult& a, const velocity::FitResult& 
     return a.low_signal == b.low_signal;
 }
 
-bool stochastic_results_match(const velocity::StochasticFitResult& a,
-                              const velocity::StochasticFitResult& b, double tol) {
+bool stochastic_results_match(const velocitypp::StochasticFitResult& a,
+                              const velocitypp::StochasticFitResult& b, double tol) {
     return fit_results_match(a.initialization, b.initialization, tol) &&
         numeric_arrays_match(a.gamma.view(), b.gamma.view(), tol) &&
         numeric_arrays_match(a.offset.view(), b.offset.view(), tol) &&
@@ -147,7 +133,7 @@ struct OutputCapture {
     std::vector<double> second = std::vector<double>(n * g, 0.0);
 };
 
-void capture_steady(void* context, const velocity::OutputBlock& block) {
+void capture_steady(void* context, const velocitypp::OutputBlock& block) {
     auto& capture = *static_cast<OutputCapture*>(context);
     auto values = floating_values(block.velocity);
     for (std::size_t i = 0; i < capture.rows; ++i)
@@ -155,7 +141,7 @@ void capture_steady(void* context, const velocity::OutputBlock& block) {
             capture.velocity[i * capture.genes + block.first + j] = values[i * block.count + j];
 }
 
-void capture_stochastic(void* context, const velocity::StochasticOutputBlock& block) {
+void capture_stochastic(void* context, const velocitypp::StochasticOutputBlock& block) {
     auto& capture = *static_cast<OutputCapture*>(context);
     auto velocity_values = floating_values(block.velocity);
     auto second_values = floating_values(block.second_residual);
@@ -175,62 +161,53 @@ bool captures_match(const OutputCapture& a, const OutputCapture& b, double tol) 
 }
 
 void default_precision_resolution_and_budgets() {
-    expect(velocity::RunOptions{}.compute_precision == velocity::ComputePrecision::automatic &&
-           velocity::StochasticRunOptions{}.compute_precision == velocity::ComputePrecision::automatic,
+    expect(velocitypp::RunOptions{}.compute_precision == velocitypp::ComputePrecision::automatic &&
+           velocitypp::StochasticRunOptions{}.compute_precision == velocitypp::ComputePrecision::automatic,
            "both run-option families default to automatic compute precision");
-
-    std::uint16_t hs[1]{}, hu[1]{}, hw[]{cellerator::numeric::round_f16(1.0f)};
-    auto hs_view = velocity::NumericView::borrow_dense_f16(hs, {1, 1}, {1, 1});
-    auto hu_view = velocity::NumericView::borrow_dense_f16(hu, {1, 1}, {1, 1});
-    auto hw_view = velocity::NumericView::borrow_dense_f16(hw, {1, 1}, {1, 1});
-    velocity::PreparedInput all_half{{hs_view, hu_view, hw_view}};
-    velocity::Workspace half_workspace(all_half);
-    velocity::StochasticWorkspace half_stochastic_workspace(all_half);
-    expect(half_workspace.compute_precision() == velocity::ComputePrecision::float32 &&
-           half_stochastic_workspace.compute_precision() == velocity::ComputePrecision::float32,
-           "automatic computation selects FP32 when every stored matrix is FP16");
-    expect(half_workspace.scratch_bytes() <= 64u * 1024u * 1024u &&
-           half_stochastic_workspace.scratch_bytes() <= 64u * 1024u * 1024u,
-           "default steady-state and stochastic numeric scratch stay within 64 MiB");
 
     auto fs = anndatapp::Array::zeros<float>({1, 1});
     auto fu = anndatapp::Array::zeros<float>({1, 1});
     auto fw = anndatapp::Array::zeros<float>({1, 1});
     fw.edit().dense<float>().data()[0] = 1.0f;
-    velocity::PreparedInput all_float{{fs.view(), fu.view(), fw.view()}};
-    velocity::Workspace float_workspace(all_float);
-    expect(float_workspace.compute_precision() == velocity::ComputePrecision::float64,
-           "automatic computation preserves the legacy FP64 path for all-FP32 storage");
+    velocitypp::PreparedInput all_float{{fs.view(), fu.view(), fw.view()}};
+    velocitypp::Workspace float_workspace(all_float);
+    velocitypp::StochasticWorkspace float_stochastic_workspace(all_float);
+    expect(float_workspace.compute_precision() == velocitypp::ComputePrecision::float64 &&
+           float_stochastic_workspace.compute_precision() == velocitypp::ComputePrecision::float64,
+           "automatic computation selects FP64 for supported FP32 storage");
+    expect(float_workspace.scratch_bytes() <= 64u * 1024u * 1024u &&
+           float_stochastic_workspace.scratch_bytes() <= 64u * 1024u * 1024u,
+           "default steady-state and stochastic numeric scratch stay within 64 MiB");
 
     auto wd = anndatapp::Array::zeros<double>({1, 1});
     wd.edit().dense<double>().data()[0] = 1.0;
-    velocity::PreparedInput mixed_half_double{{hs_view, hu_view, wd.view()}};
-    velocity::Workspace mixed_workspace(mixed_half_double);
-    expect(mixed_workspace.compute_precision() == velocity::ComputePrecision::float64,
-           "one FP64 operand keeps automatic computation in FP64 despite FP16 storage elsewhere");
+    velocitypp::PreparedInput mixed_float_double{{fs.view(), fu.view(), wd.view()}};
+    velocitypp::Workspace mixed_workspace(mixed_float_double);
+    expect(mixed_workspace.compute_precision() == velocitypp::ComputePrecision::float64,
+           "mixed FP32/FP64 storage uses FP64 automatic computation");
 
-    velocity::RunOptions force32;
-    force32.compute_precision = velocity::ComputePrecision::float32;
-    velocity::RunOptions force64;
-    force64.compute_precision = velocity::ComputePrecision::float64;
-    velocity::Workspace explicit32(all_float, force32);
-    velocity::Workspace explicit64(all_half, force64);
-    expect(explicit32.compute_precision() == velocity::ComputePrecision::float32 &&
-           explicit64.compute_precision() == velocity::ComputePrecision::float64,
-           "explicit compute-precision choices override automatic storage inference");
+    velocitypp::RunOptions force32;
+    force32.compute_precision = velocitypp::ComputePrecision::float32;
+    velocitypp::RunOptions force64;
+    force64.compute_precision = velocitypp::ComputePrecision::float64;
+    velocitypp::Workspace explicit32(mixed_float_double, force32);
+    velocitypp::Workspace explicit64(all_float, force64);
+    expect(explicit32.compute_precision() == velocitypp::ComputePrecision::float32 &&
+           explicit64.compute_precision() == velocitypp::ComputePrecision::float64,
+           "explicit compute-precision choices select either supported arithmetic type");
 }
 
 void typed_stages_expose_real_float32_arithmetic_and_result_dtypes() {
     DenseFixture f;
-    velocity::RunOptions f32_options;
-    f32_options.compute_precision = velocity::ComputePrecision::float32;
-    f32_options.output_dtype = velocity::StorageType::float64;
-    velocity::RunOptions f64_options;
-    f64_options.compute_precision = velocity::ComputePrecision::float64;
-    f64_options.output_dtype = velocity::StorageType::float64;
-    velocity::Workspace w32(f.prepared, f32_options), w64(f.prepared, f64_options);
-    velocity::ReferenceStages32 s32(f.prepared, w32, fit_options());
-    velocity::ReferenceStages s64(f.prepared, w64, fit_options());
+    velocitypp::RunOptions f32_options;
+    f32_options.compute_precision = velocitypp::ComputePrecision::float32;
+    f32_options.output_dtype = anndatapp::DType::float64;
+    velocitypp::RunOptions f64_options;
+    f64_options.compute_precision = velocitypp::ComputePrecision::float64;
+    f64_options.output_dtype = anndatapp::DType::float64;
+    velocitypp::Workspace w32(f.prepared, f32_options), w64(f.prepared, f64_options);
+    velocitypp::ReferenceStages32 s32(f.prepared, w32, fit_options());
+    velocitypp::ReferenceStages s64(f.prepared, w64, fit_options());
     auto m32 = s32.moments(0, g);
     auto m64 = s64.moments(0, g);
     static_assert(std::is_same_v<decltype(m32.spliced), float*>);
@@ -240,8 +217,8 @@ void typed_stages_expose_real_float32_arithmetic_and_result_dtypes() {
     expect(m32.spliced[0] == 1.0f && m32.spliced[2] == 1.0f &&
            m64.spliced[0] == 1.0 && m64.spliced[2] == 1.0 + 1e-8,
            "FP32 stages convert source values before fitting instead of merely casting FP64 results");
-    expect(static_cast<velocity::FitStatus>(fit32.status[0]) == velocity::FitStatus::singular &&
-           static_cast<velocity::FitStatus>(fit64.status[0]) == velocity::FitStatus::ok,
+    expect(static_cast<velocitypp::FitStatus>(fit32.status[0]) == velocitypp::FitStatus::singular &&
+           static_cast<velocitypp::FitStatus>(fit64.status[0]) == velocitypp::FitStatus::ok,
            "source variation lost in FP32 is reflected in the fit status");
     s32.emit(m32, fit32);
     s64.emit(m64, fit64);
@@ -254,13 +231,13 @@ void typed_stages_expose_real_float32_arithmetic_and_result_dtypes() {
            r64.r2.view().dtype() == anndatapp::DType::float64,
            "typed steady-state stages retain float or double result storage");
 
-    velocity::StochasticRunOptions sr32;
-    sr32.compute_precision = velocity::ComputePrecision::float32;
-    velocity::StochasticRunOptions sr64;
-    sr64.compute_precision = velocity::ComputePrecision::float64;
-    velocity::StochasticWorkspace sw32(f.prepared, sr32), sw64(f.prepared, sr64);
-    velocity::StochasticReferenceStages32 ss32(f.prepared, sw32, velocity::StochasticOptions{fit_options()});
-    velocity::StochasticReferenceStages ss64(f.prepared, sw64, velocity::StochasticOptions{fit_options()});
+    velocitypp::StochasticRunOptions sr32;
+    sr32.compute_precision = velocitypp::ComputePrecision::float32;
+    velocitypp::StochasticRunOptions sr64;
+    sr64.compute_precision = velocitypp::ComputePrecision::float64;
+    velocitypp::StochasticWorkspace sw32(f.prepared, sr32), sw64(f.prepared, sr64);
+    velocitypp::StochasticReferenceStages32 ss32(f.prepared, sw32, velocitypp::StochasticOptions{fit_options()});
+    velocitypp::StochasticReferenceStages ss64(f.prepared, sw64, velocitypp::StochasticOptions{fit_options()});
     auto im32 = ss32.initial_moments(0, g);
     auto im64 = ss64.initial_moments(0, g);
     auto if32 = ss32.initial_fit(im32);
@@ -289,114 +266,39 @@ void typed_stages_expose_real_float32_arithmetic_and_result_dtypes() {
            "typed stochastic stages retain float or double diagnostics and fit results");
 }
 
-void half_storage_is_decoded_and_duplicates_are_summed_before_products() {
-    const std::uint16_t s_values[]{
-        cellerator::numeric::round_f16(1.0f), cellerator::numeric::round_f16(2.0f),
-        cellerator::numeric::round_f16(2.0f)};
-    constexpr std::int32_t s_indices[]{0, 0, 0};
-    constexpr std::int64_t s_offsets[]{0, 2, 3};
-    const std::uint16_t u_values[]{
-        cellerator::numeric::round_f16(4.0f), cellerator::numeric::round_f16(1.0f),
-        cellerator::numeric::round_f16(4.0f)};
-    constexpr std::int32_t u_indices[]{0, 0, 1};
-    constexpr std::int64_t u_offsets[]{0, 3};
-    const std::uint16_t graph_values[]{
-        cellerator::numeric::round_f16(1.0f), cellerator::numeric::round_f16(0.0f),
-        cellerator::numeric::round_f16(0.0f), cellerator::numeric::round_f16(1.0f)};
-    auto sa = velocity::NumericView::borrow_sparse_f16(anndatapp::Layout::csr, 2, 1, 3,
-        velocity::SparseF16{s_values, 3, s_indices, 3, anndatapp::DType::int32,
-                            s_offsets, 3, anndatapp::DType::int64});
-    auto ua = velocity::NumericView::borrow_sparse_f16(anndatapp::Layout::csc, 2, 1, 3,
-        velocity::SparseF16{u_values, 3, u_indices, 3, anndatapp::DType::int32,
-                            u_offsets, 2, anndatapp::DType::int64});
-    auto wa = velocity::NumericView::borrow_dense_f16(graph_values, {2, 2}, {2, 1});
-    velocity::PreparedInput p{{sa, ua, wa}};
-    double ms[2]{}, mu[2]{}, mss[2]{}, mus[2]{}, muu[2]{}, source_s[2]{}, source_u[2]{};
-    float fms[2]{}, fmu[2]{}, fmss[2]{}, fmus[2]{}, fmuu[2]{}, fsource_s[2]{}, fsource_u[2]{};
-    velocity::reference::second_moments(p, 0, 1, ms, mu, mss, mus, muu, source_s, source_u);
-    velocity::reference::second_moments(p, 0, 1, fms, fmu, fmss, fmus, fmuu, fsource_s, fsource_u);
-    expect(ms[0] == 3 && mu[0] == 5 && mss[0] == 9 && mus[0] == 15 && muu[0] == 25 &&
-           ms[1] == 2 && mu[1] == 4 && mss[1] == 4 && mus[1] == 8 && muu[1] == 16,
-           "FP64 products use decoded FP16 values after coalescing sparse expression duplicates");
-    expect(fms[0] == 3 && fmu[0] == 5 && fmss[0] == 9 && fmus[0] == 15 && fmuu[0] == 25 &&
-           fms[1] == 2 && fmu[1] == 4 && fmss[1] == 4 && fmus[1] == 8 && fmuu[1] == 16,
-           "FP32 products use decoded FP16 values after coalescing sparse expression duplicates");
-
-    const std::uint16_t graph_duplicates[]{
-        cellerator::numeric::round_f16(.5f), cellerator::numeric::round_f16(-.5f)};
-    constexpr std::int32_t graph_indices[]{1, 1};
-    constexpr std::int64_t graph_offsets[]{0, 2, 2};
-    auto duplicate_graph = velocity::NumericView::borrow_sparse_f16(anndatapp::Layout::csr, 2, 2, 2,
-        velocity::SparseF16{graph_duplicates, 2, graph_indices, 2, anndatapp::DType::int32,
-                            graph_offsets, 3, anndatapp::DType::int64});
-    auto normalized = velocity::reference::prepare_neighborhood(duplicate_graph);
-    auto graph = normalized.view();
-    auto sparse = graph.sparse_bytes();
-    bool graph_ok = graph.dtype() == anndatapp::DType::float32 &&
-        graph.layout() == anndatapp::Layout::csr && sparse.nnz() == 2 &&
-        sparse.index_size() == 1 && sparse.offset_size() == 1;
-    if (graph_ok) {
-        std::uint8_t offsets[3]{}, indices[2]{};
-        float weights[2]{};
-        std::memcpy(offsets, sparse.offsets(), sizeof offsets);
-        std::memcpy(indices, sparse.indices(), sizeof indices);
-        std::memcpy(weights, sparse.values(), sizeof weights);
-        graph_ok = offsets[0] == 0 && offsets[1] == 1 && offsets[2] == 2 &&
-                   indices[0] == 0 && indices[1] == 1 && weights[0] == 1.0f && weights[1] == 1.0f;
-    }
-    expect(graph_ok, "FP16 sparse neighborhood duplicates are decoded and summed before positive-edge selection");
-}
-
 struct DuplicateCapture {
     std::vector<double> ms,mu,mss,mus,muu;
 };
-void capture_duplicate_steady(void* context,const velocity::OutputBlock& b) {
+void capture_duplicate_steady(void* context,const velocitypp::OutputBlock& b) {
     auto& out=*static_cast<DuplicateCapture*>(context);
     out.ms=floating_values(b.spliced);out.mu=floating_values(b.unspliced);
 }
-void capture_duplicate_stochastic(void* context,const velocity::StochasticOutputBlock& b) {
+void capture_duplicate_stochastic(void* context,const velocitypp::StochasticOutputBlock& b) {
     auto& out=*static_cast<DuplicateCapture*>(context);
     out.ms=floating_values(b.spliced);out.mu=floating_values(b.unspliced);
     out.mss=floating_values(b.spliced_second);out.mus=floating_values(b.cross);out.muu=floating_values(b.unspliced_second);
 }
-template<class Storage> Storage duplicate_value(double x) {
-    if constexpr(std::is_same_v<Storage,std::uint16_t>)return cellerator::numeric::round_f16(x);
-    else return Storage(x);
-}
-template<class Storage> velocity::NumericView duplicate_sparse_view(
-    anndatapp::Layout layout, std::size_t rows, std::size_t columns, std::size_t nnz,
-    Storage* values, const std::int32_t* indices, const std::int64_t* offsets) {
-    if constexpr(std::is_same_v<Storage,std::uint16_t>) {
-        const auto offset_count = (layout == anndatapp::Layout::csr ? rows : columns) + 1;
-        return velocity::NumericView::borrow_sparse_f16(layout, rows, columns, nnz,
-            velocity::SparseF16{values, nnz, indices, nnz, anndatapp::DType::int32,
-                                offsets, offset_count, anndatapp::DType::int64});
-    } else {
-        auto array = anndatapp::Array::borrow_sparse(layout, rows, columns, nnz, values, indices, offsets);
-        return velocity::NumericView(array.view());
-    }
-}
-template<class C,class Storage> void duplicate_first_and_second_moments_case(anndatapp::Layout source_layout,bool unsorted,bool sparse_graph) {
+template<class C> void duplicate_first_and_second_moments_case(anndatapp::Layout source_layout,bool unsorted,bool sparse_graph) {
     // The expected logical coordinates are exactly S=[1,2], U=[3,4].
     // Weighting the large cancelling entries separately returns .125 rather
     // than .1234567 in both FP32 and FP64 cancellation fixtures.
-    double large=std::is_same_v<Storage,std::uint16_t> ? 2048. : std::is_same_v<Storage,float> ? 10000000. : 4503599627370496.;
-    Storage sv[]{duplicate_value<Storage>(large),duplicate_value<Storage>(1-large),duplicate_value<Storage>(2)};
-    Storage uv[]{duplicate_value<Storage>(large),duplicate_value<Storage>(3-large),duplicate_value<Storage>(4)};
+    const C large=std::is_same_v<C,float> ? C(10000000) : C(4503599627370496.);
+    C sv[]{large,C(1)-large,C(2)};
+    C uv[]{large,C(3)-large,C(4)};
     std::int32_t source_indices[]{0,0,source_layout==anndatapp::Layout::csr ? 0 : 1};
     if(unsorted) {std::swap(sv[1],sv[2]);std::swap(uv[1],uv[2]);source_indices[1]=1;source_indices[2]=0;}
     const std::int64_t csr_offsets[]{0,2,3},csc_offsets[]{0,3};
     auto* source_offsets = source_layout==anndatapp::Layout::csr ? csr_offsets : csc_offsets;
-    auto sa=duplicate_sparse_view(source_layout,2,1,3,sv,source_indices,source_offsets);
-    auto ua=duplicate_sparse_view(source_layout,2,1,3,uv,source_indices,source_offsets);
+    auto sa=anndatapp::Array::borrow_sparse(source_layout,2,1,3,sv,source_indices,source_offsets);
+    auto ua=anndatapp::Array::borrow_sparse(source_layout,2,1,3,uv,source_indices,source_offsets);
     const float weights[]{.1234567f,0,0,.2345678f},sparse_weights[]{weights[0],weights[3]};
     const std::int32_t graph_indices[]{0,1};const std::int64_t graph_offsets[]{0,1,2};
     auto wa=sparse_graph ? anndatapp::Array::borrow_sparse(anndatapp::Layout::csr,2,2,2,sparse_weights,graph_indices,graph_offsets)
                         : anndatapp::Array::borrow_dense(weights,{2,2},{2,1});
-    velocity::PreparedInput p{{sa,ua,wa.view()}};
+    velocitypp::PreparedInput p{{sa.view(),ua.view(),wa.view()}};
     C ms[2]{},mu[2]{},ms2[2]{},mu2[2]{},mss[2]{},mus[2]{},muu[2]{},ss[2]{},su[2]{};
-    velocity::reference::moments(p,0,1,ms,mu);
-    velocity::reference::second_moments(p,0,1,ms2,mu2,mss,mus,muu,ss,su);
+    velocitypp::reference::moments(p,0,1,ms,mu);
+    velocitypp::reference::second_moments(p,0,1,ms2,mu2,mss,mus,muu,ss,su);
     bool direct=true;
     for(std::size_t i=0;i<2;++i) {
         C x=C(i+1),y=C(i+3),w=C(sparse_weights[i]);
@@ -404,15 +306,15 @@ template<class C,class Storage> void duplicate_first_and_second_moments_case(ann
             && mss[i]==w*(x*x) && mus[i]==w*(x*y) && muu[i]==w*(y*y);
     }
     expect(direct,"first and second moments coalesce sparse expression coordinates before weighting in selected precision");
-    velocity::RunOptions run;run.compute_precision=std::is_same_v<C,float>?velocity::ComputePrecision::float32:velocity::ComputePrecision::float64;
-    run.velocity=false;run.spliced_moments=run.unspliced_moments=true;run.output_dtype=std::is_same_v<C,float>?velocity::StorageType::float32:velocity::StorageType::float64;
-    velocity::Workspace workspace(p,run);DuplicateCapture compiled;
-    velocity::cpu::steady_state(p,workspace,{}, {&compiled,capture_duplicate_steady});
-    velocity::StochasticRunOptions stochastic_run;stochastic_run.compute_precision=run.compute_precision;stochastic_run.output_dtype=run.output_dtype;
+    velocitypp::RunOptions run;run.compute_precision=std::is_same_v<C,float>?velocitypp::ComputePrecision::float32:velocitypp::ComputePrecision::float64;
+    run.velocity=false;run.spliced_moments=run.unspliced_moments=true;run.output_dtype=std::is_same_v<C,float>?anndatapp::DType::float32:anndatapp::DType::float64;
+    velocitypp::Workspace workspace(p,run);DuplicateCapture compiled;
+    velocitypp::cpu::steady_state(p,workspace,{}, {&compiled,capture_duplicate_steady});
+    velocitypp::StochasticRunOptions stochastic_run;stochastic_run.compute_precision=run.compute_precision;stochastic_run.output_dtype=run.output_dtype;
     stochastic_run.velocity=false;stochastic_run.spliced_moments=stochastic_run.unspliced_moments=true;
     stochastic_run.spliced_second=stochastic_run.cross=stochastic_run.unspliced_second=true;
-    velocity::StochasticWorkspace stochastic_workspace(p,stochastic_run);DuplicateCapture compiled_second;
-    velocity::cpu::stochastic(p,stochastic_workspace,{}, {&compiled_second,capture_duplicate_stochastic});
+    velocitypp::StochasticWorkspace stochastic_workspace(p,stochastic_run);DuplicateCapture compiled_second;
+    velocitypp::cpu::stochastic(p,stochastic_workspace,{}, {&compiled_second,capture_duplicate_stochastic});
     bool optimized=compiled.ms.size()==2 && compiled_second.ms.size()==2;
     for(std::size_t i=0;i<2 && optimized;++i)
         optimized=compiled.ms[i]==double(ms[i]) && compiled.mu[i]==double(mu[i])
@@ -424,10 +326,8 @@ void sparse_expression_duplicates_are_coalesced_before_first_weighting() {
     for(bool sparse_graph:{false,true})for(int storage_order=0;storage_order<3;++storage_order) {
         auto layout=storage_order==0?anndatapp::Layout::csr:anndatapp::Layout::csc;
         bool unsorted=storage_order==2;
-        duplicate_first_and_second_moments_case<float,float>(layout,unsorted,sparse_graph);
-        duplicate_first_and_second_moments_case<double,double>(layout,unsorted,sparse_graph);
-        duplicate_first_and_second_moments_case<float,std::uint16_t>(layout,unsorted,sparse_graph);
-        duplicate_first_and_second_moments_case<double,std::uint16_t>(layout,unsorted,sparse_graph);
+        duplicate_first_and_second_moments_case<float>(layout,unsorted,sparse_graph);
+        duplicate_first_and_second_moments_case<double>(layout,unsorted,sparse_graph);
     }
 }
 
@@ -453,24 +353,24 @@ template<class T> void graph_source_order_case(anndatapp::Layout graph_layout,in
     auto wa=graph_layout==anndatapp::Layout::csr
         ?anndatapp::Array::borrow_sparse(graph_layout,3,3,duplicate_edge?6:5,duplicate_edge?csr_duplicate_weights:weights,duplicate_edge?csr_duplicate_indices:csr_indices,duplicate_edge?csr_duplicate_offsets:csr_offsets)
         :anndatapp::Array::borrow_sparse(graph_layout,3,3,duplicate_edge?6:5,duplicate_edge?csc_duplicate_weights:weights,duplicate_edge?csc_duplicate_indices:csc_indices,duplicate_edge?csc_duplicate_offsets:csc_offsets);
-    velocity::PreparedInput p{{sa.view(),ua.view(),wa.view()}};
+    velocitypp::PreparedInput p{{sa.view(),ua.view(),wa.view()}};
     T ms[3]{},mu[3]{},ms2[3]{},mu2[3]{},mss[3]{},mus[3]{},muu[3]{},ss[3]{},su[3]{};
-    velocity::reference::moments(p,0,1,ms,mu);
-    velocity::reference::second_moments(p,0,1,ms2,mu2,mss,mus,muu,ss,su);
+    velocitypp::reference::moments(p,0,1,ms,mu);
+    velocitypp::reference::second_moments(p,0,1,ms2,mu2,mss,mus,muu,ss,su);
     T expected=duplicate_edge?T(3):T(1);
     bool ordered=ms[0]==expected && mu[0]==3*expected;
     for(std::size_t i=0;i<3;++i)ordered=ordered && ms[i]==ms2[i] && mu[i]==mu2[i];
     expect(ordered,"graph source-cell order is canonical for dense/sparse expressions and both moment passes");
-    velocity::RunOptions run;run.compute_precision=std::is_same_v<T,float>?velocity::ComputePrecision::float32:velocity::ComputePrecision::float64;
-    run.output_dtype=std::is_same_v<T,float>?velocity::StorageType::float32:velocity::StorageType::float64;
+    velocitypp::RunOptions run;run.compute_precision=std::is_same_v<T,float>?velocitypp::ComputePrecision::float32:velocitypp::ComputePrecision::float64;
+    run.output_dtype=std::is_same_v<T,float>?anndatapp::DType::float32:anndatapp::DType::float64;
     run.velocity=false;run.spliced_moments=run.unspliced_moments=true;
-    velocity::Workspace workspace(p,run);DuplicateCapture first;
-    velocity::cpu::steady_state(p,workspace,{}, {&first,capture_duplicate_steady});
-    velocity::StochasticRunOptions stochastic_run;stochastic_run.compute_precision=run.compute_precision;stochastic_run.output_dtype=run.output_dtype;
+    velocitypp::Workspace workspace(p,run);DuplicateCapture first;
+    velocitypp::cpu::steady_state(p,workspace,{}, {&first,capture_duplicate_steady});
+    velocitypp::StochasticRunOptions stochastic_run;stochastic_run.compute_precision=run.compute_precision;stochastic_run.output_dtype=run.output_dtype;
     stochastic_run.velocity=false;stochastic_run.spliced_moments=stochastic_run.unspliced_moments=true;
     stochastic_run.spliced_second=stochastic_run.cross=stochastic_run.unspliced_second=true;
-    velocity::StochasticWorkspace stochastic_workspace(p,stochastic_run);DuplicateCapture second;
-    velocity::cpu::stochastic(p,stochastic_workspace,{}, {&second,capture_duplicate_stochastic});
+    velocitypp::StochasticWorkspace stochastic_workspace(p,stochastic_run);DuplicateCapture second;
+    velocitypp::cpu::stochastic(p,stochastic_workspace,{}, {&second,capture_duplicate_stochastic});
     bool compiled=first.ms.size()==3 && second.ms.size()==3;
     for(std::size_t i=0;i<3 && compiled;++i)compiled=first.ms[i]==double(ms[i]) && first.mu[i]==double(mu[i]) && second.ms[i]==double(ms[i]) && second.mu[i]==double(mu[i]);
     expect(compiled,"compiled CPU entry points preserve canonical graph order and additive duplicate edges");
@@ -483,42 +383,41 @@ void shuffled_graphs_preserve_source_order() {
         }
 }
 
-void explicit_half_output_rounds_the_fp32_residual() {
+void explicit_float32_output_stores_float_residuals() {
     DenseFixture f;
-    velocity::RunOptions options;
-    options.compute_precision = velocity::ComputePrecision::float32;
-    options.output_dtype = velocity::StorageType::float16;
-    velocity::Workspace workspace(f.prepared, options);
-    std::uint16_t output[n * g]{};
-    auto output_edit = velocity::NumericEdit::borrow_dense_f16(output, {n, g}, {std::ptrdiff_t(g), 1});
-    auto result = velocity::reference::steady_state_into(f.prepared, workspace, output_edit, fit_options());
-    auto actual = output_edit.view().dense<std::uint16_t>();
+    velocitypp::RunOptions options;
+    options.compute_precision = velocitypp::ComputePrecision::float32;
+    options.output_dtype = anndatapp::DType::float32;
+    velocitypp::Workspace workspace(f.prepared, options);
+    auto output = anndatapp::Array::zeros<float>({n, g});
+    auto output_edit = output.edit();
+    auto result = velocitypp::reference::steady_state_into(f.prepared, workspace, output_edit, fit_options());
+    auto actual = output.view().dense<float>();
     auto gamma = result.gamma.view().dense<float>();
     auto offset = result.offset.view().dense<float>();
-    bool ok = output_edit.view().dtype() == velocity::StorageType::float16 &&
+    bool ok = output.view().dtype() == anndatapp::DType::float32 &&
               result.gamma.view().dtype() == anndatapp::DType::float32;
     for (std::size_t i = 0; i < n; ++i) for (std::size_t j = 0; j < g; ++j) {
         const auto k = i * g + j;
         const float expected = float(f.u[k]) - gamma.data()[j] * float(f.s[k]) - offset.data()[j];
-        const auto expected_half = cellerator::numeric::round_f16(expected);
         ok = ok && actual.data()[std::ptrdiff_t(i) * actual.stride(0) + std::ptrdiff_t(j) * actual.stride(1)] ==
-                   expected_half;
+                   expected;
     }
-    expect(ok, "caller-selected FP16 output stores rounded residuals while fit diagnostics remain FP32");
+    expect(ok, "caller-selected FP32 output stores computed residuals while diagnostics remain FP32");
 }
 
 void degenerate_inputs_keep_constant_nonfinite_rank_and_fallback_statuses() {
-    velocity::FitOptions fit;
-    fit.trimming = velocity::Trimming::none;
+    velocitypp::FitOptions fit;
+    fit.trimming = velocitypp::Trimming::none;
     fit.fit_intercept = true;
     float x[]{1, 2, 3}, constant[]{4, 4, 4}, scratch[3]{};
-    auto constant_fit = velocity::reference::fit_gene(x, constant, 3, 1, fit, scratch);
-    expect(constant_fit.status == velocity::FitStatus::constant_response,
+    auto constant_fit = velocitypp::reference::fit_gene(x, constant, 3, 1, fit, scratch);
+    expect(constant_fit.status == velocitypp::FitStatus::constant_response,
            "constant response remains classified as a degenerate fit");
 
     float nonfinite[]{2, std::numeric_limits<float>::quiet_NaN(), 4};
-    auto invalid_fit = velocity::reference::fit_gene(x, nonfinite, 3, 1, fit, scratch);
-    expect(invalid_fit.status == velocity::FitStatus::singular,
+    auto invalid_fit = velocitypp::reference::fit_gene(x, nonfinite, 3, 1, fit, scratch);
+    expect(invalid_fit.status == velocitypp::FitStatus::singular,
            "nonfinite observations produce a singular fit status");
 
     float dense_s[]{1, 2, 3}, dense_u[]{2, 4, 6}, graph_values[9]{};
@@ -526,17 +425,17 @@ void degenerate_inputs_keep_constant_nonfinite_rank_and_fallback_statuses() {
     auto s_rank1 = anndatapp::Array::borrow_dense(dense_s, {3}, {1});
     auto u_rank2 = anndatapp::Array::borrow_dense(dense_u, {3, 1}, {1, 1});
     auto graph = anndatapp::Array::borrow_dense(graph_values, {3, 3}, {3, 1});
-    expect_invalid_argument([&] { velocity::PreparedInput invalid({s_rank1.view(), u_rank2.view(), graph.view()}); },
+    expect_invalid_argument([&] { velocitypp::PreparedInput invalid({s_rank1.view(), u_rank2.view(), graph.view()}); },
                             "rank-one expression matrices are rejected at input acquisition");
 
     const float ms[]{1, 1, 1}, mu[]{2, 3, 4}, mss[]{.5f, .5f, .5f}, mus[]{1, 1.5f, 2};
-    velocity::GeneFit32 initial{.75f, .25f, .8f, velocity::FitStatus::ok, true};
-    velocity::StochasticScales32 scales{1, 1, velocity::StochasticStatus::ok};
-    velocity::StochasticOptions stochastic;
+    velocitypp::GeneFit32 initial{.75f, .25f, .8f, velocitypp::FitStatus::ok, true};
+    velocitypp::StochasticScales32 scales{1, 1, velocitypp::StochasticStatus::ok};
+    velocitypp::StochasticOptions stochastic;
     stochastic.initialization = fit;
-    auto rank_fit = velocity::reference::stochastic_fit_gene(ms, mu, mss, mus, 3, 1,
+    auto rank_fit = velocitypp::reference::stochastic_fit_gene(ms, mu, mss, mus, 3, 1,
         initial, scales, stochastic, nullptr);
-    expect(rank_fit.status == velocity::StochasticStatus::singular &&
+    expect(rank_fit.status == velocitypp::StochasticStatus::singular &&
            rank_fit.gamma == initial.gamma && rank_fit.offset == initial.offset,
            "rank-deficient stochastic refinement reports singular and retains initialization fallback");
 }
@@ -550,20 +449,20 @@ void fp32_stochastic_residual_floor_is_scale_relative() {
                                  6.0f + 1e-6f, 8.0f - 1e-6f};
     const float above_floor_mu[]{2.0f + 1e-3f, 4.0f - 1e-3f,
                                  6.0f + 1e-3f, 8.0f - 1e-3f};
-    velocity::GeneFit32 initial{2, 0, .9f, velocity::FitStatus::ok, true};
-    velocity::StochasticOptions options;
-    options.initialization.trimming = velocity::Trimming::none;
+    velocitypp::GeneFit32 initial{2, 0, .9f, velocitypp::FitStatus::ok, true};
+    velocitypp::StochasticOptions options;
+    options.initialization.trimming = velocitypp::Trimming::none;
     float scratch[rows]{};
-    auto below = velocity::reference::stochastic_scales(ms, below_floor_mu, mss, mus,
+    auto below = velocitypp::reference::stochastic_scales(ms, below_floor_mu, mss, mus,
         rows, 1, initial, options, scratch);
-    expect(below.status == velocity::StochasticStatus::zero_scale &&
+    expect(below.status == velocitypp::StochasticStatus::zero_scale &&
            below.first > 0 && below.second > 0 &&
            std::isfinite(below.first) && std::isfinite(below.second),
            "positive FP32 residual scales below the relative floor are retained as finite zero-scale diagnostics");
 
-    auto above = velocity::reference::stochastic_scales(ms, above_floor_mu, mss, mus,
+    auto above = velocitypp::reference::stochastic_scales(ms, above_floor_mu, mss, mus,
         rows, 1, initial, options, scratch);
-    expect(above.status == velocity::StochasticStatus::ok && above.first > 0 && above.second > 0,
+    expect(above.status == velocitypp::StochasticStatus::ok && above.first > 0 && above.second > 0,
            "FP32 residual perturbations above the relative floor remain usable stochastic scales");
 
     constexpr float factor = 1e-6f;
@@ -574,46 +473,46 @@ void fp32_stochastic_residual_floor_is_scale_relative() {
         scaled_mss[i] = factor * mss[i];
         scaled_mus[i] = factor * mus[i];
     }
-    auto scaled = velocity::reference::stochastic_scales(scaled_ms, scaled_mu, scaled_mss, scaled_mus,
+    auto scaled = velocitypp::reference::stochastic_scales(scaled_ms, scaled_mu, scaled_mss, scaled_mus,
         rows, 1, initial, options, scratch);
-    expect(scaled.status == velocity::StochasticStatus::ok &&
+    expect(scaled.status == velocitypp::StochasticStatus::ok &&
            close(double(scaled.first / factor), double(above.first), 2e-4) &&
            close(double(scaled.second / factor), double(above.second), 2e-4),
            "uniformly rescaled FP32 moments preserve relative residual-floor classification and scales");
 
     for (std::size_t i = 0; i < rows; ++i) scaled_mu[i] = factor * below_floor_mu[i];
-    auto scaled_below = velocity::reference::stochastic_scales(scaled_ms, scaled_mu, scaled_mss, scaled_mus,
+    auto scaled_below = velocitypp::reference::stochastic_scales(scaled_ms, scaled_mu, scaled_mss, scaled_mus,
         rows, 1, initial, options, scratch);
-    expect(scaled_below.status == velocity::StochasticStatus::zero_scale &&
+    expect(scaled_below.status == velocitypp::StochasticStatus::zero_scale &&
            scaled_below.first > 0 && std::isfinite(scaled_below.first),
            "a positive below-floor FP32 residual remains zero-scale under uniform input rescaling");
 }
 
 void cpu_matches_reference_for_precision(
-    DenseFixture& f, velocity::ComputePrecision precision, double tol) {
-    velocity::RunOptions options;
+    DenseFixture& f, velocitypp::ComputePrecision precision, double tol) {
+    velocitypp::RunOptions options;
     options.compute_precision = precision;
-    options.output_dtype = velocity::StorageType::float64;
-    velocity::Workspace rw(f.prepared, options), cw(f.prepared, options);
+    options.output_dtype = anndatapp::DType::float64;
+    velocitypp::Workspace rw(f.prepared, options), cw(f.prepared, options);
     OutputCapture reference_capture, cpu_capture;
-    auto rr = velocity::reference::steady_state(f.prepared, rw, fit_options(),
+    auto rr = velocitypp::reference::steady_state(f.prepared, rw, fit_options(),
         {&reference_capture, capture_steady});
-    auto cr = velocity::cpu::steady_state(f.prepared, cw, fit_options(),
+    auto cr = velocitypp::cpu::steady_state(f.prepared, cw, fit_options(),
         {&cpu_capture, capture_steady});
     expect(fit_results_match(rr, cr, tol) && captures_match(reference_capture, cpu_capture, tol),
            "scalar reference and explicit CPU steady-state paths agree in the selected precision");
 
-    velocity::StochasticRunOptions stochastic_run;
+    velocitypp::StochasticRunOptions stochastic_run;
     stochastic_run.compute_precision = precision;
-    stochastic_run.output_dtype = velocity::StorageType::float64;
+    stochastic_run.output_dtype = anndatapp::DType::float64;
     stochastic_run.second_residual = true;
-    velocity::StochasticWorkspace rsw(f.prepared, stochastic_run), csw(f.prepared, stochastic_run);
+    velocitypp::StochasticWorkspace rsw(f.prepared, stochastic_run), csw(f.prepared, stochastic_run);
     OutputCapture stochastic_reference_capture, stochastic_cpu_capture;
-    velocity::StochasticOptions stochastic;
+    velocitypp::StochasticOptions stochastic;
     stochastic.initialization = fit_options();
-    auto sr = velocity::reference::stochastic(f.prepared, rsw, stochastic,
+    auto sr = velocitypp::reference::stochastic(f.prepared, rsw, stochastic,
         {&stochastic_reference_capture, capture_stochastic});
-    auto sc = velocity::cpu::stochastic(f.prepared, csw, stochastic,
+    auto sc = velocitypp::cpu::stochastic(f.prepared, csw, stochastic,
         {&stochastic_cpu_capture, capture_stochastic});
     expect(stochastic_results_match(sr, sc, tol) &&
            captures_match(stochastic_reference_capture, stochastic_cpu_capture, tol),
@@ -622,8 +521,8 @@ void cpu_matches_reference_for_precision(
 
 void scalar_reference_and_cpu_entries_agree() {
     DenseFixture f;
-    cpu_matches_reference_for_precision(f, velocity::ComputePrecision::float32, 1e-5);
-    cpu_matches_reference_for_precision(f, velocity::ComputePrecision::float64, 1e-10);
+    cpu_matches_reference_for_precision(f, velocitypp::ComputePrecision::float32, 1e-5);
+    cpu_matches_reference_for_precision(f, velocitypp::ComputePrecision::float64, 1e-10);
 }
 
 }
@@ -631,10 +530,9 @@ void scalar_reference_and_cpu_entries_agree() {
 int main() {
     default_precision_resolution_and_budgets();
     typed_stages_expose_real_float32_arithmetic_and_result_dtypes();
-    half_storage_is_decoded_and_duplicates_are_summed_before_products();
     sparse_expression_duplicates_are_coalesced_before_first_weighting();
     shuffled_graphs_preserve_source_order();
-    explicit_half_output_rounds_the_fp32_residual();
+    explicit_float32_output_stores_float_residuals();
     degenerate_inputs_keep_constant_nonfinite_rank_and_fallback_statuses();
     fp32_stochastic_residual_floor_is_scale_relative();
     scalar_reference_and_cpu_entries_agree();

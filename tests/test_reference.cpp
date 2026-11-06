@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-import velocity;
+import velocitypp;
 
 namespace {
 
@@ -96,26 +96,26 @@ SparseStorage compressed(anndatapp::Layout layout, std::size_t rows, std::size_t
     return out;
 }
 
-velocity::Input input_from(anndatapp::ArrayView s, anndatapp::ArrayView u,
+velocitypp::Input input_from(anndatapp::ArrayView s, anndatapp::ArrayView u,
                            anndatapp::ArrayView w) {
-    return velocity::Input{std::move(s), std::move(u), std::move(w)};
+    return velocitypp::Input{std::move(s), std::move(u), std::move(w)};
 }
 
-velocity::FitOptions exact_fit_options() {
-    velocity::FitOptions options;
-    options.trimming = velocity::Trimming::none;
+velocitypp::FitOptions exact_fit_options() {
+    velocitypp::FitOptions options;
+    options.trimming = velocitypp::Trimming::none;
     options.min_r2 = 0;
     options.min_ratio = 0;
-    options.low_signal = velocity::LowSignal::keep_filters;
+    options.low_signal = velocitypp::LowSignal::keep_filters;
     return options;
 }
 
-void expect_moments(const velocity::PreparedInput& prepared,
+void expect_moments(const velocitypp::PreparedInput& prepared,
                     const std::array<double, n * g>& ms_expected,
                     const std::array<double, n * g>& mu_expected,
                     const char* message) {
     std::array<double, n * g> ms{}, mu{};
-    velocity::reference::moments(prepared, 0, g, ms.data(), mu.data());
+    velocitypp::reference::moments(prepared, 0, g, ms.data(), mu.data());
     bool ok = true;
     for (std::size_t i = 0; i < ms.size(); ++i)
         ok = ok && close(ms[i], ms_expected[i]) && close(mu[i], mu_expected[i]);
@@ -127,7 +127,7 @@ void csr_graph_and_sparse_moments() {
     auto u_store = compressed(anndatapp::Layout::csc, n, g, unspliced.data());
     auto w_store = compressed(anndatapp::Layout::csr, n, n, weights.data());
     auto sa = s_store.array(), ua = u_store.array(), wa = w_store.array();
-    velocity::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()));
+    velocitypp::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()));
 
     expect_moments(prepared, expected_ms, expected_mu,
                    "CSR graph with CSR/CSC expression inputs matches hand-computed W*S and W*U");
@@ -146,7 +146,7 @@ void csc_graph_and_dense_negative_stride() {
         {n, g}, {-static_cast<std::ptrdiff_t>(g), 1});
     auto ua = anndatapp::Array::borrow_dense(reverse_u.data() + (n - 1) * g,
         {n, g}, {-static_cast<std::ptrdiff_t>(g), 1});
-    velocity::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()));
+    velocitypp::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()));
 
     expect_moments(prepared, expected_ms, expected_mu,
                    "CSC graph and negative-row-stride dense inputs preserve logical order");
@@ -157,9 +157,9 @@ void selected_genes_preserve_order_and_duplicates() {
     auto u_store = compressed(anndatapp::Layout::csr, n, g, unspliced.data());
     auto w_store = compressed(anndatapp::Layout::csc, n, n, weights.data());
     auto sa = s_store.array(), ua = u_store.array(), wa = w_store.array();
-    velocity::Input input = input_from(sa.view(), ua.view(), wa.view());
+    velocitypp::Input input = input_from(sa.view(), ua.view(), wa.view());
     input.genes = anndatapp::Axis::gather({2, 0, 2});
-    velocity::PreparedInput prepared(std::move(input));
+    velocitypp::PreparedInput prepared(std::move(input));
 
     expect(prepared.n_genes() == 3 && prepared.source_genes() == 3 &&
            prepared.gene_index(0) == 2 && prepared.gene_index(1) == 0 &&
@@ -186,7 +186,7 @@ void values_are_checked_for_finiteness() {
     auto ua = anndatapp::Array::borrow_dense(unspliced.data(), {n, g}, {static_cast<std::ptrdiff_t>(g), 1});
     auto w_store = compressed(anndatapp::Layout::csr, n, n, weights.data());
     auto wa = w_store.array();
-    velocity::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()),
+    velocitypp::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()),
                                       anndatapp::Validation::none);
     expect_invalid_argument([&] { prepared.validate_values(); },
                             "explicit value validation rejects a nonfinite dense expression value");
@@ -197,19 +197,19 @@ void workspace_respects_the_requested_bound() {
     auto u = anndatapp::Array::borrow_dense(unspliced.data(), {n, g}, {static_cast<std::ptrdiff_t>(g), 1});
     auto w_store = compressed(anndatapp::Layout::csr, n, n, weights.data());
     auto w = w_store.array();
-    velocity::PreparedInput prepared(input_from(s.view(), u.view(), w.view()));
+    velocitypp::PreparedInput prepared(input_from(s.view(), u.view(), w.view()));
 
-    velocity::RunOptions options;
+    velocitypp::RunOptions options;
     options.workspace_bytes = 1u << 20;
     options.block_genes = 64;
-    velocity::Workspace workspace(prepared, options);
+    velocitypp::Workspace workspace(prepared, options);
     expect(workspace.scratch_bytes() <= options.workspace_bytes &&
            workspace.block_genes() <= options.block_genes &&
            workspace.block_genes() <= prepared.n_genes(),
            "workspace reports bounded scratch and a block no larger than the request or gene count");
 
     options.workspace_bytes = 1;
-    expect_invalid_argument([&] { velocity::Workspace too_small(prepared, options); },
+    expect_invalid_argument([&] { velocitypp::Workspace too_small(prepared, options); },
                             "workspace rejects a cap too small for one gene and mandatory scratch");
 }
 
@@ -219,7 +219,7 @@ struct SinkCapture {
     std::vector<std::size_t> blocks;
 };
 
-void capture_velocity(void* context, const velocity::OutputBlock& block) {
+void capture_velocity(void* context, const velocitypp::OutputBlock& block) {
     auto& capture = *static_cast<SinkCapture*>(context);
     ++capture.calls;
     capture.blocks.push_back(block.count);
@@ -236,15 +236,15 @@ void reference_fit_sink_and_caller_output() {
     auto ua = anndatapp::Array::borrow_dense(unspliced.data(), {n, g}, {static_cast<std::ptrdiff_t>(g), 1});
     auto w_store = compressed(anndatapp::Layout::csr, n, n, weights.data());
     auto wa = w_store.array();
-    velocity::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()));
+    velocitypp::PreparedInput prepared(input_from(sa.view(), ua.view(), wa.view()));
 
-    velocity::RunOptions run;
+    velocitypp::RunOptions run;
     run.block_genes = 2;
-    run.output_dtype = velocity::StorageType::float64;
-    velocity::Workspace workspace(prepared, run);
+    run.output_dtype = anndatapp::DType::float64;
+    velocitypp::Workspace workspace(prepared, run);
     SinkCapture capture{n, g, 0, std::vector<double>(n * g, 99), {}};
-    velocity::BlockSink sink{&capture, capture_velocity};
-    auto result = velocity::reference::steady_state(
+    velocitypp::BlockSink sink{&capture, capture_velocity};
+    auto result = velocitypp::reference::steady_state(
         prepared, workspace, exact_fit_options(), sink);
 
     const auto gamma = result.gamma.view().dense<double>();
@@ -256,7 +256,7 @@ void reference_fit_sink_and_caller_output() {
     for (std::size_t j = 0; j < g; ++j)
         fits_ok = fits_ok && close(gamma.data()[j], 2) && close(offset.data()[j], 0) &&
             r2.data()[j] > .999999 && selected.data()[j] &&
-            status.data()[j] == static_cast<std::uint8_t>(velocity::FitStatus::ok);
+            status.data()[j] == static_cast<std::uint8_t>(velocitypp::FitStatus::ok);
     expect(fits_ok, "callable reference fit recovers exact proportional steady-state genes");
     bool sink_ok = capture.calls == 2 && capture.blocks.size() == 2 &&
         capture.blocks[0] == 2 && capture.blocks[1] == 1;
@@ -264,7 +264,7 @@ void reference_fit_sink_and_caller_output() {
     expect(sink_ok, "reference sink consumes reusable velocity blocks synchronously");
 
     auto caller_velocity = anndatapp::Array::zeros<double>({n, g});
-    auto into = velocity::reference::steady_state_into(
+    auto into = velocitypp::reference::steady_state_into(
         prepared, workspace, caller_velocity.edit(), exact_fit_options());
     auto out = caller_velocity.view().dense<double>();
     bool into_ok = true;
@@ -308,21 +308,21 @@ void masks_and_low_signal_selection() {
     std::array<bool, genes> gene_values{true, false, true, true, true, true, true};
     auto fit_mask = anndatapp::Array::borrow_dense(fit_values.data(), {rows}, {1});
     auto gene_mask = anndatapp::Array::borrow_dense(gene_values.data(), {genes}, {1});
-    velocity::Input input = input_from(sa.view(), ua.view(), wa.view());
+    velocitypp::Input input = input_from(sa.view(), ua.view(), wa.view());
     input.genes = anndatapp::Axis::gather({4, 5, 0, 2, 1, 3, 6});
     input.fit_mask = fit_mask.view();
     input.gene_mask = gene_mask.view();
-    velocity::PreparedInput prepared(std::move(input));
-    velocity::Workspace workspace(prepared);
+    velocitypp::PreparedInput prepared(std::move(input));
+    velocitypp::Workspace workspace(prepared);
 
     auto options = exact_fit_options();
-    auto kept = velocity::reference::steady_state(prepared, workspace, options);
+    auto kept = velocitypp::reference::steady_state(prepared, workspace, options);
     auto gamma = kept.gamma.view().dense<double>();
     auto r2 = kept.r2.view().dense<double>();
     auto selected = kept.genes.view().dense<bool>();
     auto status = kept.status.view().dense<std::uint8_t>();
-    const auto no_signal = std::uint8_t(velocity::FitStatus::no_signal);
-    const auto ok = std::uint8_t(velocity::FitStatus::ok);
+    const auto no_signal = std::uint8_t(velocitypp::FitStatus::no_signal);
+    const auto ok = std::uint8_t(velocitypp::FitStatus::ok);
     bool masks_ok = !kept.low_signal &&
         close(gamma.data()[0], 2) && r2.data()[0] > .7 && r2.data()[0] < .99 &&
         selected.data()[0] && status.data()[0] == ok &&
@@ -333,15 +333,15 @@ void masks_and_low_signal_selection() {
            "fit mask trains on its rows, R2 uses all rows, and source-gene mask follows a gather axis");
 
     options.min_r2 = .9999;
-    auto filtered = velocity::reference::steady_state(prepared, workspace, options);
+    auto filtered = velocitypp::reference::steady_state(prepared, workspace, options);
     auto filtered_selected = filtered.genes.view().dense<bool>();
     std::size_t filtered_count = 0;
     for (std::size_t j = 0; j < genes; ++j) filtered_count += filtered_selected.data()[j];
     expect(!filtered.low_signal && filtered_count == 1 && filtered_selected.data()[2],
            "default keep_filters preserves the per-gene threshold result when fewer than two genes pass");
 
-    options.low_signal = velocity::LowSignal::scvelo_percentile;
-    auto percentile = velocity::reference::steady_state(prepared, workspace, options);
+    options.low_signal = velocitypp::LowSignal::scvelo_percentile;
+    auto percentile = velocitypp::reference::steady_state(prepared, workspace, options);
     auto percentile_selected = percentile.genes.view().dense<bool>();
     auto percentile_status = percentile.status.view().dense<std::uint8_t>();
     std::size_t selected_count = 0;
@@ -356,9 +356,9 @@ void degenerate_gene_reports_no_signal() {
     constexpr std::array<double, 4> x{0, 0, 0, 0};
     constexpr std::array<double, 4> y{1, 2, 3, 4};
     std::array<double, 4> score_scratch{};
-    const auto fit = velocity::reference::fit_gene(x.data(), y.data(), x.size(), 1,
+    const auto fit = velocitypp::reference::fit_gene(x.data(), y.data(), x.size(), 1,
         exact_fit_options(), score_scratch.data());
-    expect(fit.status == velocity::FitStatus::no_signal && !fit.selected,
+    expect(fit.status == velocitypp::FitStatus::no_signal && !fit.selected,
            "zero-expression fit has no_signal status and is not selected");
 }
 
@@ -407,7 +407,7 @@ void neighborhood_preparation_normalizes_sparse_and_dense_graphs() {
     constexpr std::array<std::int64_t, 5> csr_offsets{0, 6, 8, 12, 12};
     auto csr = anndatapp::Array::borrow_sparse(anndatapp::Layout::csr, 4, 4,
         csr_values.size(), csr_values.data(), csr_indices.data(), csr_offsets.data());
-    auto csr_prepared = velocity::reference::prepare_neighborhood(csr.view());
+    auto csr_prepared = velocitypp::reference::prepare_neighborhood(csr.view());
     expect_csr(csr_prepared, output_offsets, output_indices, output_values,
         "noncanonical CSR coalesces duplicates, inserts one diagonal, and normalizes each row");
 
@@ -416,7 +416,7 @@ void neighborhood_preparation_normalizes_sparse_and_dense_graphs() {
     constexpr std::array<std::int64_t, 5> csc_offsets{0, 3, 7, 9, 12};
     auto csc = anndatapp::Array::borrow_sparse(anndatapp::Layout::csc, 4, 4,
         csc_values.size(), csc_values.data(), csc_indices.data(), csc_offsets.data());
-    auto csc_prepared = velocity::reference::prepare_neighborhood(csc.view());
+    auto csc_prepared = velocitypp::reference::prepare_neighborhood(csc.view());
     expect_csr(csc_prepared, output_offsets, output_indices, output_values,
         "noncanonical CSC with unsorted rows and duplicates produces the same normalized graph");
 
@@ -427,14 +427,14 @@ void neighborhood_preparation_normalizes_sparse_and_dense_graphs() {
         -1, 0, 0, 0
     };
     auto dense = anndatapp::Array::borrow_dense(dense_values.data(), {4, 4}, {4, 1});
-    auto dense_prepared = velocity::reference::prepare_neighborhood(dense.view());
+    auto dense_prepared = velocitypp::reference::prepare_neighborhood(dense.view());
     expect_csr(dense_prepared, output_offsets, output_indices, output_values,
         "dense graph retains positive off-diagonals and one diagonal before row normalization");
 }
 
 void neighborhood_preparation_handles_empty_and_nonfinite_graphs() {
     auto empty = anndatapp::Array::csr<float, std::uint8_t, std::uint8_t>(0, 0, 0);
-    auto prepared_empty = velocity::reference::prepare_neighborhood(empty.view());
+    auto prepared_empty = velocitypp::reference::prepare_neighborhood(empty.view());
     const auto empty_view = prepared_empty.view();
     const auto sparse = empty_view.sparse_bytes();
     expect(empty_view.extent(0) == 0 && empty_view.extent(1) == 0 &&
@@ -445,7 +445,7 @@ void neighborhood_preparation_handles_empty_and_nonfinite_graphs() {
     auto dense_bad_values = dense_values;
     dense_bad_values[1] = std::numeric_limits<float>::infinity();
     auto dense_bad = anndatapp::Array::borrow_dense(dense_bad_values.data(), {2, 2}, {2, 1});
-    expect_invalid_argument([&] { (void)velocity::reference::prepare_neighborhood(dense_bad.view()); },
+    expect_invalid_argument([&] { (void)velocitypp::reference::prepare_neighborhood(dense_bad.view()); },
         "dense neighborhood preparation rejects nonfinite connectivity values");
 
     constexpr std::array<float, 1> sparse_values{std::numeric_limits<float>::quiet_NaN()};
@@ -453,7 +453,7 @@ void neighborhood_preparation_handles_empty_and_nonfinite_graphs() {
     constexpr std::array<std::int64_t, 3> sparse_offsets{0, 1, 1};
     auto sparse_bad = anndatapp::Array::borrow_sparse(anndatapp::Layout::csr, 2, 2, 1,
         sparse_values.data(), sparse_indices.data(), sparse_offsets.data());
-    expect_invalid_argument([&] { (void)velocity::reference::prepare_neighborhood(sparse_bad.view()); },
+    expect_invalid_argument([&] { (void)velocitypp::reference::prepare_neighborhood(sparse_bad.view()); },
         "sparse neighborhood preparation rejects nonfinite stored connectivity values");
 }
 

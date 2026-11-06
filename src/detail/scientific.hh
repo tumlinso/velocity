@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace velocity::detail::scientific {
+namespace velocitypp::detail::scientific {
 enum class FitStatus : std::uint8_t { ok, insufficient_data, no_signal, singular, constant_response };
 enum class Trimming { none, upper, tails };
 enum class StochasticStatus : std::uint8_t { ok, not_selected, invalid_initialization, insufficient_data, zero_scale, singular, nonfinite };

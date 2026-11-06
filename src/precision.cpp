@@ -10,22 +10,22 @@ module;
 #include <vector>
 #include "detail/sensitivity.hh"
 
-module velocity.precision;
-import velocity;
+module velocitypp.precision;
+import velocitypp;
 
-namespace velocity::precision {
+namespace velocitypp::precision {
 namespace {
 
 struct Sort {
     template<class T> void operator()(T* p, std::size_t n) const { std::sort(p, p+n); }
 };
 
-template<class T> velocity::detail::sensitivity::Options<T> numeric(SensitivityOptions o) {
+template<class T> velocitypp::detail::sensitivity::Options<T> numeric(SensitivityOptions o) {
     return {T(o.band), T(o.prediction_limit), T(o.r2_limit)};
 }
 
-template<class T> velocity::detail::scientific::Options<T> numeric(const FitOptions& o) {
-    using namespace velocity::detail;
+template<class T> velocitypp::detail::scientific::Options<T> numeric(const FitOptions& o) {
+    using namespace velocitypp::detail;
     return {scientific::Trimming(o.trimming), T(o.percentile_low), T(o.percentile_high),
             o.fit_intercept, o.positive_intercept, o.r2_adjusted,
             T(o.ratio_min), T(o.ratio_max), T(o.min_r2), T(o.min_ratio)};
@@ -47,7 +47,7 @@ template<class T> BasicSensitivityReport<T> report_gene(const T* x, const T* y,
         if (rows > 1 && std::uintmax_t(rows - 1) > std::uintmax_t(std::numeric_limits<std::ptrdiff_t>::max())/step)
             throw std::invalid_argument("sensitivity stride overflows row offsets");
     }
-    using namespace velocity::detail;
+    using namespace velocitypp::detail;
     auto result = sensitivity::report(x, y, rows, stride,
         scientific::Fit<T>{base.gamma, base.offset, base.r2, scientific::FitStatus(base.status), base.selected},
         numeric<T>(fit), scratch, mask, enabled, numeric<T>(o), Sort{});
@@ -57,10 +57,10 @@ template<class T> BasicSensitivityReport<T> report_gene(const T* x, const T* y,
 }
 
 bool higher_precision(const OriginalColumn& c, std::size_t n) {
-    auto usable = [n](const NumericView& a) {
+    auto usable = [n](const anndatapp::ArrayView& a) {
         if (a.rank() != 2 || a.extent(0) != n || a.extent(1) != 1)
             throw std::invalid_argument("an original source column must have shape cells by one");
-        return a.dtype() == StorageType::float32 || a.dtype() == StorageType::float64;
+        return a.dtype() == anndatapp::DType::float32 || a.dtype() == anndatapp::DType::float64;
     };
     return usable(c.spliced) && usable(c.unspliced);
 }
@@ -107,15 +107,15 @@ SensitivityReport32 sensitivity_gene(const float* x, const float* y, std::size_t
     return report_gene(x, y, rows, stride, base, fit, scratch, mask, enabled, o);
 }
 
-OriginalArraySource::OriginalArraySource(NumericView s, NumericView u)
+OriginalArraySource::OriginalArraySource(anndatapp::ArrayView s, anndatapp::ArrayView u)
     : spliced_(std::move(s)), unspliced_(std::move(u)) {
     spliced_.validate(); unspliced_.validate();
     if (spliced_.rank() != 2 || unspliced_.rank() != 2 ||
         spliced_.layout() != anndatapp::Layout::dense || unspliced_.layout() != anndatapp::Layout::dense ||
         spliced_.extent(0) != unspliced_.extent(0) || spliced_.extent(1) != unspliced_.extent(1))
         throw std::invalid_argument("original source arrays must be matching dense matrices");
-    auto floating = [](StorageType t) {
-        return t == StorageType::float16 || t == StorageType::float32 || t == StorageType::float64;
+    auto floating = [](anndatapp::DType t) {
+        return t == anndatapp::DType::float32 || t == anndatapp::DType::float64;
     };
     if (!floating(spliced_.dtype()) || !floating(unspliced_.dtype()))
         throw std::invalid_argument("original source arrays must use floating storage");

@@ -3,7 +3,6 @@
 #include <charconv>
 #include <chrono>
 #include <cmath>
-#include <Cellerator/ops/numeric/binary16.hh>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -21,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-import velocity;
+import velocitypp;
 
 namespace {
 constinit std::atomic<bool> count_allocations{false};
@@ -339,7 +338,7 @@ std::size_t array_bytes(const anndatapp::Array& a) {
     return count*scalar_bytes(a.dtype());
 }
 
-std::size_t fit_result_bytes(const velocity::FitResult& fit) {
+std::size_t fit_result_bytes(const velocitypp::FitResult& fit) {
     return array_bytes(fit.gamma) + array_bytes(fit.offset) + array_bytes(fit.r2)
         + array_bytes(fit.genes) + array_bytes(fit.status);
 }
@@ -357,9 +356,6 @@ struct Checksum {
     }
 };
 
-void checksum_add(Checksum& checksum, std::uint16_t bits) {
-    checksum.add(cellerator::numeric::load_f16(bits));
-}
 template<class T> void checksum_add(Checksum& checksum, T value) { checksum.add(value); }
 
 template<class T>
@@ -370,21 +366,18 @@ void checksum_values(Checksum& checksum, const T* data, std::size_t rows, std::s
             checksum_add(checksum, data[std::ptrdiff_t(i)*row_stride + std::ptrdiff_t(j)*column_stride]);
 }
 
-void checksum_block(Checksum& checksum, const velocity::NumericView& output,
+void checksum_block(Checksum& checksum, const anndatapp::ArrayView& output,
                     std::size_t count, std::size_t rows) {
     if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
         || output.extent(0) != rows || output.extent(1) != count)
         throw std::runtime_error("velocity sink received an unexpected output view");
-    if (output.dtype() == velocity::StorageType::float16) {
-        const auto view = output.dense<std::uint16_t>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else if (output.dtype() == velocity::StorageType::float32) {
+    if (output.dtype() == anndatapp::DType::float32) {
         const auto view = output.dense<float>();
         checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else if (output.dtype() == velocity::StorageType::float64) {
+    } else if (output.dtype() == anndatapp::DType::float64) {
         const auto view = output.dense<double>();
         checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else throw std::runtime_error("velocity sink dtype must be float16, float32, or float64");
+    } else throw std::runtime_error("velocity sink dtype must be float32 or float64");
 }
 
 struct SinkState {
@@ -392,7 +385,7 @@ struct SinkState {
     std::size_t next_gene = 0, rows = 0;
 };
 
-void stream_sink(void* context, const velocity::OutputBlock& block) {
+void stream_sink(void* context, const velocitypp::OutputBlock& block) {
     auto& state = *static_cast<SinkState*>(context);
     if (block.first != state.next_gene || !block.count)
         throw std::runtime_error("velocity sink blocks are not contiguous");
@@ -400,27 +393,22 @@ void stream_sink(void* context, const velocity::OutputBlock& block) {
     state.next_gene += block.count;
 }
 
-void checksum_retained(Checksum& checksum, const velocity::NumericView& output,
+void checksum_retained(Checksum& checksum, const anndatapp::ArrayView& output,
                        std::size_t rows, std::size_t genes, std::size_t block_genes) {
     if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
         || output.extent(0) != rows || output.extent(1) != genes)
         throw std::runtime_error("retained velocity output has an unexpected shape");
-    if (output.dtype() == velocity::StorageType::float16) {
-        const auto view = output.dense<std::uint16_t>();
-        for (std::size_t first = 0; first < genes; first += block_genes)
-            checksum_values(checksum, view.data() + std::ptrdiff_t(first)*view.stride(1), rows,
-                std::min(block_genes, genes - first), view.stride(0), view.stride(1));
-    } else if (output.dtype() == velocity::StorageType::float32) {
+    if (output.dtype() == anndatapp::DType::float32) {
         const auto view = output.dense<float>();
         for (std::size_t first = 0; first < genes; first += block_genes)
             checksum_values(checksum, view.data() + std::ptrdiff_t(first)*view.stride(1), rows,
                 std::min(block_genes, genes - first), view.stride(0), view.stride(1));
-    } else if (output.dtype() == velocity::StorageType::float64) {
+    } else if (output.dtype() == anndatapp::DType::float64) {
         const auto view = output.dense<double>();
         for (std::size_t first = 0; first < genes; first += block_genes)
             checksum_values(checksum, view.data() + std::ptrdiff_t(first)*view.stride(1), rows,
                 std::min(block_genes, genes - first), view.stride(0), view.stride(1));
-    } else throw std::runtime_error("retained velocity dtype must be float16, float32, or float64");
+    } else throw std::runtime_error("retained velocity dtype must be float32 or float64");
 }
 
 struct Memory { std::uint64_t rss = 0, hwm = 0; };
@@ -570,13 +558,13 @@ int run(const Config& config) {
     auto w = make_array(fixture.weights, config.graph);
     fixture.spliced.reset(); fixture.unspliced.reset(); fixture.weights.reset();
 
-    velocity::Input input{s.array.view(), u.array.view(), w.array.view()};
-    velocity::PreparedInput prepared(std::move(input), anndatapp::Validation::none);
-    velocity::RunOptions run_options;
+    velocitypp::Input input{s.array.view(), u.array.view(), w.array.view()};
+    velocitypp::PreparedInput prepared(std::move(input), anndatapp::Validation::none);
+    velocitypp::RunOptions run_options;
     run_options.workspace_bytes = max_workspace_bytes;
     run_options.block_genes = config.block;
-    run_options.output_dtype = velocity::StorageType::float32;
-    velocity::Workspace workspace(prepared, run_options);
+    run_options.output_dtype = anndatapp::DType::float32;
+    velocitypp::Workspace workspace(prepared, run_options);
     const auto input_storage_bytes = s.bytes + u.bytes + w.bytes;
     const auto prep_accounted = input_storage_bytes + prepared.storage_bytes();
     anndatapp::Array retained;
@@ -594,17 +582,17 @@ int run(const Config& config) {
     const auto prep_end = Clock::now();
 
     Checksum checksum;
-    velocity::FitResult result;
+    velocitypp::FitResult result;
     const auto execution_alloc_start = allocation_stats();
     count_allocations.store(true, std::memory_order_relaxed);
     const auto execute_start = Clock::now();
     if (config.retain) {
-        result = velocity::reference::steady_state_into(prepared, workspace,
-            velocity::NumericEdit(retained.edit()));
-        checksum_retained(checksum, velocity::NumericView(retained.view()), n, g, config.block);
+        result = velocitypp::reference::steady_state_into(prepared, workspace,
+            anndatapp::ArrayEdit(retained.edit()));
+        checksum_retained(checksum, anndatapp::ArrayView(retained.view()), n, g, config.block);
     } else {
         SinkState sink{{}, 0, n};
-        result = velocity::reference::steady_state(prepared, workspace, {}, {&sink, stream_sink});
+        result = velocitypp::reference::steady_state(prepared, workspace, {}, {&sink, stream_sink});
         checksum = sink.checksum;
         if (sink.next_gene != g) throw std::runtime_error("stream sink did not receive every gene block");
     }

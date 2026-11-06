@@ -8,11 +8,10 @@ module;
 #include <string_view>
 #include <utility>
 
-export module velocity;
+export module velocitypp;
 export import anndatapp.core;
-export import :numeric;
 
-export namespace velocity {
+export namespace velocitypp {
 
 enum class ComputePrecision : std::uint8_t { float32, float64, automatic };
 
@@ -32,13 +31,13 @@ struct FitOptions {
 
 struct RunOptions {
     std::size_t workspace_bytes = 64 * 1024 * 1024, block_genes = 64;
-    std::optional<StorageType> output_dtype;
+    std::optional<anndatapp::DType> output_dtype;
     bool velocity = true, spliced_moments = false, unspliced_moments = false;
     ComputePrecision compute_precision = ComputePrecision::automatic;
 };
 
 struct Input {
-    NumericView spliced, unspliced, weights;
+    anndatapp::ArrayView spliced, unspliced, weights;
     anndatapp::Axis genes = anndatapp::Axis::all();
     std::optional<anndatapp::ArrayView> fit_mask, gene_mask;
 };
@@ -62,11 +61,11 @@ public:
     std::size_t source_genes() const noexcept;
     std::size_t gene_index(std::size_t position) const;
     std::size_t storage_bytes() const noexcept;
-    StorageType output_dtype() const noexcept;
+    anndatapp::DType output_dtype() const noexcept;
     void validate_values() const;
-    NumericView spliced() const;
-    NumericView unspliced() const;
-    NumericView weights() const;
+    anndatapp::ArrayView spliced() const;
+    anndatapp::ArrayView unspliced() const;
+    anndatapp::ArrayView weights() const;
     std::optional<anndatapp::ArrayView> fit_mask() const;
     std::optional<anndatapp::ArrayView> gene_mask() const;
 private:
@@ -127,7 +126,7 @@ using FitBlock32 = BasicFitBlock<float>;
 // These views alias reusable workspace; a sink must finish reading before return.
 struct OutputBlock {
     std::size_t first = 0, count = 0;
-    NumericView velocity, spliced, unspliced;
+    anndatapp::ArrayView velocity, spliced, unspliced;
 };
 struct BlockSink {
     void* context = nullptr;
@@ -145,7 +144,7 @@ public:
     BasicMomentBlock<T> moments(std::size_t first, std::size_t count);
     BasicFitBlock<T> fit(BasicMomentBlock<T>);
     // Alternate sources must be dense N by count batches; caller owns staging.
-    void replace_moments(BasicMomentBlock<T>&, std::size_t offset, std::size_t count, NumericView s, NumericView u);
+    void replace_moments(BasicMomentBlock<T>&, std::size_t offset, std::size_t count, anndatapp::ArrayView s, anndatapp::ArrayView u);
     void emit(BasicMomentBlock<T>, BasicFitBlock<T>);
     FitResult finish();
     bool bound_to(const PreparedInput&, const Workspace&) const noexcept;
@@ -177,15 +176,15 @@ auto steady_state_with(Operations& operations, std::size_t genes, std::size_t bl
 }
 
 namespace reference {
-anndatapp::Array prepare_neighborhood(NumericView connectivities);
+anndatapp::Array prepare_neighborhood(anndatapp::ArrayView connectivities);
 void moments(const PreparedInput&, std::size_t first, std::size_t count,
              double* spliced, double* unspliced);
 GeneFit fit_gene(const double* spliced, const double* unspliced, std::size_t rows,
                  std::ptrdiff_t stride, const FitOptions&, double* score_scratch,
                  const std::uint8_t* fit_mask = nullptr, bool gene_enabled = true);
-void residuals(const MomentBlock&, const FitBlock&, NumericEdit output);
+void residuals(const MomentBlock&, const FitBlock&, anndatapp::ArrayEdit output);
 FitResult steady_state(const PreparedInput&, Workspace&, FitOptions = {}, BlockSink = {});
-FitResult steady_state_into(const PreparedInput&, Workspace&, NumericEdit velocity,
+FitResult steady_state_into(const PreparedInput&, Workspace&, anndatapp::ArrayEdit velocity,
                             FitOptions = {});
 
 void moments(const PreparedInput&, std::size_t first, std::size_t count,
@@ -193,7 +192,7 @@ void moments(const PreparedInput&, std::size_t first, std::size_t count,
 GeneFit32 fit_gene(const float* spliced, const float* unspliced, std::size_t rows,
                  std::ptrdiff_t stride, const FitOptions&, float* score_scratch,
                  const std::uint8_t* fit_mask = nullptr, bool gene_enabled = true);
-void residuals(const MomentBlock32&, const FitBlock32&, NumericEdit output);
+void residuals(const MomentBlock32&, const FitBlock32&, anndatapp::ArrayEdit output);
 }
 
 // Stochastic refinement preserves the deterministic selection/diagnostics.
@@ -206,7 +205,7 @@ struct StochasticOptions {
 };
 struct StochasticRunOptions {
     std::size_t workspace_bytes = 64 * 1024 * 1024, block_genes = 64;
-    std::optional<StorageType> output_dtype;
+    std::optional<anndatapp::DType> output_dtype;
     bool velocity = true, second_residual = false;
     bool spliced_moments = false, unspliced_moments = false;
     bool spliced_second = false, cross = false, unspliced_second = false;
@@ -279,7 +278,7 @@ using StochasticFitBlock = BasicStochasticFitBlock<double>;
 using StochasticFitBlock32 = BasicStochasticFitBlock<float>;
 struct StochasticOutputBlock {
     std::size_t first = 0, count = 0;
-    NumericView velocity, second_residual, spliced, unspliced, spliced_second, cross, unspliced_second;
+    anndatapp::ArrayView velocity, second_residual, spliced, unspliced, spliced_second, cross, unspliced_second;
 };
 struct StochasticBlockSink {
     void* context = nullptr;
@@ -297,9 +296,9 @@ public:
     BasicFitBlock<T> initial_fit(BasicMomentBlock<T>);
     void accept_initialization(BasicMomentBlock<T>, BasicFitBlock<T>);
     // Alternate sources must be dense N by count batches; caller owns staging.
-    void replace_moments(BasicMomentBlock<T>&, std::size_t offset, std::size_t count, NumericView s, NumericView u);
+    void replace_moments(BasicMomentBlock<T>&, std::size_t offset, std::size_t count, anndatapp::ArrayView s, anndatapp::ArrayView u);
     // Alternate sources must be dense N by count batches; caller owns staging.
-    void replace_moments(BasicStochasticMomentBlock<T>&, std::size_t offset, std::size_t count, NumericView s, NumericView u);
+    void replace_moments(BasicStochasticMomentBlock<T>&, std::size_t offset, std::size_t count, anndatapp::ArrayView s, anndatapp::ArrayView u);
     void resolve_selection();
     BasicStochasticMomentBlock<T> moments(std::size_t first, std::size_t count);
     BasicStochasticScaleBlock<T> scales(BasicStochasticMomentBlock<T>);
@@ -357,10 +356,10 @@ StochasticGeneFit stochastic_fit_gene(const double* spliced, const double* unspl
     const GeneFit&, StochasticScales, const StochasticOptions&, double* score_scratch,
     const std::uint8_t* fit_mask = nullptr);
 void stochastic_residuals(const StochasticMomentBlock&, const StochasticFitBlock&,
-                          NumericEdit velocity, std::optional<NumericEdit> second_residual = {});
+                          anndatapp::ArrayEdit velocity, std::optional<anndatapp::ArrayEdit> second_residual = {});
 StochasticFitResult stochastic(const PreparedInput&, StochasticWorkspace&, StochasticOptions = {}, StochasticBlockSink = {});
-StochasticFitResult stochastic_into(const PreparedInput&, StochasticWorkspace&, NumericEdit velocity,
-    StochasticOptions = {}, std::optional<NumericEdit> second_residual = {});
+StochasticFitResult stochastic_into(const PreparedInput&, StochasticWorkspace&, anndatapp::ArrayEdit velocity,
+    StochasticOptions = {}, std::optional<anndatapp::ArrayEdit> second_residual = {});
 
 void second_moments(const PreparedInput&, std::size_t first, std::size_t count,
                     float* spliced, float* unspliced, float* spliced_second, float* cross,
@@ -373,20 +372,20 @@ StochasticGeneFit32 stochastic_fit_gene(const float* spliced, const float* unspl
     const GeneFit32&, StochasticScales32, const StochasticOptions&, float* score_scratch,
     const std::uint8_t* fit_mask = nullptr);
 void stochastic_residuals(const StochasticMomentBlock32&, const StochasticFitBlock32&,
-                          NumericEdit velocity, std::optional<NumericEdit> second_residual = {});
+                          anndatapp::ArrayEdit velocity, std::optional<anndatapp::ArrayEdit> second_residual = {});
 // Alternate sources are N by K batches in caller-supplied column order. The
 // prepared graph is reused; sparse source indexing is cold caller-owned
 // acquisition outside a Workspace budget. Stage replacement requires dense input.
-template<class T> void moments_from(const PreparedInput&, NumericView s, NumericView u,
+template<class T> void moments_from(const PreparedInput&, anndatapp::ArrayView s, anndatapp::ArrayView u,
     T* ms, T* mu, std::size_t row_stride);
-template<class T> void second_moments_from(const PreparedInput&, NumericView s, NumericView u,
+template<class T> void second_moments_from(const PreparedInput&, anndatapp::ArrayView s, anndatapp::ArrayView u,
     T* ms, T* mu, T* mss, T* mus, T* muu, T* source_s, T* source_u, std::size_t row_stride);
 
 }
 
 }
 
-export namespace velocity::cpu {
+export namespace velocitypp::cpu {
 // Compiled portable CPU helpers; explicitly callable when other paths are selected.
 FitResult steady_state(const PreparedInput&, Workspace&, FitOptions = {}, BlockSink = {});
 StochasticFitResult stochastic(const PreparedInput&, StochasticWorkspace&, StochasticOptions = {}, StochasticBlockSink = {});

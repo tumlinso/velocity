@@ -1,7 +1,7 @@
 #pragma once
 // Include scientific.hh in the global fragment, then this header after importing
 // velocity. Conversion occurs outside the element loops.
-namespace velocity::detail {
+namespace velocitypp::detail {
 template<class T> scientific::Options<T> numeric_options(const FitOptions& o) {
     return {scientific::Trimming(o.trimming), T(o.percentile_low), T(o.percentile_high),
             o.fit_intercept, o.positive_intercept, o.r2_adjusted,

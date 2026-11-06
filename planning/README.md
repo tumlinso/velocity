@@ -1,19 +1,25 @@
 # Planning state
 
+The JSON plans and receipts below are preserved historical records for earlier
+`velocity` source snapshots. They retain their original qualification status
+and are not rewritten to describe the current `velocitypp` package. None of
+their source-bound numerical, performance, FP16, or GPU results qualifies the
+current direct-view source.
+
 The completed [first-party relocation](velocity-relocation.json) records the
-move into this Cellerator component and its separate quarantine. The original
-checkout retains Git/workflow state and raw artifacts; no builds or tests were
-run for the move.
+earlier move into a Cellerator component and its separate quarantine. The
+original checkout retains Git/workflow state and raw artifacts; no builds or
+tests were run for that move.
 
-The [portable source segmentation](portable-segmentation.json) moved CUDA/AVX2
-code and accelerator support outside the active build. The portable component
-and its accelerator archive have since been relocated into the Cellerator
-checkout; see [the current source boundary](../docs/segmentation.md). Portable
-FP16 consumption and FP32/FP64 math remain. The relocation made no data-package
-changes and ran no build or test workflow.
+The [portable source segmentation](portable-segmentation.json) records an
+earlier move of CUDA/AVX2 code and accelerator support outside that source
+snapshot's active build. Its later relocation and FP16 ownership notes describe
+the previous component layout; they are not the current standalone boundary.
+See [the current source boundary](../docs/segmentation.md). These relocations
+made no data-package changes and ran no build or test workflow.
 
-This setup establishes project intent, scientific source evidence, contributor
-guidance, Project Control registration, and a native Todo authority.
+That historical setup established project intent, scientific source evidence,
+contributor guidance, Project Control registration, and a native Todo authority.
 
 The user approved and authorized [Milestone 1](milestone-1.json): first moments,
 steady-state velocity, bounded workspace, customization, and qualification.
@@ -45,7 +51,8 @@ outside its scope. Its source-bound dependencies and local receipts are recorded
 in both repositories. The execution-handle waiver continues; Scheduler admission
 and local validation do not manufacture native Todo outcome acceptance.
 
-Milestone 3 implementation and local qualification are complete. The
+For the recorded Milestone 3 source snapshot, implementation and local
+qualification were complete. The
 [validation receipt](../tests/results/milestone-3.json),
 [per-type numerical errors](../tests/results/precision-errors.json),
 [runtime/memory measurements](../benchmarks/results/milestone-3.json), and
@@ -57,12 +64,23 @@ Specialized AVX2 and CUDA paths demonstrated no end-to-end gain on the measured
 sparse workload. All task GPU leases have verified cleanup.
 
 The [setup receipt](setup-receipt.json) records verified bootstrap outcomes and
-any remaining runtime limitation. It is sanitized evidence, not workflow
-authority. Native authority lives in the ignored
-`.todo-orchestrator/authority.sqlite3`; future authored plan packages must be
-previewed and committed through supported Project Control authoring routes.
+any remaining runtime limitation for the earlier standalone checkout. It is
+sanitized historical evidence, not workflow authority. Its native authority
+files remain in the original checkout and do not establish current Project
+Control state.
 
 Use the [architecture](../docs/architecture.md),
 [scVelo foundation audit](../docs/scvelo-foundation.md), and
 [validation](../docs/validation.md) for scope and evidence. Future scientific
 families require their own user-directed milestones.
+
+## Current standalone package boundary
+
+The current package is Velocity++ with modules `velocitypp` and
+`velocitypp.precision`, namespace `velocitypp`, and installed target
+`velocitypp::velocitypp`. It uses FP32/FP64 AnnData++ arrays directly through
+`anndatapp::ArrayView`, `ArrayEdit`, and `DType`. FP16/binary16 support,
+Cellerator dependencies and aliases, and CUDA/AVX2 implementations are outside
+this standalone checkout. The root `ccell` wrappers provide `ccell.velocity`;
+`ccell` owns preprocessing. The standalone repository is `tumlinso/velocitypp`;
+its local ccell submodule directory remains `velocity/`.

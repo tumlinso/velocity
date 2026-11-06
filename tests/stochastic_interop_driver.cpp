@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-import velocity;
+import velocitypp;
 
 namespace {
 struct Matrix {
@@ -33,10 +33,10 @@ Matrix matrix(std::istream& in, std::size_t rows, std::size_t nnz) {
     read(in, m.values.data(), nnz);
     return m;
 }
-velocity::Trimming trim(const std::string& value) {
-    if (value == "none") return velocity::Trimming::none;
-    if (value == "upper") return velocity::Trimming::upper;
-    if (value == "tails") return velocity::Trimming::tails;
+velocitypp::Trimming trim(const std::string& value) {
+    if (value == "none") return velocitypp::Trimming::none;
+    if (value == "upper") return velocitypp::Trimming::upper;
+    if (value == "tails") return velocitypp::Trimming::tails;
     throw std::runtime_error("trimming must be none, upper, or tails");
 }
 }
@@ -62,28 +62,28 @@ int main(int argc, char** argv) try {
     auto sa = s.array(n, g), ua = u.array(n, g), wa = w.array(n, n);
     auto fa = anndatapp::Array::borrow_dense(fit.data(), {n}, {1});
     auto ga = anndatapp::Array::borrow_dense(genes.data(), {g}, {1});
-    velocity::Input input{sa.view(), ua.view(), wa.view()};
+    velocitypp::Input input{sa.view(), ua.view(), wa.view()};
     input.fit_mask = fa.view(); input.gene_mask = ga.view();
-    velocity::PreparedInput prepared(input);
+    velocitypp::PreparedInput prepared(input);
 
-    velocity::StochasticOptions options;
+    velocitypp::StochasticOptions options;
     options.initialization.fit_intercept = std::stoi(argv[4]) != 0;
     options.fit_second_intercept = std::stoi(argv[5]) != 0;
     options.initialization.trimming = trim(argv[6]);
     options.initialization.min_r2 = std::stod(argv[7]);
     options.initialization.min_ratio = std::stod(argv[8]);
-    velocity::StochasticRunOptions run;
+    velocitypp::StochasticRunOptions run;
     run.block_genes = 16;
     run.second_residual = true;
-    velocity::StochasticWorkspace workspace(prepared, run);
+    velocitypp::StochasticWorkspace workspace(prepared, run);
 
     std::vector<double> ms(n*g), mu(n*g), mss(n*g), mus(n*g);
     std::vector<double> source_s(n), source_u(n);
-    velocity::reference::second_moments(prepared, 0, g, ms.data(), mu.data(),
+    velocitypp::reference::second_moments(prepared, 0, g, ms.data(), mu.data(),
         mss.data(), mus.data(), nullptr, source_s.data(), source_u.data());
     auto v = anndatapp::Array::empty<float>({n, g});
     auto residual2 = anndatapp::Array::empty<float>({n, g});
-    auto result = velocity::reference::stochastic_into(prepared, workspace, v.edit(),
+    auto result = velocitypp::reference::stochastic_into(prepared, workspace, v.edit(),
         options, residual2.edit());
 
     std::ofstream out(argv[3], std::ios::binary);
@@ -101,7 +101,7 @@ int main(int argc, char** argv) try {
     write(out, result.initialization.genes.view().dense<bool>().data(), g);
     std::vector<std::uint8_t> refined(g);
     const auto* status = result.status.view().dense<std::uint8_t>().data();
-    for (std::size_t i = 0; i < g; ++i) refined[i] = status[i] == std::uint8_t(velocity::StochasticStatus::ok);
+    for (std::size_t i = 0; i < g; ++i) refined[i] = status[i] == std::uint8_t(velocitypp::StochasticStatus::ok);
     write(out, refined.data(), g); write(out, status, g);
     return 0;
 } catch (const std::exception& e) {

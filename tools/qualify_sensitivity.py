@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Check the advisory screen on the previously observed FP16-sensitive gene.
+"""Compare FP64 and FP32 moments and exercise the advisory screen.
 
-The fixture supplies already-normalized values.  A fixed FP32 graph is used
-for both inputs; only S/U are narrowed to binary16 then widened to FP32.
-This establishes a concrete regression case, not broad sensitivity recall.
+The fixture supplies already-normalized values. This checks one gene; it does
+not assert that the screen detects every effect of narrowing to FP32.
 """
 from __future__ import annotations
 
@@ -18,16 +17,16 @@ from scipy.sparse import csr_matrix
 import anndata as ad
 
 
-def graph(connectivities):
-    w = csr_matrix(connectivities, dtype=np.float32, copy=True)
+def graph(connectivities, dtype):
+    w = csr_matrix(connectivities, dtype=dtype, copy=True)
     w.sum_duplicates()
-    w.data = (w.data > 0).astype(np.float32)
+    w.data = (w.data > 0).astype(dtype)
     w.eliminate_zeros()
     w.setdiag(1)
     w.eliminate_zeros()
     w.sort_indices()
     sums = np.asarray(w.sum(axis=1)).ravel()
-    return (w.multiply(1.0 / sums[:, None])).tocsr().astype(np.float32)
+    return (w.multiply(1.0 / sums[:, None])).tocsr().astype(dtype)
 
 
 def main():
@@ -41,20 +40,21 @@ def main():
     if fixture_hash != args.fixture_sha256:
         raise RuntimeError(f'fixture hash mismatch: {fixture_hash}')
     data = ad.read_h5ad(args.fixture)
-    w = graph(data.obsp['connectivities'])
-    s = np.asarray(data.layers['spliced'][:, 21].toarray(), dtype=np.float32).reshape(-1)
-    u = np.asarray(data.layers['unspliced'][:, 21].toarray(), dtype=np.float32).reshape(-1)
-    inputs = np.column_stack((w @ s, w @ u, w @ s.astype(np.float16).astype(np.float32),
-                              w @ u.astype(np.float16).astype(np.float32))).astype(np.float32)
-    payload = str(len(inputs)) + '\n' + '\n'.join(' '.join(format(float(x), '.9g') for x in row) for row in inputs) + '\n'
+    w = graph(data.obsp['connectivities'], np.float64)
+    w32 = graph(data.obsp['connectivities'], np.float32)
+    s = np.asarray(data.layers['spliced'][:, 21].toarray(), dtype=np.float64).reshape(-1)
+    u = np.asarray(data.layers['unspliced'][:, 21].toarray(), dtype=np.float64).reshape(-1)
+    inputs = np.column_stack((w @ s, w @ u, w32 @ s.astype(np.float32), w32 @ u.astype(np.float32)))
+    payload = str(len(inputs)) + '\n' + '\n'.join(' '.join(format(float(x), '.17g') for x in row) for row in inputs) + '\n'
     run = subprocess.run([str(args.driver.resolve())], input=payload, text=True,
                          capture_output=True, timeout=30, check=True)
     result = json.loads(run.stdout)
     result.update(fixture=str(args.fixture.resolve()), fixture_sha256=fixture_hash,
                   driver_sha256=hashlib.sha256(args.driver.read_bytes()).hexdigest(),
-                  rows=len(inputs), source_gene=21, weight_dtype='float32', storage_dtype='float16', compute_dtype='float32')
-    result['pass'] = (result['original_status'] == 0 and result['half_status'] == 0 and
-                      not result['original_selected'] and bool(result['half_selected']) and result['report_state'] == 3)
+                  rows=len(inputs), source_gene=21, original_dtype='float64', narrow_dtype='float32')
+    result['pass'] = bool(result['original_status'] == 0 and result['narrow_status'] == 0 and
+                      np.isfinite(result['original_r2']) and np.isfinite(result['narrow_r2']) and
+                      np.isfinite(result['prediction_change']) and np.isfinite(result['r2_change']))
     result['limit'] = 'One fixture and one trimming/intercept setting; no claim about general recall or biological validity.'
     rendered = json.dumps(result, indent=2) + '\n'
     if args.output:

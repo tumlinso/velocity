@@ -1,7 +1,7 @@
 #pragma once
 
-// Include after importing velocity; this is an internal module-unit header.
-namespace velocity::detail {
+// Include after importing velocitypp; this is an internal module-unit header.
+namespace velocitypp::detail {
 
 GeneFit fit_gene(const double* spliced, const double* unspliced,
                  std::size_t rows, std::ptrdiff_t stride,

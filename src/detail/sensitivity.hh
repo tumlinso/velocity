@@ -5,7 +5,7 @@
 // allocated here.  Values are evaluated in the selected compute precision.
 #include "scientific.hh"
 
-namespace velocity::detail::sensitivity {
+namespace velocitypp::detail::sensitivity {
 
 enum class State : std::uint8_t { no_trimming, unscoreable, stable, sensitive };
 

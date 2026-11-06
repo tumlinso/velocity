@@ -4,7 +4,6 @@
 #include <charconv>
 #include <chrono>
 #include <cmath>
-#include <Cellerator/ops/numeric/binary16.hh>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -20,10 +19,9 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include <type_traits>
 #include <vector>
 
-import velocity;
+import velocitypp;
 
 namespace {
 constinit std::atomic<bool> count_allocations{false};
@@ -272,7 +270,7 @@ Format parse_graph_format(std::string_view s) {
     throw std::runtime_error("graph format must be csr or csc");
 }
 struct OwnedArray {
-    velocity::NumericView view;
+    anndatapp::ArrayView view;
     std::size_t bytes = 0;
 };
 
@@ -296,7 +294,7 @@ std::size_t array_bytes(const anndatapp::Array& a) {
     return count*scalar_bytes(a.dtype());
 }
 
-std::size_t fit_result_bytes(const velocity::StochasticFitResult& fit) {
+std::size_t fit_result_bytes(const velocitypp::StochasticFitResult& fit) {
     const auto& init = fit.initialization;
     return array_bytes(init.gamma) + array_bytes(init.offset) + array_bytes(init.r2)
         + array_bytes(init.genes) + array_bytes(init.status) + array_bytes(fit.gamma)
@@ -318,9 +316,6 @@ struct Checksum {
     }
 };
 
-void checksum_add(Checksum& checksum, std::uint16_t bits) {
-    checksum.add(cellerator::numeric::load_f16(bits));
-}
 template<class T> void checksum_add(Checksum& checksum, T value) { checksum.add(value); }
 
 template<class T>
@@ -331,21 +326,18 @@ void checksum_values(Checksum& checksum, const T* data, std::size_t rows, std::s
             checksum_add(checksum, data[std::ptrdiff_t(i)*row_stride + std::ptrdiff_t(j)*column_stride]);
 }
 
-void checksum_block(Checksum& checksum, const velocity::NumericView& output,
+void checksum_block(Checksum& checksum, const anndatapp::ArrayView& output,
                     std::size_t count, std::size_t rows) {
     if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
         || output.extent(0) != rows || output.extent(1) != count)
         throw std::runtime_error("velocity sink received an unexpected output view");
-    if (output.dtype() == velocity::StorageType::float16) {
-        const auto view = output.dense<std::uint16_t>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else if (output.dtype() == velocity::StorageType::float32) {
+    if (output.dtype() == anndatapp::DType::float32) {
         const auto view = output.dense<float>();
         checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else if (output.dtype() == velocity::StorageType::float64) {
+    } else if (output.dtype() == anndatapp::DType::float64) {
         const auto view = output.dense<double>();
         checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else throw std::runtime_error("velocity sink dtype must be float16, float32, or float64");
+    } else throw std::runtime_error("velocity sink dtype must be float32 or float64");
 }
 
 struct SinkState {
@@ -353,7 +345,7 @@ struct SinkState {
     std::size_t next_gene = 0, rows = 0;
 };
 
-void stream_sink(void* context, const velocity::StochasticOutputBlock& block) {
+void stream_sink(void* context, const velocitypp::StochasticOutputBlock& block) {
     auto& state = *static_cast<SinkState*>(context);
     if (block.first != state.next_gene || !block.count)
         throw std::runtime_error("velocity sink blocks are not contiguous");
@@ -397,10 +389,7 @@ template<class T> struct TypedStorage {
     std::vector<T> values;
 };
 
-template<class T> T convert(float x) {
-    if constexpr (std::is_same_v<T, std::uint16_t>) return cellerator::numeric::round_f16(x);
-    else return T(x);
-}
+template<class T> T convert(float x) { return T(x); }
 
 template<class T> OwnedArray typed_array(const std::shared_ptr<Csr>& source, Format format) {
     auto storage = std::make_shared<TypedStorage<T>>();
@@ -413,15 +402,9 @@ template<class T> OwnedArray typed_array(const std::shared_ptr<Csr>& source, For
             for (auto p=std::size_t(source->offsets[i]); p<std::size_t(source->offsets[i+1]); ++p)
                 storage->values[i*source->columns + std::size_t(source->indices[p])] = convert<T>(source->values[p]);
         auto owner = std::static_pointer_cast<const void>(storage);
-        if constexpr (std::is_same_v<T, std::uint16_t>) {
-            auto view = velocity::NumericView::retain_dense_f16(storage->values.data(),
-                {source->rows, source->columns}, {std::ptrdiff_t(source->columns), 1}, std::move(owner));
-            return {std::move(view), count*sizeof(T)};
-        } else {
-            auto array = anndatapp::Array::share_dense<T>(storage->values.data(), {source->rows, source->columns},
-                {std::ptrdiff_t(source->columns), 1}, std::move(owner), anndatapp::Validation::none);
-            return {velocity::NumericView(array.view()), count*sizeof(T)};
-        }
+        auto array = anndatapp::Array::share_dense<T>(storage->values.data(), {source->rows, source->columns},
+            {std::ptrdiff_t(source->columns), 1}, std::move(owner), anndatapp::Validation::none);
+        return {anndatapp::ArrayView(array.view()), count*sizeof(T)};
     }
     storage->offsets = matrix->offsets;
     storage->indices = matrix->indices;
@@ -431,25 +414,10 @@ template<class T> OwnedArray typed_array(const std::shared_ptr<Csr>& source, For
     const auto layout = format == Format::csr ? anndatapp::Layout::csr : anndatapp::Layout::csc;
     const auto bytes = storage->values.size()*sizeof(T) + storage->indices.size()*sizeof(std::int32_t)
         + storage->offsets.size()*sizeof(std::int64_t);
-    if constexpr (std::is_same_v<T, std::uint16_t>) {
-        velocity::SparseF16 buffers;
-        buffers.values = storage->values.data();
-        buffers.values_count = storage->values.size();
-        buffers.indices = storage->indices.data();
-        buffers.indices_count = storage->indices.size();
-        buffers.index_type = anndatapp::DType::int32;
-        buffers.offsets = storage->offsets.data();
-        buffers.offsets_count = storage->offsets.size();
-        buffers.offset_type = anndatapp::DType::int64;
-        auto view = velocity::NumericView::retain_sparse_f16(layout, source->rows, source->columns,
-            storage->values.size(), buffers, std::move(owner));
-        return {std::move(view), bytes};
-    } else {
-        auto array = anndatapp::Array::share_sparse<T,std::int32_t,std::int64_t>(layout,
-            source->rows, source->columns, storage->values.size(), storage->values.data(),
-            storage->indices.data(), storage->offsets.data(), std::move(owner), anndatapp::Validation::none);
-        return {velocity::NumericView(array.view()), bytes};
-    }
+    auto array = anndatapp::Array::share_sparse<T,std::int32_t,std::int64_t>(layout,
+        source->rows, source->columns, storage->values.size(), storage->values.data(),
+        storage->indices.data(), storage->offsets.data(), std::move(owner), anndatapp::Validation::none);
+    return {anndatapp::ArrayView(array.view()), bytes};
 }
 
 struct Config {
@@ -474,19 +442,21 @@ Config parse_args(int argc, char** argv) {
             if (err!=std::errc{} || end!=value.data()+value.size()) throw std::runtime_error("invalid block");
         } else throw std::runtime_error("unknown option");
     }
+    if (c.profile=="half" || c.profile=="allhalf")
+        throw std::runtime_error("FP16 profiles are unsupported; use fp32, fp64, or legacy");
     if (c.input.empty() || !c.block || c.block>64 || (c.backend!="scalar" && c.backend!="cpu")
         || (c.method!="steady" && c.method!="stochastic")
-        || (c.profile!="half" && c.profile!="allhalf" && c.profile!="fp32" && c.profile!="fp64" && c.profile!="legacy"))
+        || (c.profile!="fp32" && c.profile!="fp64" && c.profile!="legacy"))
         throw std::runtime_error("invalid configuration");
     return c;
 }
-void steady_sink(void* p, const velocity::OutputBlock& block) {
+void steady_sink(void* p, const velocitypp::OutputBlock& block) {
     auto& state=*static_cast<SinkState*>(p);
     if (block.first!=state.next_gene || !block.count) throw std::runtime_error("bad block order");
     checksum_block(state.velocity,block.velocity,block.count,state.rows);
     state.next_gene+=block.count;
 }
-std::size_t fit_result_bytes(const velocity::FitResult& x) {
+std::size_t fit_result_bytes(const velocitypp::FitResult& x) {
     return array_bytes(x.gamma)+array_bytes(x.offset)+array_bytes(x.r2)+array_bytes(x.genes)+array_bytes(x.status);
 }
 int run(const Config& c) {
@@ -496,38 +466,37 @@ int run(const Config& c) {
     auto n=fixture.spliced->rows, g=fixture.spliced->columns;
     auto ef=parse_expression_format(c.expression), gf=parse_graph_format(c.graph);
     check_probe_bound(fixture,ef,n,g);
-    auto convert_array = [&](const auto& src, Format f, bool graph) {
+    auto convert_array = [&](const auto& src, Format f) {
         if (c.profile=="fp64") return typed_array<double>(src,f);
-        if ((c.profile=="half" && !graph) || c.profile=="allhalf") return typed_array<std::uint16_t>(src,f);
         return typed_array<float>(src,f);
     };
-    auto s=convert_array(fixture.spliced,ef,false), u=convert_array(fixture.unspliced,ef,false);
-    auto w=convert_array(fixture.weights,gf,true);
+    auto s=convert_array(fixture.spliced,ef), u=convert_array(fixture.unspliced,ef);
+    auto w=convert_array(fixture.weights,gf);
     auto file_bytes=fixture.file_bytes;
     fixture.spliced.reset();fixture.unspliced.reset();fixture.weights.reset();
     auto tpack=Clock::now();
-    velocity::PreparedInput prepared({s.view,u.view,w.view},anndatapp::Validation::none);
-    auto precision=(c.profile=="fp64" || c.profile=="legacy") ? velocity::ComputePrecision::float64 : velocity::ComputePrecision::float32;
-    auto dtype=c.profile=="fp64" ? velocity::StorageType::float64 : velocity::StorageType::float32;
+    velocitypp::PreparedInput prepared({s.view,u.view,w.view},anndatapp::Validation::none);
+    auto precision=(c.profile=="fp64" || c.profile=="legacy") ? velocitypp::ComputePrecision::float64 : velocitypp::ComputePrecision::float32;
+    auto dtype=c.profile=="fp64" ? anndatapp::DType::float64 : anndatapp::DType::float32;
     auto tprep=Clock::now();
-    velocity::FitOptions options; options.min_r2=-100; options.min_ratio=-100;
+    velocitypp::FitOptions options; options.min_r2=-100; options.min_ratio=-100;
     SinkState sink{{},{},0,n};
     std::size_t scratch=0, result_bytes=0, selected=0; std::size_t statuses[7]{};
     auto tcompute=tprep;
     if (c.method=="steady") {
-        velocity::RunOptions ro; ro.workspace_bytes=max_workspace_bytes;ro.block_genes=c.block;ro.compute_precision=precision;ro.output_dtype=dtype;
-        velocity::Workspace workspace(prepared,ro);scratch=workspace.scratch_bytes();tcompute=Clock::now();
-        auto result=c.backend=="scalar" ? velocity::reference::steady_state(prepared,workspace,options,{&sink,steady_sink})
-            : velocity::cpu::steady_state(prepared,workspace,options,{&sink,steady_sink});
+        velocitypp::RunOptions ro; ro.workspace_bytes=max_workspace_bytes;ro.block_genes=c.block;ro.compute_precision=precision;ro.output_dtype=dtype;
+        velocitypp::Workspace workspace(prepared,ro);scratch=workspace.scratch_bytes();tcompute=Clock::now();
+        auto result=c.backend=="scalar" ? velocitypp::reference::steady_state(prepared,workspace,options,{&sink,steady_sink})
+            : velocitypp::cpu::steady_state(prepared,workspace,options,{&sink,steady_sink});
         result_bytes=fit_result_bytes(result);
         auto genes=result.genes.view().dense<bool>();
         for (std::size_t j=0;j<g;++j) selected+=genes.data()[std::ptrdiff_t(j)*genes.stride(0)];
     } else {
-        velocity::StochasticRunOptions ro;ro.workspace_bytes=max_workspace_bytes;ro.block_genes=c.block;ro.compute_precision=precision;ro.output_dtype=dtype;ro.second_residual=true;
-        velocity::StochasticWorkspace workspace(prepared,ro);scratch=workspace.scratch_bytes();tcompute=Clock::now();
-        velocity::StochasticOptions so;so.initialization=options;
-        auto result=c.backend=="scalar" ? velocity::reference::stochastic(prepared,workspace,so,{&sink,stream_sink})
-            : velocity::cpu::stochastic(prepared,workspace,so,{&sink,stream_sink});
+        velocitypp::StochasticRunOptions ro;ro.workspace_bytes=max_workspace_bytes;ro.block_genes=c.block;ro.compute_precision=precision;ro.output_dtype=dtype;ro.second_residual=true;
+        velocitypp::StochasticWorkspace workspace(prepared,ro);scratch=workspace.scratch_bytes();tcompute=Clock::now();
+        velocitypp::StochasticOptions so;so.initialization=options;
+        auto result=c.backend=="scalar" ? velocitypp::reference::stochastic(prepared,workspace,so,{&sink,stream_sink})
+            : velocitypp::cpu::stochastic(prepared,workspace,so,{&sink,stream_sink});
         result_bytes=fit_result_bytes(result);
         auto genes=result.initialization.genes.view().dense<bool>();
         auto status=result.status.view().dense<std::uint8_t>();

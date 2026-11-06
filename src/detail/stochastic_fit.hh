@@ -1,7 +1,7 @@
 #pragma once
 
-// Include <cstddef> and <cstdint> and import velocity before this header.
-namespace velocity::detail {
+// Include <cstddef> and <cstdint> and import velocitypp before this header.
+namespace velocitypp::detail {
 
 // Each pointer addresses one gene; successive rows are stride doubles apart.
 // The optional mask has one byte per row. scratch holds at least rows doubles.

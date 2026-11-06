@@ -1,5 +1,4 @@
 module;
-#include <Cellerator/ops/numeric/binary16.hh>
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -11,15 +10,15 @@ module;
 #include <utility>
 #include <vector>
 
-module velocity;
+module velocitypp;
 import anndatapp.core;
 
-namespace velocity::reference {
+namespace velocitypp::reference {
 namespace {
 
 using anndatapp::DType;
 using anndatapp::Layout;
-using ArrayView = NumericView;
+using ArrayView = anndatapp::ArrayView;
 using std::size_t;
 
 struct Entry { size_t column, position; };
@@ -34,7 +33,7 @@ struct SparseInput {
     const std::byte* values;
     const std::byte* indices;
     const std::byte* offsets;
-    StorageType value_type;
+    anndatapp::DType value_type;
     DType index_type, offset_type;
     size_t nnz, n;
 };
@@ -64,8 +63,7 @@ template<class T> T load(const std::byte* p) {
 }
 
 template<class T> auto numeric_value(const std::byte* p) {
-    if constexpr(std::is_same_v<T,std::uint16_t>)return cellerator::numeric::load_f16(load<T>(p));
-    else return load<T>(p);
+    return load<T>(p);
 }
 
 template<class T> size_t as_size(const std::byte* p) {
@@ -151,8 +149,7 @@ SparseInput sparse_input(const ArrayView& view, size_t n) {
     const auto bytes = view.sparse_bytes(); // Also rejects selected sparse views.
     SparseInput input{bytes.values(), bytes.indices(), bytes.offsets(), view.dtype(),
                       view.index_dtype(), view.offset_dtype(), bytes.nnz(), n};
-    if(input.value_type==StorageType::float16)check_sparse<std::uint16_t>(input);
-    else if (input.value_type == StorageType::float32) check_sparse<float>(input);
+    if (input.value_type == anndatapp::DType::float32) check_sparse<float>(input);
     else check_sparse<double>(input);
     return input;
 }
@@ -202,7 +199,7 @@ size_t grouped_row(const SparseInput& input, const Entry* entries, size_t count,
     bool diagonal = false;
     while (p < count) {
         const auto column = entries[p].column;
-        using C=std::conditional_t<std::is_same_v<T,std::uint16_t>,float,T>;
+        using C = T;
         C sum = C(0);
         do {
             sum = C(sum + numeric_value<T>(input.values + entries[p].position * sizeof(T)));
@@ -291,7 +288,7 @@ template<class I, class O> anndatapp::Array make_csr(size_t n, size_t nnz) {
 }
 
 anndatapp::Array make_csr(size_t n, size_t nnz, DType index, DType offset) {
-#define VELOCITY_CSR_CASE(I, ID) \
+#define VELOCITYPP_CSR_CASE(I, ID) \
     case DType::ID: \
         switch (offset) { \
         case DType::uint8: return make_csr<I, std::uint8_t>(n, nnz); \
@@ -302,13 +299,13 @@ anndatapp::Array make_csr(size_t n, size_t nnz, DType index, DType offset) {
         } \
         break
     switch (index) {
-    VELOCITY_CSR_CASE(std::uint8_t, uint8);
-    VELOCITY_CSR_CASE(std::uint16_t, uint16);
-    VELOCITY_CSR_CASE(std::uint32_t, uint32);
-    VELOCITY_CSR_CASE(std::uint64_t, uint64);
+    VELOCITYPP_CSR_CASE(std::uint8_t, uint8);
+    VELOCITYPP_CSR_CASE(std::uint16_t, uint16);
+    VELOCITYPP_CSR_CASE(std::uint32_t, uint32);
+    VELOCITYPP_CSR_CASE(std::uint64_t, uint64);
     default: break;
     }
-#undef VELOCITY_CSR_CASE
+#undef VELOCITYPP_CSR_CASE
     throw std::invalid_argument("unsupported output sparse index type");
 }
 
@@ -384,24 +381,22 @@ anndatapp::Array prepare_neighborhood(ArrayView connectivities) {
         throw std::invalid_argument("connectivities must have rank two");
     const auto rows = connectivities.extent(0), columns = connectivities.extent(1);
     if (rows != columns) throw std::invalid_argument("connectivities must be square");
-    if (connectivities.dtype() != StorageType::float16 && connectivities.dtype() != StorageType::float32 && connectivities.dtype() != StorageType::float64)
-        throw std::invalid_argument("connectivities must be float16, float32 or float64");
+    if (connectivities.dtype() != anndatapp::DType::float32 && connectivities.dtype() != anndatapp::DType::float64)
+        throw std::invalid_argument("connectivities must be float32 or float64");
     const auto layout = connectivities.layout();
     if (layout != Layout::dense && layout != Layout::csr && layout != Layout::csc)
         throw std::invalid_argument("connectivities must be dense, CSR, or CSC");
     connectivities.validate();
 
     if (layout == Layout::dense) {
-        if(connectivities.dtype()==StorageType::float16)return prepare_dense<std::uint16_t>(dense_input<std::uint16_t>(connectivities,rows));
-        if (connectivities.dtype() == StorageType::float32)
+        if (connectivities.dtype() == anndatapp::DType::float32)
             return prepare_dense<float>(dense_input<float>(connectivities, rows));
         return prepare_dense<double>(dense_input<double>(connectivities, rows));
     }
     auto input = sparse_input(connectivities, rows);
-    if(input.value_type==StorageType::float16)return prepare_sparse<std::uint16_t>(input,layout);
-    if (input.value_type == StorageType::float32)
+    if (input.value_type == anndatapp::DType::float32)
         return prepare_sparse<float>(input, layout);
     return prepare_sparse<double>(input, layout);
 }
 
-} // namespace velocity::reference
+} // namespace velocitypp::reference

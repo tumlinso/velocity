@@ -5,9 +5,7 @@
 // Compiled portable CPU implementation ABI. Public BMIs and scalar reference
 // implementations never include implementation headers; column_sums retains
 // ascending row order separately for each gene.
-namespace velocity::detail::cpu {
-void half_to_float(const std::uint16_t* source, std::ptrdiff_t stride_bytes,
-                   float* output, std::size_t count) noexcept;
+namespace velocitypp::detail::cpu {
 void weighted_add(const float* source, float weight, float* output, std::size_t count) noexcept;
 void weighted_add(const double* source, double weight, double* output, std::size_t count) noexcept;
 void products(const float* s, const float* u, float* ss, float* su, float* uu, std::size_t count) noexcept;
