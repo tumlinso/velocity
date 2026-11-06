@@ -34,7 +34,7 @@ def main():
     parser.add_argument('--driver', type=Path, required=True)
     parser.add_argument('--fixture', type=Path, default=Path('/home/tumlinson/accelerated-ports/scVelo/tests/_data/dentategyrus_100obs_preprocessed.h5ad'))
     parser.add_argument('--fixture-sha256', default='46033b23d673e2ff7e8fd6e75b619706861ad8418b6723989300b91ee9e870d8')
-    parser.add_argument('--output', type=Path)
+    parser.add_argument('--output', type=Path, default=Path(__file__).resolve().parents[1]/'build/qualification/sensitivity.json')
     args = parser.parse_args()
     fixture_hash = hashlib.sha256(args.fixture.read_bytes()).hexdigest()
     if fixture_hash != args.fixture_sha256:

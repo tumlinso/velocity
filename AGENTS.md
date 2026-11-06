@@ -1,7 +1,7 @@
 # Velocity++ standalone package
 
 This directory contains the standalone C++20 RNA velocity package. Its source
-checkout inside ccell remains `velocity/`; its repository, package, module,
+checkout inside ccell is `external/velocitypp/`; its repository, package, module,
 namespace, and target identity is `velocitypp`.
 
 The public named modules are `velocitypp` and `velocitypp.precision`. The
@@ -9,9 +9,14 @@ installed CMake package is `velocitypp`, and consumers link
 `velocitypp::velocitypp`. Use the `velocitypp` namespace throughout examples
 and current documentation.
 
-The standalone numerical boundary uses FP32 and FP64 arrays directly through
-`anndatapp::ArrayView`, `anndatapp::ArrayEdit`, and `anndatapp::DType`. Do not
-add parallel numeric view/edit adapters. This checkout has no FP16 or binary16
+The standalone numerical boundary uses FP32 and FP64 storage through already
+acquired AnnData++ byte descriptors and explicit dtype tags. Descriptor acquisition
+and storage construction belong to callers. Do not add a parallel matrix/storage
+model. Standard reference sizing, validation, preparation, binding and execution
+allocate nothing; all topology, results, selection, sensitivity and scratch use
+caller-supplied buffers. Read STYLE.md before changing code. Its strict rules
+cover shipped source, public templates and examples; dev-only tests/drivers are
+exempt. Do not weaken STYLE.md without explicit user authorization. This checkout has no FP16 or binary16
 path, Cellerator dependency, Cellerator alias, CUDA backend, or AVX2 backend.
 AnnData++ is independently owned; do not edit its sources or rename its package,
 module, or type identifiers here.

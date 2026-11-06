@@ -515,9 +515,9 @@ def compare_source_class(manual, source):
                          for k in ('gamma','offset','offset2','velocity','residual2','mss','mus')})
 
 
-def qualify(driver):
+def qualify(driver, output=None, artifacts=None):
     ns = source_namespace()
-    scratch = ROOT / 'tests/artifacts'
+    scratch = artifacts or ROOT / 'build/qualification/stochastic-artifacts'
     scratch.mkdir(parents=True, exist_ok=True)
     report = dict(source_commit=SOURCE_COMMIT, source_hashes=SOURCE_HASHES,
                   native_driver_sha256=hashlib.sha256(driver.read_bytes()).hexdigest(),
@@ -598,7 +598,7 @@ def qualify(driver):
     report['independent_fp64_initial_pass_all'] = all(
         x['fp64_initial_diagnostic']['independent_fp64_selected_pass'] for x in report['cases'])
     report['production_class_pass_all'] = all(x['pinned_production_class']['pass_all'] for x in report['cases'])
-    output = ROOT / 'tests/results/milestone-2.json'
+    output = output or ROOT / 'build/qualification/stochastic.json'
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))
@@ -609,11 +609,13 @@ def qualify(driver):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--driver', type=Path)
+    parser.add_argument('--output', type=Path)
+    parser.add_argument('--artifacts-dir', type=Path)
     parser.add_argument('--reference-smoke', action='store_true')
     parser.add_argument('--source-smoke', action='store_true')
     args = parser.parse_args()
     if args.driver:
-        qualify(args.driver.resolve())
+        qualify(args.driver.resolve(), args.output, args.artifacts_dir)
         return
     ns = source_namespace()
     if args.source_smoke:

@@ -1,220 +1,179 @@
 module;
-#include <cstddef>
-#include <cstdint>
-#include <limits>
-#include <memory>
-#include <optional>
-#include <stdexcept>
-#include <string_view>
-#include <utility>
+#include <stddef.h>
+#include <stdint.h>
 
 export module velocitypp;
 export import anndatapp.core;
 
 export namespace velocitypp {
 
-enum class ComputePrecision : std::uint8_t { float32, float64, automatic };
-
-enum class FitStatus : std::uint8_t { ok, insufficient_data, no_signal, singular, constant_response };
+enum class Code : uint8_t { ok, argument, shape, dtype, layout, capacity, overflow, nonfinite, bounds, unfinished };
+struct Status {
+    Code code = Code::ok;
+    size_t location = 0, required = 0;
+    explicit operator bool() const noexcept { return code == Code::ok; }
+};
+enum class ComputePrecision : uint8_t { float32, float64, automatic };
+enum class FitStatus : uint8_t { ok, insufficient_data, no_signal, singular, constant_response };
 enum class LowSignal { keep_filters, scvelo_percentile };
 enum class Trimming { none, upper, tails };
-
 struct FitOptions {
     Trimming trimming = Trimming::tails;
     double percentile_low = 5, percentile_high = 95;
     bool fit_intercept = false, positive_intercept = true, r2_adjusted = false;
-    double ratio_min = -std::numeric_limits<double>::infinity();
-    double ratio_max = std::numeric_limits<double>::infinity();
+    double ratio_min = -__builtin_huge_val(), ratio_max = __builtin_huge_val();
     double min_r2 = .01, min_ratio = .01;
     LowSignal low_signal = LowSignal::keep_filters;
-};
-
-struct RunOptions {
-    std::size_t workspace_bytes = 64 * 1024 * 1024, block_genes = 64;
-    std::optional<anndatapp::DType> output_dtype;
-    bool velocity = true, spliced_moments = false, unspliced_moments = false;
-    ComputePrecision compute_precision = ComputePrecision::automatic;
-};
-
-struct Input {
-    anndatapp::ArrayView spliced, unspliced, weights;
-    anndatapp::Axis genes = anndatapp::Axis::all();
-    std::optional<anndatapp::ArrayView> fit_mask, gene_mask;
-};
-
-Input from_anndata(const anndatapp::AnnData&, std::string_view spliced = "spliced",
-                  std::string_view unspliced = "unspliced",
-                  std::string_view weights = "connectivities");
-
-namespace detail { struct PreparedState; struct WorkspaceState; template<class T> struct BasicStagesState; struct StochasticWorkspaceState; template<class T> struct BasicStochasticStagesState; struct Access; }
-
-class PreparedInput {
-public:
-    explicit PreparedInput(Input, anndatapp::Validation = anndatapp::Validation::full);
-    ~PreparedInput();
-    PreparedInput(PreparedInput&&) noexcept;
-    PreparedInput& operator=(PreparedInput&&) noexcept;
-    PreparedInput(const PreparedInput&) = delete;
-    PreparedInput& operator=(const PreparedInput&) = delete;
-    std::size_t n_cells() const noexcept;
-    std::size_t n_genes() const noexcept;
-    std::size_t source_genes() const noexcept;
-    std::size_t gene_index(std::size_t position) const;
-    std::size_t storage_bytes() const noexcept;
-    anndatapp::DType output_dtype() const noexcept;
-    void validate_values() const;
-    anndatapp::ArrayView spliced() const;
-    anndatapp::ArrayView unspliced() const;
-    anndatapp::ArrayView weights() const;
-    std::optional<anndatapp::ArrayView> fit_mask() const;
-    std::optional<anndatapp::ArrayView> gene_mask() const;
-private:
-    std::unique_ptr<detail::PreparedState> state_;
-    friend struct detail::Access;
-};
-
-class Workspace {
-public:
-    explicit Workspace(const PreparedInput&, RunOptions = {});
-    ~Workspace();
-    Workspace(Workspace&&) noexcept;
-    Workspace& operator=(Workspace&&) noexcept;
-    Workspace(const Workspace&) = delete;
-    Workspace& operator=(const Workspace&) = delete;
-    std::size_t block_genes() const noexcept;
-    std::size_t scratch_bytes() const noexcept;
-    ComputePrecision compute_precision() const noexcept;
-private:
-    std::unique_ptr<detail::WorkspaceState> state_;
-    friend struct detail::Access;
-};
-
-template<class T> struct BasicGeneFit {
-    T gamma = 0, offset = 0, r2 = 0;
-    FitStatus status = FitStatus::insufficient_data;
-    bool selected = false;
-};
-using GeneFit = BasicGeneFit<double>;
-using GeneFit32 = BasicGeneFit<float>;
-
-struct FitResult {
-    anndatapp::Array gamma, offset, r2, genes, status;
-    bool low_signal = false;
-};
-
-// Numerical block pointers are borrowed and row-major with the stated stride.
-template<class T> struct BasicMomentBlock {
-    std::size_t first = 0, count = 0, rows = 0;
-    std::ptrdiff_t stride = 0;
-    T* spliced = nullptr;
-    T* unspliced = nullptr;
-};
-using MomentBlock = BasicMomentBlock<double>;
-using MomentBlock32 = BasicMomentBlock<float>;
-
-template<class T> struct BasicFitBlock {
-    std::size_t first = 0, count = 0;
-    T* gamma = nullptr;
-    T* offset = nullptr;
-    T* r2 = nullptr;
-    bool* selected = nullptr;
-    std::uint8_t* status = nullptr;
-};
-using FitBlock = BasicFitBlock<double>;
-using FitBlock32 = BasicFitBlock<float>;
-
-// These views alias reusable workspace; a sink must finish reading before return.
-struct OutputBlock {
-    std::size_t first = 0, count = 0;
-    anndatapp::ArrayView velocity, spliced, unspliced;
-};
-struct BlockSink {
-    void* context = nullptr;
-    void (*write)(void*, const OutputBlock&) = nullptr;
-};
-
-template<class T> class BasicReferenceStages {
-public:
-    BasicReferenceStages(const PreparedInput&, Workspace&, FitOptions = {}, BlockSink = {});
-    ~BasicReferenceStages();
-    BasicReferenceStages(BasicReferenceStages&&) noexcept;
-    BasicReferenceStages& operator=(BasicReferenceStages&&) noexcept;
-    BasicReferenceStages(const BasicReferenceStages&) = delete;
-    BasicReferenceStages& operator=(const BasicReferenceStages&) = delete;
-    BasicMomentBlock<T> moments(std::size_t first, std::size_t count);
-    BasicFitBlock<T> fit(BasicMomentBlock<T>);
-    // Alternate sources must be dense N by count batches; caller owns staging.
-    void replace_moments(BasicMomentBlock<T>&, std::size_t offset, std::size_t count, anndatapp::ArrayView s, anndatapp::ArrayView u);
-    void emit(BasicMomentBlock<T>, BasicFitBlock<T>);
-    FitResult finish();
-    bool bound_to(const PreparedInput&, const Workspace&) const noexcept;
-private:
-    std::unique_ptr<detail::BasicStagesState<T>> state_;
-    friend struct detail::Access;
-};
-using ReferenceStages = BasicReferenceStages<double>;
-using ReferenceStages32 = BasicReferenceStages<float>;
-
-// Custom stage results can be opaque device state. Only the reference stages
-// prescribe host arrays. No dispatch occurs within an element loop.
-template<class Operations>
-auto steady_state_with(Operations& operations, std::size_t genes, std::size_t block_genes = 64) {
-    if (!block_genes) throw std::invalid_argument("block_genes must be positive");
-    if constexpr (requires { operations.begin(); }) operations.begin();
-    for (std::size_t first = 0; first < genes;) {
-        const auto count = genes - first < block_genes ? genes - first : block_genes;
-        if constexpr (requires { operations.process_block(first, count); })
-            operations.process_block(first, count);
-        else {
-            auto moments = operations.moments(first, count);
-            auto fit = operations.fit(moments);
-            operations.emit(moments, fit);
-        }
-        first += count;
-    }
-    return operations.finish();
-}
-
-namespace reference {
-anndatapp::Array prepare_neighborhood(anndatapp::ArrayView connectivities);
-void moments(const PreparedInput&, std::size_t first, std::size_t count,
-             double* spliced, double* unspliced);
-GeneFit fit_gene(const double* spliced, const double* unspliced, std::size_t rows,
-                 std::ptrdiff_t stride, const FitOptions&, double* score_scratch,
-                 const std::uint8_t* fit_mask = nullptr, bool gene_enabled = true);
-void residuals(const MomentBlock&, const FitBlock&, anndatapp::ArrayEdit output);
-FitResult steady_state(const PreparedInput&, Workspace&, FitOptions = {}, BlockSink = {});
-FitResult steady_state_into(const PreparedInput&, Workspace&, anndatapp::ArrayEdit velocity,
-                            FitOptions = {});
-
-void moments(const PreparedInput&, std::size_t first, std::size_t count,
-             float* spliced, float* unspliced);
-GeneFit32 fit_gene(const float* spliced, const float* unspliced, std::size_t rows,
-                 std::ptrdiff_t stride, const FitOptions&, float* score_scratch,
-                 const std::uint8_t* fit_mask = nullptr, bool gene_enabled = true);
-void residuals(const MomentBlock32&, const FitBlock32&, anndatapp::ArrayEdit output);
-}
-
-// Stochastic refinement preserves the deterministic selection/diagnostics.
-enum class StochasticStatus : std::uint8_t {
-    ok, not_selected, invalid_initialization, insufficient_data, zero_scale, singular, nonfinite
 };
 struct StochasticOptions {
     FitOptions initialization;
     bool fit_second_intercept = false, refit_all_if_none = false;
 };
-struct StochasticRunOptions {
-    std::size_t workspace_bytes = 64 * 1024 * 1024, block_genes = 64;
-    std::optional<anndatapp::DType> output_dtype;
-    bool velocity = true, second_residual = false;
-    bool spliced_moments = false, unspliced_moments = false;
-    bool spliced_second = false, cross = false, unspliced_second = false;
-    ComputePrecision compute_precision = ComputePrecision::automatic;
+struct RunOptions { size_t workspace_bytes = 64*1024*1024, block_genes = 64; bool unspliced_second = false; };
+using StochasticRunOptions = RunOptions;
+
+// The caller acquires and retains these AnnData++ descriptors before a call.
+// This binding stores only existing descriptor addresses and their dtype tags.
+using DenseInput = decltype(((anndatapp::ArrayView*)nullptr)->bytes());
+using SparseInput = decltype(((anndatapp::ArrayView*)nullptr)->sparse_bytes());
+struct AcquiredMatrix {
+    const DenseInput* dense = nullptr;
+    const SparseInput* sparse = nullptr;
+    anndatapp::DType dtype = anndatapp::DType::float32;
+    anndatapp::DType index_type = anndatapp::DType::int32, offset_type = anndatapp::DType::int64;
+    anndatapp::Layout layout = anndatapp::Layout::dense;
 };
-template<class T> struct BasicStochasticScales {
-    T first = 0, second = 0;
-    StochasticStatus status = StochasticStatus::not_selected;
+// Masks/selection are borrowed; null genes means all source genes.
+// A nonnull empty selection is valid.
+struct Input {
+    AcquiredMatrix spliced, unspliced, weights;
+    const size_t* genes = nullptr;
+    size_t gene_count = 0;
+    const uint8_t* fit_mask = nullptr;
+    const uint8_t* gene_mask = nullptr;
+    ptrdiff_t fit_mask_stride = 1, gene_mask_stride = 1;
 };
+struct Entry { size_t index = 0, position = 0; };
+struct ColumnIndex { size_t* offsets = nullptr; Entry* entries = nullptr; };
+struct GraphIndex { size_t* rows = nullptr; size_t* columns = nullptr; Entry* row_edges = nullptr; Entry* column_edges = nullptr; size_t edges = 0; };
+struct PreparationSize { size_t indices = 0, entries = 0; };
+struct PreparationBuffers {
+    size_t* indices = nullptr; size_t index_capacity = 0;
+    Entry* entries = nullptr; size_t entry_capacity = 0;
+};
+struct PreparedInput {
+    Input input;
+    size_t rows = 0, columns = 0, genes = 0;
+    ColumnIndex spliced, unspliced;
+    GraphIndex graph;
+};
+Status validate(const Input&);
+Status preparation_size(const Input&, PreparationSize&);
+Status prepare(const Input&, const PreparationBuffers&, PreparedInput&);
+// Trusted preparation omits scans for values/ranges, but still reports capacity.
+Status prepare_unchecked(const Input&, const PreparationBuffers&, PreparedInput&);
+
+struct WorkspaceSize { size_t scalars = 0, masks = 0, block = 0, bytes = 0; };
+template<class T> struct Workspace {
+    T* ms = nullptr; T* mu = nullptr; T* score = nullptr;
+    T* mss = nullptr; T* mus = nullptr; T* muu = nullptr;
+    T* source_s = nullptr; T* source_u = nullptr;
+    uint8_t* mask = nullptr;
+    size_t rows = 0, block = 0, scratch_bytes = 0;
+    bool stochastic = false;
+};
+using Workspace64 = Workspace<double>;
+using Workspace32 = Workspace<float>;
+template<class T> Status workspace_size(const PreparedInput&, RunOptions, bool stochastic, WorkspaceSize&);
+template<class T> Status bind_workspace(const PreparedInput&, RunOptions, bool stochastic,
+    T* storage, size_t scalar_capacity, uint8_t* mask, size_t mask_capacity, Workspace<T>&);
+
+template<class T> struct BasicGeneFit { T gamma = 0, offset = 0, r2 = 0; FitStatus status = FitStatus::insufficient_data; bool selected = false; };
+using GeneFit = BasicGeneFit<double>;
+using GeneFit32 = BasicGeneFit<float>;
+// Result arrays are pairwise disjoint and disjoint from input, topology,
+// workspace and numerical outputs. Binding checks capacities, not provenance.
+template<class T> struct BasicFitResult {
+    T* gamma = nullptr; T* offset = nullptr; T* r2 = nullptr;
+    bool* genes = nullptr; uint8_t* status = nullptr;
+    size_t capacity = 0;
+    bool low_signal = false;
+};
+using FitResult = BasicFitResult<double>;
+using FitResult32 = BasicFitResult<float>;
+template<class T> struct BasicMomentBlock {
+    size_t first = 0, count = 0, rows = 0;
+    ptrdiff_t stride = 0;
+    T* spliced = nullptr; T* unspliced = nullptr;
+};
+using MomentBlock = BasicMomentBlock<double>;
+using MomentBlock32 = BasicMomentBlock<float>;
+template<class T> struct BasicFitBlock {
+    size_t first = 0, count = 0;
+    T* gamma = nullptr; T* offset = nullptr; T* r2 = nullptr;
+    bool* selected = nullptr; uint8_t* status = nullptr;
+};
+using FitBlock = BasicFitBlock<double>;
+using FitBlock32 = BasicFitBlock<float>;
+template<class T> struct BasicBlockSink { void* context = nullptr; void (*write)(void*, const BasicMomentBlock<T>&, const BasicFitBlock<T>&) = nullptr; };
+using BlockSink = BasicBlockSink<double>;
+using BlockSink32 = BasicBlockSink<float>;
+template<class T> struct BasicReferenceStages {
+    const PreparedInput* input = nullptr;
+    Workspace<T>* workspace = nullptr;
+    FitOptions options;
+    BasicFitResult<T> result;
+    BasicBlockSink<T> sink;
+    size_t next = 0;
+    bool finished = false;
+    BasicMomentBlock<T> moments(size_t first, size_t count);
+    BasicFitBlock<T> fit(BasicMomentBlock<T>);
+    void emit(BasicMomentBlock<T>, BasicFitBlock<T>);
+    BasicFitResult<T> finish();
+};
+using ReferenceStages = BasicReferenceStages<double>;
+using ReferenceStages32 = BasicReferenceStages<float>;
+template<class T> Status bind_stages(const PreparedInput&, Workspace<T>&, FitOptions,
+    BasicFitResult<T>, BasicReferenceStages<T>&, BasicBlockSink<T> = {});
+
+struct RuntimeOperations;
+// Whole-region replacement precedes reference scheduling. Concrete intermediates
+// and results belong to Operations; the reference's host layout is optional.
+// Trusted schedule precondition: block > 0 unless Operations::run bypasses it.
+template<class Operations> requires (!__is_same(Operations,RuntimeOperations) && !__is_same(Operations,const RuntimeOperations))
+auto steady_state_with(Operations& o, size_t genes, size_t block = 64) {
+    if constexpr (requires { o.run(); }) return o.run();
+    else {
+        if constexpr (requires { o.begin(); }) o.begin();
+        for (size_t first = 0; first < genes;) {
+            size_t count = genes-first < block ? genes-first : block;
+            if constexpr (requires { o.process_block(first,count); }) o.process_block(first,count);
+            else { auto m=o.moments(first,count); auto f=o.fit(m); o.emit(m,f); }
+            first += count;
+        }
+        return o.finish();
+    }
+}
+// Preconditions: block > 0; callbacks used by the selected region are nonnull.
+// State/results remain entirely caller-owned, including novel device layouts.
+struct RuntimeOperations {
+    void* context = nullptr;
+    Status (*run)(void*) = nullptr;
+    Status (*begin)(void*) = nullptr;
+    Status (*initialize)(void*) = nullptr;
+    Status (*initial_block)(void*,size_t,size_t) = nullptr;
+    Status (*resolve)(void*) = nullptr;
+    Status (*moments)(void*,size_t,size_t) = nullptr;
+    Status (*scales)(void*,size_t,size_t) = nullptr;
+    Status (*fit)(void*,size_t,size_t) = nullptr;
+    Status (*emit)(void*,size_t,size_t) = nullptr;
+    Status (*process_block)(void*,size_t,size_t) = nullptr;
+    Status (*finish)(void*) = nullptr;
+};
+Status steady_state_with(const RuntimeOperations&, size_t genes, size_t block = 64);
+
+enum class StochasticStatus : uint8_t { ok, not_selected, invalid_initialization, insufficient_data, zero_scale, singular, nonfinite };
+template<class T> struct BasicStochasticScales { T first = 0, second = 0; StochasticStatus status = StochasticStatus::not_selected; };
 using StochasticScales = BasicStochasticScales<double>;
 using StochasticScales32 = BasicStochasticScales<float>;
 template<class T> struct BasicStochasticGeneFit {
@@ -225,168 +184,109 @@ template<class T> struct BasicStochasticGeneFit {
 };
 using StochasticGeneFit = BasicStochasticGeneFit<double>;
 using StochasticGeneFit32 = BasicStochasticGeneFit<float>;
-struct StochasticFitResult {
-    FitResult initialization;
-    anndatapp::Array gamma, offset, offset2, first_scale, second_scale, status, objective;
+template<class T> struct BasicStochasticFitResult {
+    BasicFitResult<T> initialization;
+    T* gamma = nullptr; T* offset = nullptr; T* offset2 = nullptr;
+    T* first_scale = nullptr; T* second_scale = nullptr; T* objective = nullptr;
+    uint8_t* status = nullptr;
+    size_t capacity = 0;
     bool refit_all = false;
 };
-class StochasticWorkspace {
-public:
-    explicit StochasticWorkspace(const PreparedInput&, StochasticRunOptions = {});
-    ~StochasticWorkspace();
-    StochasticWorkspace(StochasticWorkspace&&) noexcept;
-    StochasticWorkspace& operator=(StochasticWorkspace&&) noexcept;
-    StochasticWorkspace(const StochasticWorkspace&) = delete;
-    StochasticWorkspace& operator=(const StochasticWorkspace&) = delete;
-    std::size_t block_genes() const noexcept;
-    std::size_t scratch_bytes() const noexcept;
-    ComputePrecision compute_precision() const noexcept;
-private:
-    std::unique_ptr<detail::StochasticWorkspaceState> state_;
-    friend struct detail::Access;
-};
+using StochasticFitResult = BasicStochasticFitResult<double>;
+using StochasticFitResult32 = BasicStochasticFitResult<float>;
 template<class T> struct BasicStochasticMomentBlock {
-    std::size_t first = 0, count = 0, rows = 0;
-    std::ptrdiff_t stride = 0;
-    T* spliced = nullptr;
-    T* unspliced = nullptr;
-    T* spliced_second = nullptr;
-    T* cross = nullptr;
-    T* unspliced_second = nullptr;
+    size_t first = 0, count = 0, rows = 0;
+    ptrdiff_t stride = 0;
+    T* spliced = nullptr; T* unspliced = nullptr; T* spliced_second = nullptr;
+    T* cross = nullptr; T* unspliced_second = nullptr;
 };
 using StochasticMomentBlock = BasicStochasticMomentBlock<double>;
 using StochasticMomentBlock32 = BasicStochasticMomentBlock<float>;
-template<class T> struct BasicStochasticScaleBlock {
-    std::size_t first = 0, count = 0;
-    T* first_scale = nullptr;
-    T* second_scale = nullptr;
-    std::uint8_t* status = nullptr;
-};
-using StochasticScaleBlock = BasicStochasticScaleBlock<double>;
-using StochasticScaleBlock32 = BasicStochasticScaleBlock<float>;
+template<class T> struct BasicStochasticScaleBlock { size_t first=0,count=0; T* first_scale=nullptr; T* second_scale=nullptr; uint8_t* status=nullptr; };
 template<class T> struct BasicStochasticFitBlock {
-    std::size_t first = 0, count = 0;
-    T* gamma = nullptr;
-    T* offset = nullptr;
-    T* offset2 = nullptr;
-    T* first_scale = nullptr;
-    T* second_scale = nullptr;
-    std::uint8_t* status = nullptr;
-    T* objective = nullptr;
+    size_t first=0,count=0;
+    T* gamma=nullptr; T* offset=nullptr; T* offset2=nullptr;
+    T* first_scale=nullptr; T* second_scale=nullptr; uint8_t* status=nullptr; T* objective=nullptr;
 };
-using StochasticFitBlock = BasicStochasticFitBlock<double>;
-using StochasticFitBlock32 = BasicStochasticFitBlock<float>;
-struct StochasticOutputBlock {
-    std::size_t first = 0, count = 0;
-    anndatapp::ArrayView velocity, second_residual, spliced, unspliced, spliced_second, cross, unspliced_second;
-};
-struct StochasticBlockSink {
-    void* context = nullptr;
-    void (*write)(void*, const StochasticOutputBlock&) = nullptr;
-};
-template<class T> class BasicStochasticReferenceStages {
-public:
-    BasicStochasticReferenceStages(const PreparedInput&, StochasticWorkspace&, StochasticOptions = {}, StochasticBlockSink = {});
-    ~BasicStochasticReferenceStages();
-    BasicStochasticReferenceStages(BasicStochasticReferenceStages&&) noexcept;
-    BasicStochasticReferenceStages& operator=(BasicStochasticReferenceStages&&) noexcept;
-    BasicStochasticReferenceStages(const BasicStochasticReferenceStages&) = delete;
-    BasicStochasticReferenceStages& operator=(const BasicStochasticReferenceStages&) = delete;
-    BasicMomentBlock<T> initial_moments(std::size_t first, std::size_t count);
+using StochasticScaleBlock=BasicStochasticScaleBlock<double>;
+using StochasticScaleBlock32=BasicStochasticScaleBlock<float>;
+using StochasticFitBlock=BasicStochasticFitBlock<double>;
+using StochasticFitBlock32=BasicStochasticFitBlock<float>;
+template<class T> struct BasicStochasticBlockSink { void* context=nullptr; void (*write)(void*,const BasicStochasticMomentBlock<T>&,const BasicStochasticFitBlock<T>&)=nullptr; };
+using StochasticBlockSink=BasicStochasticBlockSink<double>;
+template<class T> struct BasicStochasticReferenceStages {
+    const PreparedInput* input=nullptr;
+    Workspace<T>* workspace=nullptr;
+    StochasticOptions options;
+    BasicStochasticFitResult<T> result;
+    BasicStochasticBlockSink<T> sink;
+    size_t next=0;
+    bool resolved=false,finished=false;
+    BasicMomentBlock<T> initial_moments(size_t,size_t);
     BasicFitBlock<T> initial_fit(BasicMomentBlock<T>);
-    void accept_initialization(BasicMomentBlock<T>, BasicFitBlock<T>);
-    // Alternate sources must be dense N by count batches; caller owns staging.
-    void replace_moments(BasicMomentBlock<T>&, std::size_t offset, std::size_t count, anndatapp::ArrayView s, anndatapp::ArrayView u);
-    // Alternate sources must be dense N by count batches; caller owns staging.
-    void replace_moments(BasicStochasticMomentBlock<T>&, std::size_t offset, std::size_t count, anndatapp::ArrayView s, anndatapp::ArrayView u);
+    void accept_initialization(BasicMomentBlock<T>,BasicFitBlock<T>);
     void resolve_selection();
-    BasicStochasticMomentBlock<T> moments(std::size_t first, std::size_t count);
+    BasicStochasticMomentBlock<T> moments(size_t,size_t);
     BasicStochasticScaleBlock<T> scales(BasicStochasticMomentBlock<T>);
-    BasicStochasticFitBlock<T> fit(BasicStochasticMomentBlock<T>, BasicStochasticScaleBlock<T>);
-    void emit(BasicStochasticMomentBlock<T>, BasicStochasticFitBlock<T>);
-    StochasticFitResult finish();
-    bool bound_to(const PreparedInput&, const StochasticWorkspace&) const noexcept;
-private:
-    std::unique_ptr<detail::BasicStochasticStagesState<T>> state_;
-    friend struct detail::Access;
+    BasicStochasticFitBlock<T> fit(BasicStochasticMomentBlock<T>,BasicStochasticScaleBlock<T>);
+    void emit(BasicStochasticMomentBlock<T>,BasicStochasticFitBlock<T>);
+    BasicStochasticFitResult<T> finish();
 };
-using StochasticReferenceStages = BasicStochasticReferenceStages<double>;
-using StochasticReferenceStages32 = BasicStochasticReferenceStages<float>;
-
-// Both passes accept opaque custom state; only explicit reference calls use host buffers.
-template<class Operations>
-auto stochastic_with(Operations& operations, std::size_t genes, std::size_t block_genes = 64) {
-    if (!block_genes) throw std::invalid_argument("block_genes must be positive");
-    if constexpr (requires { operations.begin(); }) operations.begin();
-    for (std::size_t first = 0; first < genes;) {
-        auto count = genes - first < block_genes ? genes - first : block_genes;
-        auto moments = operations.initial_moments(first, count);
-        auto fit = operations.initial_fit(moments);
-        operations.accept_initialization(moments, fit);
-        first += count;
-    }
-    operations.resolve_selection();
-    for (std::size_t first = 0; first < genes;) {
-        auto count = genes - first < block_genes ? genes - first : block_genes;
-        if constexpr (requires { operations.process_block(first, count); }) operations.process_block(first, count);
+using StochasticReferenceStages=BasicStochasticReferenceStages<double>;
+using StochasticReferenceStages32=BasicStochasticReferenceStages<float>;
+template<class T> Status bind_stages(const PreparedInput&,Workspace<T>&,StochasticOptions,
+    BasicStochasticFitResult<T>,BasicStochasticReferenceStages<T>&,BasicStochasticBlockSink<T> = {});
+// Trusted schedule precondition: block > 0 unless Operations::run bypasses it.
+template<class Operations> requires (!__is_same(Operations,RuntimeOperations) && !__is_same(Operations,const RuntimeOperations))
+auto stochastic_with(Operations& o,size_t genes,size_t block=64) {
+    if constexpr (requires { o.run(); }) return o.run();
+    else {
+        if constexpr (requires { o.begin(); }) o.begin();
+        if constexpr (requires { o.initialize(); }) o.initialize();
         else {
-            auto moments = operations.moments(first, count);
-            auto scales = operations.scales(moments);
-            auto fit = operations.fit(moments, scales);
-            operations.emit(moments, fit);
+            for (size_t first=0;first<genes;) { size_t count=genes-first<block?genes-first:block;
+                auto m=o.initial_moments(first,count);auto f=o.initial_fit(m);o.accept_initialization(m,f);first+=count; }
+            o.resolve_selection();
         }
-        first += count;
+        for(size_t first=0;first<genes;) {size_t count=genes-first<block?genes-first:block;
+            if constexpr(requires{o.process_block(first,count);})o.process_block(first,count);
+            else {auto m=o.moments(first,count);auto s=o.scales(m);auto f=o.fit(m,s);o.emit(m,f);}first+=count;}
+        return o.finish();
     }
-    return operations.finish();
 }
+Status stochastic_with(const RuntimeOperations&,size_t genes,size_t block=64);
+
 namespace reference {
-// All moment outputs are optional; source_s/source_u each hold n_cells() doubles.
-void second_moments(const PreparedInput&, std::size_t first, std::size_t count,
-                    double* spliced, double* unspliced, double* spliced_second, double* cross,
-                    double* unspliced_second, double* source_s, double* source_u);
-// Per-gene pointers address rows elements at the stated signed stride. The
-// caller supplies disjoint score_scratch[rows] for trimmed fitting; pointer
-// capacity and scratch nonaliasing are caller preconditions. fit_mask, if set,
-// holds rows bytes. Initial diagnostics and supplied scales must be finite.
-StochasticScales stochastic_scales(const double* spliced, const double* unspliced,
-    const double* spliced_second, const double* cross, std::size_t rows, std::ptrdiff_t stride,
-    const GeneFit&, const StochasticOptions&, double* score_scratch, const std::uint8_t* fit_mask = nullptr);
-StochasticGeneFit stochastic_fit_gene(const double* spliced, const double* unspliced,
-    const double* spliced_second, const double* cross, std::size_t rows, std::ptrdiff_t stride,
-    const GeneFit&, StochasticScales, const StochasticOptions&, double* score_scratch,
-    const std::uint8_t* fit_mask = nullptr);
-void stochastic_residuals(const StochasticMomentBlock&, const StochasticFitBlock&,
-                          anndatapp::ArrayEdit velocity, std::optional<anndatapp::ArrayEdit> second_residual = {});
-StochasticFitResult stochastic(const PreparedInput&, StochasticWorkspace&, StochasticOptions = {}, StochasticBlockSink = {});
-StochasticFitResult stochastic_into(const PreparedInput&, StochasticWorkspace&, anndatapp::ArrayEdit velocity,
-    StochasticOptions = {}, std::optional<anndatapp::ArrayEdit> second_residual = {});
-
-void second_moments(const PreparedInput&, std::size_t first, std::size_t count,
-                    float* spliced, float* unspliced, float* spliced_second, float* cross,
-                    float* unspliced_second, float* source_s, float* source_u);
-StochasticScales32 stochastic_scales(const float* spliced, const float* unspliced,
-    const float* spliced_second, const float* cross, std::size_t rows, std::ptrdiff_t stride,
-    const GeneFit32&, const StochasticOptions&, float* score_scratch, const std::uint8_t* fit_mask = nullptr);
-StochasticGeneFit32 stochastic_fit_gene(const float* spliced, const float* unspliced,
-    const float* spliced_second, const float* cross, std::size_t rows, std::ptrdiff_t stride,
-    const GeneFit32&, StochasticScales32, const StochasticOptions&, float* score_scratch,
-    const std::uint8_t* fit_mask = nullptr);
-void stochastic_residuals(const StochasticMomentBlock32&, const StochasticFitBlock32&,
-                          anndatapp::ArrayEdit velocity, std::optional<anndatapp::ArrayEdit> second_residual = {});
-// Alternate sources are N by K batches in caller-supplied column order. The
-// prepared graph is reused; sparse source indexing is cold caller-owned
-// acquisition outside a Workspace budget. Stage replacement requires dense input.
-template<class T> void moments_from(const PreparedInput&, anndatapp::ArrayView s, anndatapp::ArrayView u,
-    T* ms, T* mu, std::size_t row_stride);
-template<class T> void second_moments_from(const PreparedInput&, anndatapp::ArrayView s, anndatapp::ArrayView u,
-    T* ms, T* mu, T* mss, T* mus, T* muu, T* source_s, T* source_u, std::size_t row_stride);
-
+Status validate(const FitOptions&);
+Status validate(const StochasticOptions&);
+// Raw per-gene routines are trusted: signed strides, score_scratch[rows],
+// masks[rows], nonoverlap, finite options and enabled inputs are caller contracts.
+GeneFit fit_gene(const double*,const double*,size_t,ptrdiff_t,const FitOptions&,double*,const uint8_t* = nullptr,bool = true);
+GeneFit32 fit_gene(const float*,const float*,size_t,ptrdiff_t,const FitOptions&,float*,const uint8_t* = nullptr,bool = true);
+StochasticScales stochastic_scales(const double*,const double*,const double*,const double*,size_t,ptrdiff_t,const GeneFit&,const StochasticOptions&,double*,const uint8_t* = nullptr);
+StochasticScales32 stochastic_scales(const float*,const float*,const float*,const float*,size_t,ptrdiff_t,const GeneFit32&,const StochasticOptions&,float*,const uint8_t* = nullptr);
+StochasticGeneFit stochastic_fit_gene(const double*,const double*,const double*,const double*,size_t,ptrdiff_t,const GeneFit&,StochasticScales,const StochasticOptions&,double*,const uint8_t* = nullptr);
+StochasticGeneFit32 stochastic_fit_gene(const float*,const float*,const float*,const float*,size_t,ptrdiff_t,const GeneFit32&,StochasticScales32,const StochasticOptions&,float*,const uint8_t* = nullptr);
+template<class T> void moments(const PreparedInput&,size_t,size_t,T*,T*);
+template<class T> void second_moments(const PreparedInput&,size_t,size_t,T*,T*,T*,T*,T*,T*,T*);
+template<class T> void moments_from(const PreparedInput&,const PreparedInput&,size_t,size_t,T*,T*);
+template<class T> void moments_from(const PreparedInput&,const void*,ptrdiff_t,anndatapp::DType,const void*,ptrdiff_t,anndatapp::DType,T*,T*,size_t);
+template<class T> void second_moments_from(const PreparedInput&,const void*,ptrdiff_t,anndatapp::DType,const void*,ptrdiff_t,anndatapp::DType,T*,T*,T*,T*,T*,size_t);
+template<class T,class O> void residuals(const BasicMomentBlock<T>&,const BasicFitBlock<T>&,O*,ptrdiff_t,ptrdiff_t=1);
+template<class T,class O> void stochastic_residuals(const BasicStochasticMomentBlock<T>&,const BasicStochasticFitBlock<T>&,O*,O*,ptrdiff_t,ptrdiff_t=1);
+template<class T> Status steady_state(const PreparedInput&,Workspace<T>&,BasicFitResult<T>&,FitOptions = {},BasicBlockSink<T> = {});
+// Output capacities are element spans including signed-stride gaps. The pointer
+// addresses logical row zero. Output regions are disjoint from all other buffers.
+template<class T,class O> Status steady_state_into(const PreparedInput&,Workspace<T>&,BasicFitResult<T>&,O*,size_t,ptrdiff_t,FitOptions = {});
+template<class T> Status stochastic(const PreparedInput&,Workspace<T>&,BasicStochasticFitResult<T>&,StochasticOptions = {},BasicStochasticBlockSink<T> = {});
+template<class T,class O> Status stochastic_into(const PreparedInput&,Workspace<T>&,BasicStochasticFitResult<T>&,O*,size_t,O*,size_t,ptrdiff_t,StochasticOptions = {});
+struct NeighborhoodSize { size_t entries=0, indices=0, scratch_entries=0; };
+struct NeighborhoodBuffers { size_t* indices=nullptr;size_t index_capacity=0;Entry* scratch=nullptr;size_t scratch_capacity=0;float* values=nullptr;size_t* columns=nullptr;size_t* offsets=nullptr;size_t capacity=0,offset_capacity=0; };
+Status neighborhood_size(const AcquiredMatrix&,NeighborhoodSize&);
+Status prepare_neighborhood(const AcquiredMatrix&,const NeighborhoodBuffers&,size_t& used);
 }
-
+namespace cpu {
+template<class T> Status steady_state(const PreparedInput&,Workspace<T>&,BasicFitResult<T>&,FitOptions = {},BasicBlockSink<T> = {});
+template<class T> Status stochastic(const PreparedInput&,Workspace<T>&,BasicStochasticFitResult<T>&,StochasticOptions = {},BasicStochasticBlockSink<T> = {});
 }
-
-export namespace velocitypp::cpu {
-// Compiled portable CPU helpers; explicitly callable when other paths are selected.
-FitResult steady_state(const PreparedInput&, Workspace&, FitOptions = {}, BlockSink = {});
-StochasticFitResult stochastic(const PreparedInput&, StochasticWorkspace&, StochasticOptions = {}, StochasticBlockSink = {});
 }

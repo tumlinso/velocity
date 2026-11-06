@@ -21,6 +21,7 @@
 #include <vector>
 
 import velocitypp;
+#include "support.hh"
 
 namespace {
 constinit std::atomic<bool> count_allocations{false};
@@ -318,31 +319,6 @@ OwnedArray make_array(const std::shared_ptr<Csr>& source, Format format) {
     return {std::move(array), storage->bytes()};
 }
 
-std::size_t scalar_bytes(anndatapp::DType type) {
-    switch (type) {
-    case anndatapp::DType::boolean: case anndatapp::DType::int8: case anndatapp::DType::uint8: return 1;
-    case anndatapp::DType::int16: case anndatapp::DType::uint16: return 2;
-    case anndatapp::DType::int32: case anndatapp::DType::uint32: case anndatapp::DType::float32: return 4;
-    case anndatapp::DType::int64: case anndatapp::DType::uint64: case anndatapp::DType::float64: return 8;
-    }
-    throw std::runtime_error("unsupported output dtype");
-}
-
-std::size_t array_bytes(const anndatapp::Array& a) {
-    std::size_t count = 1;
-    for (std::size_t i = 0; i < a.rank(); ++i) {
-        if (a.extent(i) && count > std::numeric_limits<std::size_t>::max()/a.extent(i))
-            throw std::runtime_error("array extent product overflows");
-        count *= a.extent(i);
-    }
-    return count*scalar_bytes(a.dtype());
-}
-
-std::size_t fit_result_bytes(const velocitypp::FitResult& fit) {
-    return array_bytes(fit.gamma) + array_bytes(fit.offset) + array_bytes(fit.r2)
-        + array_bytes(fit.genes) + array_bytes(fit.status);
-}
-
 struct Checksum {
     std::uint64_t values = 0;
     double sum = 0;
@@ -356,59 +332,46 @@ struct Checksum {
     }
 };
 
-template<class T> void checksum_add(Checksum& checksum, T value) { checksum.add(value); }
-
-template<class T>
-void checksum_values(Checksum& checksum, const T* data, std::size_t rows, std::size_t columns,
-                     std::ptrdiff_t row_stride, std::ptrdiff_t column_stride) {
-    for (std::size_t i = 0; i < rows; ++i)
-        for (std::size_t j = 0; j < columns; ++j)
-            checksum_add(checksum, data[std::ptrdiff_t(i)*row_stride + std::ptrdiff_t(j)*column_stride]);
-}
-
-void checksum_block(Checksum& checksum, const anndatapp::ArrayView& output,
-                    std::size_t count, std::size_t rows) {
-    if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
-        || output.extent(0) != rows || output.extent(1) != count)
-        throw std::runtime_error("velocity sink received an unexpected output view");
-    if (output.dtype() == anndatapp::DType::float32) {
-        const auto view = output.dense<float>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else if (output.dtype() == anndatapp::DType::float64) {
-        const auto view = output.dense<double>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else throw std::runtime_error("velocity sink dtype must be float32 or float64");
-}
-
-struct SinkState {
+template<class T, class O> struct SinkState {
     Checksum checksum;
-    std::size_t next_gene = 0, rows = 0;
+    std::size_t next_gene = 0, rows = 0, genes = 0;
+    std::vector<O>* retained = nullptr;
+    std::vector<O>* block_output = nullptr;
 };
 
-void stream_sink(void* context, const velocitypp::OutputBlock& block) {
-    auto& state = *static_cast<SinkState*>(context);
-    if (block.first != state.next_gene || !block.count)
-        throw std::runtime_error("velocity sink blocks are not contiguous");
-    checksum_block(state.checksum, block.velocity, block.count, state.rows);
-    state.next_gene += block.count;
+template<class O>
+void checksum_block(Checksum& checksum, const O* values, std::size_t rows, std::size_t columns) {
+    for (std::size_t i = 0; i < rows; ++i)
+        for (std::size_t j = 0; j < columns; ++j)
+            checksum.add(values[i * columns + j]);
 }
 
-void checksum_retained(Checksum& checksum, const anndatapp::ArrayView& output,
-                       std::size_t rows, std::size_t genes, std::size_t block_genes) {
-    if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
-        || output.extent(0) != rows || output.extent(1) != genes)
-        throw std::runtime_error("retained velocity output has an unexpected shape");
-    if (output.dtype() == anndatapp::DType::float32) {
-        const auto view = output.dense<float>();
-        for (std::size_t first = 0; first < genes; first += block_genes)
-            checksum_values(checksum, view.data() + std::ptrdiff_t(first)*view.stride(1), rows,
-                std::min(block_genes, genes - first), view.stride(0), view.stride(1));
-    } else if (output.dtype() == anndatapp::DType::float64) {
-        const auto view = output.dense<double>();
-        for (std::size_t first = 0; first < genes; first += block_genes)
-            checksum_values(checksum, view.data() + std::ptrdiff_t(first)*view.stride(1), rows,
-                std::min(block_genes, genes - first), view.stride(0), view.stride(1));
-    } else throw std::runtime_error("retained velocity dtype must be float32 or float64");
+template<class T, class O>
+void stream_sink(void* context, const velocitypp::BasicMomentBlock<T>& moments,
+                 const velocitypp::BasicFitBlock<T>& fit) {
+    auto& state = *static_cast<SinkState<T, O>*>(context);
+    if (moments.first != state.next_gene || !moments.count || moments.rows != state.rows
+        || fit.first != moments.first || fit.count != moments.count)
+        throw std::runtime_error("velocity sink blocks are not contiguous or compatible");
+    if (state.retained)
+        velocitypp::reference::residuals(moments, fit, state.retained->data() + moments.first,
+            std::ptrdiff_t(state.genes));
+    else {
+        velocitypp::reference::residuals(moments, fit, state.block_output->data(),
+            std::ptrdiff_t(moments.count));
+        checksum_block(state.checksum, state.block_output->data(), moments.rows, moments.count);
+    }
+    state.next_gene += moments.count;
+}
+
+void checksum_retained(Checksum& checksum, const float* values, std::size_t rows,
+                       std::size_t genes, std::size_t block_genes) {
+    for (std::size_t first = 0; first < genes; first += block_genes) {
+        const auto count = std::min(block_genes, genes - first);
+        for (std::size_t i = 0; i < rows; ++i)
+            for (std::size_t j = 0; j < count; ++j)
+                checksum.add(values[i * genes + first + j]);
+    }
 }
 
 struct Memory { std::uint64_t rss = 0, hwm = 0; };
@@ -558,22 +521,29 @@ int run(const Config& config) {
     auto w = make_array(fixture.weights, config.graph);
     fixture.spliced.reset(); fixture.unspliced.reset(); fixture.weights.reset();
 
-    velocitypp::Input input{s.array.view(), u.array.view(), w.array.view()};
-    velocitypp::PreparedInput prepared(std::move(input), anndatapp::Validation::none);
+    velocity_benchmark::Acquired s_input(s.array.view()), u_input(u.array.view()), w_input(w.array.view());
+    velocitypp::Input input{s_input.matrix, u_input.matrix, w_input.matrix};
+    velocity_benchmark::PreparedStorage prepared(input);
     velocitypp::RunOptions run_options;
     run_options.workspace_bytes = max_workspace_bytes;
     run_options.block_genes = config.block;
-    run_options.output_dtype = anndatapp::DType::float32;
-    velocitypp::Workspace workspace(prepared, run_options);
+    velocity_benchmark::fit_workspace_budget<double, float>(prepared.input, run_options, false, 1);
+    velocity_benchmark::WorkspaceStorage<double> workspace(prepared.input, run_options, false);
     const auto input_storage_bytes = s.bytes + u.bytes + w.bytes;
-    const auto prep_accounted = input_storage_bytes + prepared.storage_bytes();
-    anndatapp::Array retained;
+    const auto prepared_bytes = prepared.bytes();
+    std::vector<float> block_output;
+    block_output.resize(checked_size(mul_bytes(n, workspace.size.block), "stream output count"));
+    const auto workspace_bytes = workspace.bytes() + block_output.capacity() * sizeof(float);
+    if (workspace_bytes > max_workspace_bytes)
+        throw std::runtime_error("allocated workspace and output block exceed 64-MiB limit");
+    const auto prep_accounted = input_storage_bytes + prepared_bytes;
     const auto logical_velocity_bytes = mul_bytes(mul_bytes(n, g), sizeof(float));
+    std::vector<float> retained;
+    if (config.retain) retained.resize(checked_size(mul_bytes(n, g), "retained output count"));
     const auto output_live_bytes = config.retain ? logical_velocity_bytes
         : mul_bytes(mul_bytes(n, std::min(g, config.block)), sizeof(float));
-    if (prep_accounted + workspace.scratch_bytes() + output_live_bytes > max_accounted_bytes)
+    if (prep_accounted + workspace_bytes + output_live_bytes > max_accounted_bytes)
         throw std::runtime_error("accounted buffers exceed 1.5-GiB probe budget");
-    if (config.retain) retained = anndatapp::Array::empty<float>({n, g});
     count_allocations.store(false, std::memory_order_relaxed);
     const auto prep_alloc_end = allocation_stats();
     const AllocationStats prep_allocations{prep_alloc_end.calls - prep_alloc_start.calls,
@@ -582,34 +552,33 @@ int run(const Config& config) {
     const auto prep_end = Clock::now();
 
     Checksum checksum;
-    velocitypp::FitResult result;
+    std::optional<velocity_benchmark::FitStorage<double>> result_storage;
+    SinkState<double, float> sink{{}, 0, n, g, config.retain ? &retained : nullptr, &block_output};
+    velocitypp::BasicBlockSink<double> sink_callback{&sink, stream_sink<double, float>};
     const auto execution_alloc_start = allocation_stats();
     count_allocations.store(true, std::memory_order_relaxed);
     const auto execute_start = Clock::now();
-    if (config.retain) {
-        result = velocitypp::reference::steady_state_into(prepared, workspace,
-            anndatapp::ArrayEdit(retained.edit()));
-        checksum_retained(checksum, anndatapp::ArrayView(retained.view()), n, g, config.block);
-    } else {
-        SinkState sink{{}, 0, n};
-        result = velocitypp::reference::steady_state(prepared, workspace, {}, {&sink, stream_sink});
-        checksum = sink.checksum;
-        if (sink.next_gene != g) throw std::runtime_error("stream sink did not receive every gene block");
-    }
+    result_storage.emplace(g);
+    auto result = result_storage->result();
+    velocity_benchmark::require(velocitypp::reference::steady_state(
+        prepared.input, workspace.workspace, result, {}, sink_callback), "velocitypp steady-state run");
+    if (config.retain) checksum_retained(checksum, retained.data(), n, g, config.block);
+    else checksum = sink.checksum;
     const auto execute_end = Clock::now();
     count_allocations.store(false, std::memory_order_relaxed);
     const auto execution_alloc_end = allocation_stats();
     const AllocationStats execution_allocations{execution_alloc_end.calls - execution_alloc_start.calls,
         execution_alloc_end.bytes - execution_alloc_start.bytes};
     const auto mem_after = memory();
+    if (sink.next_gene != g) throw std::runtime_error("stream sink did not receive every gene block");
     if (checksum.values != logical_velocity_bytes / sizeof(float) || !checksum.finite)
         throw std::runtime_error("velocity sink found missing or nonfinite output values");
-    const auto fit_bytes = fit_result_bytes(result);
+    const auto fit_bytes = result_storage->bytes();
     const auto retained_bytes = fit_bytes + (config.retain ? logical_velocity_bytes : 0);
     const auto output_bytes = fit_bytes + logical_velocity_bytes;
-    if (prep_accounted + workspace.scratch_bytes() + retained_bytes > max_accounted_bytes)
+    if (prep_accounted + workspace_bytes + retained_bytes > max_accounted_bytes)
         throw std::runtime_error("accounted live buffers exceed 1.5-GiB probe budget");
-    print_result(config, fixture, n, g, prepared.storage_bytes(), workspace.scratch_bytes(),
+    print_result(config, fixture, n, g, prepared_bytes, workspace_bytes,
         input_storage_bytes, prep_accounted, output_bytes, retained_bytes, fit_bytes, prep_allocations,
         execution_allocations, checksum,
         mem_before, mem_loaded, mem_prepared, mem_after,

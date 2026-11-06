@@ -26,6 +26,13 @@ def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def recorded_path(path: Path) -> str:
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def mask_digest(bits: str) -> str:
     if any(c not in "01" for c in bits):
         raise RuntimeError("native selection mask is malformed")
@@ -67,14 +74,21 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--native", type=Path, required=True)
     p.add_argument("--input", type=Path)
+    p.add_argument("--output", type=Path,
+                   default=ROOT / "build/qualification/stochastic-benchmark.json",
+                   help="summary JSON path (default: build/qualification/stochastic-benchmark.json)")
+    p.add_argument("--artifacts-dir", type=Path,
+                   default=ROOT / "build/qualification/stochastic-benchmark-artifacts",
+                   help="directory for raw runs, events, and generated scaling inputs")
     p.add_argument("--cpu", type=int, default=0)
     p.add_argument("--runs", type=int, default=3)
     p.add_argument("--scaling-only", action="store_true")
     args = p.parse_args()
     native = args.native.resolve()
-    artifact_dir = ROOT / "benchmarks/artifacts"
+    result_file = args.output.resolve()
+    artifact_dir = args.artifacts_dir.resolve()
+    result_file.parent.mkdir(parents=True, exist_ok=True)
     artifact_dir.mkdir(parents=True, exist_ok=True)
-    result_file = ROOT / "benchmarks/results/milestone-2.json"
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     raw_events = artifact_dir / f"milestone-2-events-{run_id}.jsonl"
     raw_runs = artifact_dir / f"milestone-2-runs-{run_id}.json"
@@ -256,7 +270,7 @@ def main():
                          peak_metric="process HWM minus RSS immediately after common input load; includes preparation, execution and sink"),
         summary=summary, scvelo=reference_samples, native=native_samples,
         source_allocation_accounting="NumPy/SciPy allocations were not intercepted; HWM and identified materialized array sizes are recorded.",
-        raw_events=raw_events.relative_to(ROOT).as_posix())
+        raw_events=recorded_path(raw_events))
     raw_runs.write_text(json.dumps(record, indent=2)+"\n")
     compact_record = {key: record[key] for key in ("schema", "run_id", "mode", "host", "scvelo_source_commit",
         "workload_sha256", "generation", "native_sha256", "benchmark_source_sha256", "runner_sha256",
@@ -264,7 +278,7 @@ def main():
         "source_allocation_accounting", "raw_events")}
     compact_record["scvelo_samples"] = [compact_sample(x) for x in reference_samples]
     compact_record["native_samples"] = [compact_sample(x) for x in native_samples]
-    compact_record["raw_runs"] = raw_runs.relative_to(ROOT).as_posix()
+    compact_record["raw_runs"] = recorded_path(raw_runs)
     if not result_file.exists():
         result_file.write_text(json.dumps(compact_record, indent=2)+"\n")
     print(json.dumps(summary, indent=2))

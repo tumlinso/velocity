@@ -22,6 +22,7 @@
 #include <vector>
 
 import velocitypp;
+#include "support.hh"
 
 namespace {
 constinit std::atomic<bool> count_allocations{false};
@@ -319,34 +320,6 @@ OwnedArray make_array(const std::shared_ptr<Csr>& source, Format format) {
     return {std::move(array), storage->bytes()};
 }
 
-std::size_t scalar_bytes(anndatapp::DType type) {
-    switch (type) {
-    case anndatapp::DType::boolean: case anndatapp::DType::int8: case anndatapp::DType::uint8: return 1;
-    case anndatapp::DType::int16: case anndatapp::DType::uint16: return 2;
-    case anndatapp::DType::int32: case anndatapp::DType::uint32: case anndatapp::DType::float32: return 4;
-    case anndatapp::DType::int64: case anndatapp::DType::uint64: case anndatapp::DType::float64: return 8;
-    }
-    throw std::runtime_error("unsupported output dtype");
-}
-
-std::size_t array_bytes(const anndatapp::Array& a) {
-    std::size_t count = 1;
-    for (std::size_t i = 0; i < a.rank(); ++i) {
-        if (a.extent(i) && count > std::numeric_limits<std::size_t>::max()/a.extent(i))
-            throw std::runtime_error("array extent product overflows");
-        count *= a.extent(i);
-    }
-    return count*scalar_bytes(a.dtype());
-}
-
-std::size_t fit_result_bytes(const velocitypp::StochasticFitResult& fit) {
-    const auto& init = fit.initialization;
-    return array_bytes(init.gamma) + array_bytes(init.offset) + array_bytes(init.r2)
-        + array_bytes(init.genes) + array_bytes(init.status) + array_bytes(fit.gamma)
-        + array_bytes(fit.offset) + array_bytes(fit.offset2) + array_bytes(fit.first_scale)
-        + array_bytes(fit.second_scale) + array_bytes(fit.status) + array_bytes(fit.objective);
-}
-
 struct Checksum {
     std::uint64_t values = 0;
     double sum = 0, absolute_sum = 0;
@@ -361,60 +334,30 @@ struct Checksum {
     }
 };
 
-template<class T> void checksum_add(Checksum& checksum, T value) { checksum.add(value); }
-
-template<class T>
-void checksum_values(Checksum& checksum, const T* data, std::size_t rows, std::size_t columns,
-                     std::ptrdiff_t row_stride, std::ptrdiff_t column_stride) {
-    for (std::size_t i = 0; i < rows; ++i)
-        for (std::size_t j = 0; j < columns; ++j)
-            checksum_add(checksum, data[std::ptrdiff_t(i)*row_stride + std::ptrdiff_t(j)*column_stride]);
-}
-
-void checksum_block(Checksum& checksum, const anndatapp::ArrayView& output,
-                    std::size_t count, std::size_t rows) {
-    if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
-        || output.extent(0) != rows || output.extent(1) != count)
-        throw std::runtime_error("velocity sink received an unexpected output view");
-    if (output.dtype() == anndatapp::DType::float32) {
-        const auto view = output.dense<float>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else if (output.dtype() == anndatapp::DType::float64) {
-        const auto view = output.dense<double>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else throw std::runtime_error("velocity sink dtype must be float32 or float64");
-}
-
-struct SinkState {
+template<class T, class O> struct SinkState {
     Checksum velocity, second_residual;
     std::size_t next_gene = 0, rows = 0;
+    std::size_t genes = 0;
+    std::vector<O>* velocity_output = nullptr;
+    std::vector<O>* second_output = nullptr;
 };
 
-void stream_sink(void* context, const velocitypp::StochasticOutputBlock& block) {
-    auto& state = *static_cast<SinkState*>(context);
-    if (block.first != state.next_gene || !block.count)
-        throw std::runtime_error("velocity sink blocks are not contiguous");
-    checksum_block(state.velocity, block.velocity, block.count, state.rows);
-    checksum_block(state.second_residual, block.second_residual, block.count, state.rows);
-    state.next_gene += block.count;
-}
-
-void checksum_retained(Checksum& checksum, const anndatapp::ArrayView& output,
-                       std::size_t rows, std::size_t genes, std::size_t block_genes) {
-    if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
-        || output.extent(0) != rows || output.extent(1) != genes)
-        throw std::runtime_error("retained velocity output has an unexpected shape");
-    if (output.dtype() == anndatapp::DType::float32) {
-        const auto view = output.dense<float>();
-        for (std::size_t first = 0; first < genes; first += block_genes)
-            checksum_values(checksum, view.data() + std::ptrdiff_t(first)*view.stride(1), rows,
-                std::min(block_genes, genes - first), view.stride(0), view.stride(1));
-    } else if (output.dtype() == anndatapp::DType::float64) {
-        const auto view = output.dense<double>();
-        for (std::size_t first = 0; first < genes; first += block_genes)
-            checksum_values(checksum, view.data() + std::ptrdiff_t(first)*view.stride(1), rows,
-                std::min(block_genes, genes - first), view.stride(0), view.stride(1));
-    } else throw std::runtime_error("retained velocity dtype must be float32 or float64");
+template<class T, class O>
+void stream_sink(void* context, const velocitypp::BasicStochasticMomentBlock<T>& moments,
+                 const velocitypp::BasicStochasticFitBlock<T>& fit) {
+    auto& state = *static_cast<SinkState<T, O>*>(context);
+    if (moments.first != state.next_gene || !moments.count || moments.rows != state.rows
+        || fit.first != moments.first || fit.count != moments.count)
+        throw std::runtime_error("stochastic sink blocks are not contiguous or compatible");
+    velocitypp::reference::stochastic_residuals(moments, fit, state.velocity_output->data(),
+        state.second_output->data(), std::ptrdiff_t(moments.count));
+    for (std::size_t i = 0; i < moments.rows; ++i)
+        for (std::size_t j = 0; j < moments.count; ++j)
+            state.velocity.add((*state.velocity_output)[i * moments.count + j]);
+    for (std::size_t i = 0; i < moments.rows; ++i)
+        for (std::size_t j = 0; j < moments.count; ++j)
+            state.second_residual.add((*state.second_output)[i * moments.count + j]);
+    state.next_gene += moments.count;
 }
 
 struct Memory { std::uint64_t rss = 0, hwm = 0; };
@@ -478,15 +421,6 @@ std::optional<Config> parse_args(int argc, char** argv) {
     return c;
 }
 
-std::pair<double, bool> sum_array(const anndatapp::Array& a) {
-    double sum = 0; bool finite = true;
-    if (a.dtype() == anndatapp::DType::float64) {
-        auto x = a.view().dense<double>();
-        for (std::size_t i = 0; i < a.extent(0); ++i) { sum += x.data()[std::ptrdiff_t(i)*x.stride(0)]; finite &= std::isfinite(x.data()[std::ptrdiff_t(i)*x.stride(0)]); }
-    } else throw std::runtime_error("expected float64 fit output");
-    return {sum, finite};
-}
-
 int run(const Config& config) {
     const auto total_start = Clock::now();
     const auto before = memory();
@@ -502,14 +436,23 @@ int run(const Config& config) {
     auto u = make_array(fixture.unspliced, Format::csr);
     auto w = make_array(fixture.weights, Format::csr);
     fixture.spliced.reset(); fixture.unspliced.reset(); fixture.weights.reset();
-    velocitypp::Input input{s.array.view(), u.array.view(), w.array.view()};
-    velocitypp::PreparedInput prepared(std::move(input), anndatapp::Validation::none);
+    velocity_benchmark::Acquired s_input(s.array.view()), u_input(u.array.view()), w_input(w.array.view());
+    velocitypp::Input input{s_input.matrix, u_input.matrix, w_input.matrix};
+    velocity_benchmark::PreparedStorage prepared(input);
     velocitypp::StochasticRunOptions run;
     run.workspace_bytes = max_workspace_bytes; run.block_genes = config.block;
-    run.output_dtype = anndatapp::DType::float32; run.second_residual = true;
-    velocitypp::StochasticWorkspace workspace(prepared, run);
+    velocity_benchmark::fit_workspace_budget<double, float>(prepared.input, run, true, 2);
+    velocity_benchmark::WorkspaceStorage<double> workspace(prepared.input, run, true);
     const auto input_bytes = s.bytes + u.bytes + w.bytes;
-    const auto prep_accounted = input_bytes + prepared.storage_bytes();
+    const auto prepared_bytes = prepared.bytes();
+    std::vector<float> velocity_output, second_output;
+    const auto block_elements = checked_size(mul_bytes(n, workspace.size.block), "stream output count");
+    velocity_output.resize(block_elements);
+    second_output.resize(block_elements);
+    const auto workspace_bytes = workspace.bytes()
+        + velocity_output.capacity() * sizeof(float) + second_output.capacity() * sizeof(float);
+    if (workspace_bytes > max_workspace_bytes)
+        throw std::runtime_error("allocated workspace and output blocks exceed 64-MiB limit");
     const auto mem_prepared = memory();
     const auto prep_end = Clock::now();
     count_allocations.store(false, std::memory_order_relaxed);
@@ -518,54 +461,51 @@ int run(const Config& config) {
 
     velocitypp::StochasticOptions options;
     options.initialization.min_r2 = -100; options.initialization.min_ratio = -100;
-    velocitypp::StochasticFitResult result;
-    SinkState sink{{}, {}, 0, n};
+    std::optional<velocity_benchmark::StochasticFitStorage<double>> result_storage;
+    SinkState<double, float> sink{{}, {}, 0, n, g, &velocity_output, &second_output};
+    velocitypp::BasicStochasticBlockSink<double> sink_callback{&sink, stream_sink<double, float>};
     const auto exec_alloc_start = allocation_stats();
     count_allocations.store(true, std::memory_order_relaxed);
     const auto execute_start = Clock::now();
-    result = velocitypp::reference::stochastic(prepared, workspace, options, {&sink, stream_sink});
+    result_storage.emplace(g);
+    auto result = result_storage->result();
+    velocity_benchmark::require(velocitypp::reference::stochastic(
+        prepared.input, workspace.workspace, result, options, sink_callback), "velocitypp stochastic run");
     const auto execute_end = Clock::now();
     count_allocations.store(false, std::memory_order_relaxed);
     const auto exec_alloc_end = allocation_stats();
     const AllocationStats exec_alloc{exec_alloc_end.calls-exec_alloc_start.calls, exec_alloc_end.bytes-exec_alloc_start.bytes};
     const auto after = memory();
-    const auto fit_bytes = fit_result_bytes(result);
+    const auto fit_bytes = result_storage->bytes();
     if (sink.next_gene != g || sink.velocity.values != n*g || sink.second_residual.values != n*g
         || !sink.velocity.finite || !sink.second_residual.finite)
         throw std::runtime_error("stochastic sink missed, duplicated, or found nonfinite output");
 
-    auto mask = result.initialization.genes.view().dense<bool>();
-    auto status = result.status.view().dense<std::uint8_t>();
-    auto gamma = result.gamma.view().dense<double>();
-    auto offset = result.offset.view().dense<double>();
-    auto offset2 = result.offset2.view().dense<double>();
-    auto first_scale = result.first_scale.view().dense<double>();
-    auto second_scale = result.second_scale.view().dense<double>();
-    auto objective = result.objective.view().dense<double>();
     std::size_t selected = 0, successful = 0;
     std::string bits; bits.reserve(g);
     double gamma_sum = 0, offset_sum = 0, offset2_sum = 0;
     for (std::size_t j = 0; j < g; ++j) {
-        const bool active = mask.data()[std::ptrdiff_t(j)*mask.stride(0)];
-        selected += active; successful += active && status.data()[std::ptrdiff_t(j)*status.stride(0)] == 0;
+        const bool active = result_storage->initialization.genes[j];
+        const auto status = result_storage->status[j];
+        selected += active; successful += active && status == std::uint8_t(velocitypp::StochasticStatus::ok);
         bits.push_back(active ? '1' : '0');
-        gamma_sum += gamma.data()[std::ptrdiff_t(j)*gamma.stride(0)];
-        offset_sum += offset.data()[std::ptrdiff_t(j)*offset.stride(0)];
-        offset2_sum += offset2.data()[std::ptrdiff_t(j)*offset2.stride(0)];
-        if (active && (!std::isfinite(first_scale.data()[std::ptrdiff_t(j)*first_scale.stride(0)])
-            || !std::isfinite(second_scale.data()[std::ptrdiff_t(j)*second_scale.stride(0)])
-            || !std::isfinite(objective.data()[std::ptrdiff_t(j)*objective.stride(0)])))
+        gamma_sum += result_storage->gamma[j];
+        offset_sum += result_storage->offset[j];
+        offset2_sum += result_storage->offset2[j];
+        if (active && (!std::isfinite(result_storage->first_scale[j])
+            || !std::isfinite(result_storage->second_scale[j])
+            || !std::isfinite(result_storage->objective[j])))
             throw std::runtime_error("selected stochastic diagnostics are nonfinite");
     }
     std::size_t success_counts[7]{};
-    for (std::size_t j=0;j<g;++j) if (status.data()[std::ptrdiff_t(j)*status.stride(0)] < 7) ++success_counts[status.data()[std::ptrdiff_t(j)*status.stride(0)]];
+    for (std::size_t j=0;j<g;++j) if (result_storage->status[j] < 7) ++success_counts[result_storage->status[j]];
     const auto output = mul_bytes(mul_bytes(n, g), sizeof(float));
     const auto streamed_live = mul_bytes(mul_bytes(n, std::min(g, config.block)), 2*sizeof(float));
     std::cout << std::setprecision(17)
         << "{\"schema\":\"velocity.stochastic-qualification.v1\",\"input\":\"" << json_escape(config.input.string())
         << "\",\"input_file_bytes\":" << fixture.file_bytes << ",\"shape\":[" << n << ',' << g
-        << "],\"block_genes\":" << workspace.block_genes() << ",\"threads\":1,\"input_storage_bytes\":" << input_bytes
-        << ",\"prepared_bytes\":" << prepared.storage_bytes() << ",\"workspace_scratch_bytes\":" << workspace.scratch_bytes()
+        << "],\"block_genes\":" << workspace.size.block << ",\"threads\":1,\"input_storage_bytes\":" << input_bytes
+        << ",\"prepared_bytes\":" << prepared_bytes << ",\"workspace_scratch_bytes\":" << workspace_bytes
         << ",\"prep_global_new_calls\":" << prep_alloc.calls << ",\"prep_global_new_requested_bytes\":" << prep_alloc.bytes
         << ",\"execution_global_new_calls\":" << exec_alloc.calls << ",\"execution_global_new_requested_bytes\":" << exec_alloc.bytes
         << ",\"fit_result_bytes\":" << fit_bytes << ",\"logical_velocity_bytes\":" << output

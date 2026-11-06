@@ -1,42 +1,47 @@
-# Coding style
+# Velocity++ numerical development style
 
-Write compact numerical and systems code in the tradition of classic C and
-Fortran scientific libraries. Keep the calculation and its relationship to
-memory visible. This transparency is valuable independently of runtime speed.
+Velocity++ follows the ccell numerical development style: compact C-style
+scientific code exposing memory and execution, with C++ language features for
+real specialization and composition. This is a numerical development reference
+for competent programmers, including intentionally unchecked access.
 
-- **Keep calculations locally understandable.** Use complete mathematical
-  expressions, ordinary loops, concise notation, and direct control flow.
-  Keep relevant invariants near the calculation. Long names and forwarding
-  helpers do not substitute for a clear algorithm.
-- **Use direct representations.** Pointers, arrays, references, plain structs,
-  dimensions, strides, and sparse buffers should reveal the working data.
-  Make units, mutability, ownership, aliasing, and lifetimes explicit.
-- **Make costs visible.** Allocation, initialization, copying, conversion,
-  packing, transfer, materialization, and synchronization should be deliberate.
-  Reuse caller-controlled outputs and workspace when the operation benefits.
-  Retain only intermediates that serve the calculation or a requested result.
-- **Keep machinery minimal.** Standard-library facilities, dependencies,
-  templates, RAII, and helpers need a concrete benefit. Use small templates
-  and callable structs when they express useful composition or specialization.
-  Avoid wrapper hierarchies, callback layers, registration systems, and generic
-  scaffolding introduced merely for extensibility.
-- **Separate acquisition from computation.** Resolve types, layouts, ownership,
-  and preconditions at suitable boundaries. Provide explicit borrowed or trusted
-  access where justified. Acquired numerical loops should not pay repeated
-  library dispatch, checks, allocation, or synchronization.
-- **Expose scientific components.** Models, objectives, statistics, update
-  rules, and diagnostics should remain understandable and reusable. Allow
-  meaningful downstream substitution without hiding the reference behavior.
-- **Preserve mathematical intent.** Explain changes to numerical evaluation,
-  precision, reduction order, approximation, solver, and convergence behavior.
-  Numerical similarity is the target; bitwise identity and exact result equality
-  are not required. Reduced allocation alone does not establish that similarity.
-- **Keep compiled interfaces small.** Preserve C++20 modules, independently
-  compiled implementations, and private implementation dependencies. Assess
-  specialization using both execution cost and consumer build cost.
+The binding policy is self-contained for standalone checkouts:
 
-Follow the written guidance in
-[Cellerator's coding_style.md](/home/tumlinson/Cellerator/coding_style.md), not
-its current implementation as an example. Keep that protected guide unchanged.
-Fast imports and consumer recompilation remain very high priorities here;
-report material runtime/build tradeoffs with measurements.
+- Use direct arrays, pointers, indices, signed strides, arithmetic, loops,
+  plain operation-specific structs, and deliberate calls. Preserve compact
+  mathematical expressions, short conventional notation, ternaries, and coherent
+  algorithm phases. Labels/goto are permitted where they reveal the calculation.
+- No containers, generic standard-library algorithms, optional/string/span,
+  smart pointers, or hidden owning/growing machinery in shipped numerical code
+  or examples. Tests and qualification tooling may use ordinary library facilities.
+- Include only necessary scalar headers (`stddef.h`, `stdint.h`, `float.h`).
+  Use compiler math/memory builtins with required numerical semantics. No
+  cstdlib/stdlib.h, cmath/math.h, algorithm, limits, numeric, utility, type_traits,
+  memory, or other broad runtime headers in production numerical source.
+- All standard reference sizing, validation, preparation, binding, diagnostics,
+  topology and execution allocate nothing. The caller supplies sufficient
+  buffers and retains them. Return capacity/status/location without allocating
+  an error. Do not introduce allocate/release helpers or numerical owners.
+- Callers perform AnnData++ construction and descriptor acquisition. The
+  reference borrows existing library descriptors; it does not define a parallel
+  matrix/storage model. State lifetime and aliasing remain explicit.
+- Callers control threads, worker-local workspace, scheduling and reductions.
+  CPU reference calls are synchronous; no implicit synchronization or global
+  mutable dispatch registry. Unsafe paths transfer documented preconditions.
+- Consumers may replace a primitive, connected region, fused block, or whole
+  algorithm with different layouts and mathematics. Only retained boundaries
+  impose compatibility. Templates preserve arbitrary concrete intermediate types;
+  runtime typed function pointers retain custom state/results in caller context.
+  Replacements may allocate explicitly where necessary; that exception does not
+  apply to standard reference implementations.
+- Keep ordinary kernels and common specializations separately compiled. Export
+  small descriptors/declarations and narrow composition templates. Private edits
+  must preserve public BMIs and consumer objects; measure rebuild behavior.
+- Preserve declared precision, evaluation/reduction order, masks, convergence
+  and fallback semantics. No blanket fast-math. Style compliance is distinct
+  from scientific equivalence; performance and equivalence claims need evidence.
+
+The protected Cellerator `coding_style.md` is the baseline compact style; its
+independent source must not be changed. In a ccell checkout, the root
+`coding_style.md` adds the full contributor contract. Do not weaken these rules
+without explicit user authorization.

@@ -22,15 +22,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--native', type=Path, required=True)
     parser.add_argument('--input', type=Path, required=True)
+    parser.add_argument('--output', type=Path,
+                        default=ROOT / 'build/qualification/deterministic-benchmark.json',
+                        help='summary JSON path (default: build/qualification/deterministic-benchmark.json)')
+    parser.add_argument('--artifacts-dir', type=Path,
+                        default=ROOT / 'build/qualification/deterministic-benchmark-artifacts',
+                        help='directory for raw runs, events, and generated scaling inputs')
     parser.add_argument('--cpu', type=int, default=0)
     parser.add_argument('--runs', type=int, default=3)
     parser.add_argument('--extra-controls', action='store_true', help='also run retained, CSC and dense controls')
     parser.add_argument('--scaling-only', action='store_true', help='append the two N/G workspace controls without rerunning canonical samples')
     args = parser.parse_args()
     native, workload = args.native.resolve(), args.input.resolve()
+    result_path = args.output.resolve()
+    artifact_dir = args.artifacts_dir.resolve()
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_dir.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, OPENBLAS_NUM_THREADS='1', OMP_NUM_THREADS='1', MKL_NUM_THREADS='1')
-    raw_events = ROOT / 'benchmarks/artifacts/milestone-1-events.jsonl'
-    raw_events.parent.mkdir(parents=True, exist_ok=True)
+    raw_events = artifact_dir / 'deterministic-benchmark-events.jsonl'
     def limit():
         resource.setrlimit(resource.RLIMIT_AS, (2*1024**3, 2*1024**3))
         os.sched_setaffinity(0, {args.cpu})
@@ -50,8 +59,7 @@ def main():
             raise RuntimeError(f'worker failed with exit {p.returncode}: {p.stderr}')
         return json.loads(p.stdout)
     if args.scaling_only:
-        result_path = ROOT / 'benchmarks/results/milestone-1.json'
-        raw_path = ROOT / 'benchmarks/artifacts/milestone-1-runs.json'
+        raw_path = artifact_dir / 'deterministic-benchmark-runs.json'
         report = json.loads(result_path.read_text())
         if digest(native) != report['native_sha256'] or digest(workload) != report['workload_sha256']:
             raise RuntimeError('native binary or canonical workload differs from recorded comparison')
@@ -62,7 +70,7 @@ def main():
                 raise RuntimeError(f'native source changed: {name}')
         samples = []
         for n, g in ((4096, 256), (8192, 256)):
-            path = ROOT / f'benchmarks/artifacts/scaling-n{n}-g{g}.bin'
+            path = artifact_dir / f'scaling-n{n}-g{g}.bin'
             generated = run([sys.executable, str(ROOT/'tools/benchmark_reference.py'), 'generate',
                              str(path), '--n', str(n), '--g', str(g), '--k', '32',
                              '--density', '.01', '--seed', '20261103'])
@@ -144,9 +152,8 @@ def main():
                                      incremental_peak='process HWM minus RSS immediately after common input load; includes preparation and sink',
                                      cold_timing='common input file load, preparation, computation and sink; excludes interpreter startup/import'),
                     summary=summary, reference=reference, native=candidate, controls=controls)
-    raw = ROOT/'benchmarks/artifacts/milestone-1-runs.json'
-    out = ROOT/'benchmarks/results/milestone-1.json'
-    raw.parent.mkdir(parents=True, exist_ok=True); out.parent.mkdir(parents=True, exist_ok=True)
+    raw = artifact_dir / 'deterministic-benchmark-runs.json'
+    out = result_path
     raw.write_text(json.dumps(artifact, indent=2)+'\n')
     out.write_text(json.dumps(artifact, indent=2)+'\n')
     print(json.dumps(summary, indent=2))

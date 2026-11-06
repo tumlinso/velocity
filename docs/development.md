@@ -5,11 +5,12 @@
 This checkout builds the standalone Velocity++ package. Its modules are
 `velocitypp` and `velocitypp.precision`, its C++ namespace is `velocitypp`, and
 its installed target is `velocitypp::velocitypp`. It uses AnnData++ 1.0 or
-newer and passes `anndatapp::ArrayView`, `ArrayEdit`, and `DType` directly.
+newer and binds already acquired AnnData++ descriptors with explicit dtype tags.
+Callers supply all topology, workspace, state and result storage.
 Supported numeric storage is FP32 and FP64.
 
 There is no FP16 or binary16 support, Cellerator dependency or alias, CUDA
-backend, or AVX2 backend. The root `ccell` wrappers provide `ccell.velocity`;
+backend, or AVX2 backend. The source submodule lives at `external/velocitypp` in ccell. The root `ccell` wrappers provide `ccell.velocity`;
 preprocessing remains owned by `ccell`. See the
 [architecture](architecture.md) and [segmentation boundary](segmentation.md).
 
@@ -49,8 +50,8 @@ target_link_libraries(my_app PRIVATE velocitypp::velocitypp)
 ```
 
 Import `velocitypp` for the core API and `velocitypp.precision` for optional
-sensitivity and selective precision stages. Consumer code uses AnnData++ arrays
-directly.
+sensitivity and selective precision stages. Consumers create AnnData++ arrays and acquire their descriptors before
+entering the allocation-free numerical reference.
 
 Example and qualification executables use the `velocitypp_*` prefix. Use CTest
 to run the configured native and installed-consumer checks rather than invoking

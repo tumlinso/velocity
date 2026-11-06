@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
+#include <optional>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 import velocitypp;
@@ -13,6 +15,11 @@ using anndatapp::ArrayView;
 using anndatapp::Axis;
 using anndatapp::DType;
 using anndatapp::Layout;
+using velocitypp::AcquiredMatrix;
+using velocitypp::DenseInput;
+using velocitypp::Entry;
+using velocitypp::PreparedInput;
+using velocitypp::SparseInput;
 
 namespace {
 void check(bool ok, const char* message) {
@@ -101,6 +108,30 @@ ArrayView retained_graph(GraphBuffers& graph, Layout layout) {
     return array.view();
 }
 
+struct AcquiredView {
+    ArrayView view;
+    DenseInput dense;
+    std::optional<SparseInput> sparse;
+    AcquiredMatrix input;
+
+    explicit AcquiredView(ArrayView retained) : view(std::move(retained)) {
+        input.dtype = view.dtype();
+        input.layout = view.layout();
+        if (input.layout == Layout::dense) {
+            dense = view.bytes();
+            input.dense = &dense;
+        } else {
+            input.index_type = view.index_dtype();
+            input.offset_type = view.offset_dtype();
+            sparse.emplace(view.sparse_bytes());
+            input.sparse = &*sparse;
+        }
+    }
+
+    AcquiredView(const AcquiredView&) = delete;
+    AcquiredView& operator=(const AcquiredView&) = delete;
+};
+
 std::uint64_t unsigned_at(const std::byte* p, std::size_t width, std::size_t i) {
     p += width * i;
     switch (width) {
@@ -112,13 +143,44 @@ std::uint64_t unsigned_at(const std::byte* p, std::size_t width, std::size_t i) 
     }
 }
 
-Array test_temporary_graph_owner(Layout layout) {
-    GraphBuffers graph;
-    auto result = velocitypp::reference::prepare_neighborhood(retained_graph(graph, layout));
-    check(graph.released, "temporary graph owner is released after neighborhood preparation");
-    auto view = result.view();
+struct NeighborhoodStorage {
+    std::vector<std::size_t> indices;
+    std::vector<Entry> scratch;
+    std::vector<float> values;
+    std::vector<std::size_t> columns, offsets;
+    std::size_t used = 0;
+    anndatapp::Array array;
+};
+
+NeighborhoodStorage prepare_neighborhood(const AcquiredMatrix& input) {
+    velocitypp::reference::NeighborhoodSize size{};
+    check(bool(velocitypp::reference::neighborhood_size(input, size)),
+          "neighborhood sizing accepts the retained graph view");
+
+    NeighborhoodStorage result;
+    result.indices.resize(size.indices);
+    result.scratch.resize(size.scratch_entries);
+    result.values.resize(size.entries);
+    result.columns.resize(size.entries);
+    result.offsets.resize(input.layout == Layout::dense
+        ? input.dense->extent(0) + 1 : input.sparse->rows() + 1);
+    velocitypp::reference::NeighborhoodBuffers buffers{
+        result.indices.data(), result.indices.size(),
+        result.scratch.data(), result.scratch.size(),
+        result.values.data(), result.columns.data(), result.offsets.data(), result.values.size(), result.offsets.size()
+    };
+    check(bool(velocitypp::reference::prepare_neighborhood(input, buffers, result.used)),
+          "caller-owned buffers prepare the neighborhood graph");
+    result.array = anndatapp::Array::borrow_sparse(Layout::csr,
+        result.offsets.size() - 1, result.offsets.size() - 1, result.used,
+        result.values.data(), result.columns.data(), result.offsets.data());
+    return result;
+}
+
+void check_neighborhood(const NeighborhoodStorage& result) {
+    auto view = result.array.view();
     check(view.layout() == Layout::csr && view.dtype() == DType::float32,
-          "neighborhood preparation returns a native FP32 CSR Array");
+          "neighborhood preparation writes a caller-owned FP32 CSR graph");
     auto bytes = view.sparse_bytes();
     check(bytes.rows() == 2, "normalized sparse graph has two rows");
     check(bytes.columns() == 2, "normalized sparse graph has two columns");
@@ -135,10 +197,43 @@ Array test_temporary_graph_owner(Layout layout) {
         check(std::abs(value - expected_values[i]) < 1e-7f,
               "normalized sparse graph retains the expected row weights");
     }
+}
+
+NeighborhoodStorage test_temporary_graph_owner(Layout layout) {
+    GraphBuffers graph;
+    auto result = [&] {
+        AcquiredView input(retained_graph(graph, layout));
+        auto prepared = prepare_neighborhood(input.input);
+        check(!graph.released,
+              "caller-retained dense or sparse graph storage stays live during preparation");
+        return prepared;
+    }();
+    check(graph.released,
+          "retained graph storage is released when its caller-owned view leaves scope");
+    check_neighborhood(result);
     return result;
 }
 
-void test_sparse_view_and_mixed_precision_moments(const Array& graph) {
+struct PreparationStorage {
+    std::vector<std::size_t> indices;
+    std::vector<Entry> entries;
+    PreparedInput prepared;
+
+    void bind(const velocitypp::Input& input) {
+        velocitypp::PreparationSize size{};
+        check(bool(velocitypp::preparation_size(input, size)),
+              "caller-owned preparation sizing accepts the matrix inputs");
+        indices.resize(size.indices);
+        entries.resize(size.entries);
+        velocitypp::PreparationBuffers buffers{
+            indices.data(), indices.size(), entries.data(), entries.size()
+        };
+        check(bool(velocitypp::prepare(input, buffers, prepared)),
+              "caller-owned index and entry buffers prepare mixed sparse inputs");
+    }
+};
+
+void test_sparse_view_and_mixed_precision_moments(const NeighborhoodStorage& graph) {
     float s_values[] = {1, 3};
     std::int16_t s_indices[] = {0, 0};
     std::int32_t s_offsets[] = {0, 1, 2};
@@ -163,14 +258,20 @@ void test_sparse_view_and_mixed_precision_moments(const Array& graph) {
           unspliced_csc.values()[0] == 10 && unspliced_csc.indices()[1] == 1,
           "native CSC views retain their layout and independent integer widths");
 
-    velocitypp::PreparedInput prepared({spliced_view, unspliced_view, graph.view()});
-    check(prepared.output_dtype() == DType::float64,
-          "mixed FP32 and FP64 array inputs select FP64 output storage");
+    AcquiredView spliced_input(spliced_view);
+    AcquiredView unspliced_input(unspliced_view);
+    AcquiredView graph_input(graph.array.view());
+    velocitypp::Input input{};
+    input.spliced = spliced_input.input;
+    input.unspliced = unspliced_input.input;
+    input.weights = graph_input.input;
+    PreparationStorage storage;
+    storage.bind(input);
 
     float ms32[2]{}, mu32[2]{};
     double ms64[2]{}, mu64[2]{};
-    velocitypp::reference::moments(prepared, 0, 1, ms32, mu32);
-    velocitypp::reference::moments(prepared, 0, 1, ms64, mu64);
+    velocitypp::reference::moments(storage.prepared, 0, 1, ms32, mu32);
+    velocitypp::reference::moments(storage.prepared, 0, 1, ms64, mu64);
     check(std::abs(ms32[0] - 2.f) < 1e-6f && std::abs(ms32[1] - 3.f) < 1e-6f &&
           std::abs(mu32[0] - 20.f) < 1e-6f && std::abs(mu32[1] - 30.f) < 1e-6f,
           "FP32 moment operation consumes mixed FP32/FP64 sparse sources");
@@ -185,7 +286,7 @@ int main() {
     auto dense = test_temporary_graph_owner(Layout::dense);
     auto csr = test_temporary_graph_owner(Layout::csr);
     auto csc = test_temporary_graph_owner(Layout::csc);
-    check(dense.layout() == Layout::csr && csc.layout() == Layout::csr,
+    check(dense.array.layout() == Layout::csr && csc.array.layout() == Layout::csr,
           "dense, CSR, and CSC input graphs normalize to CSR");
     test_sparse_view_and_mixed_precision_moments(csr);
 }

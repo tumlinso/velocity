@@ -5,11 +5,12 @@
 #include <cstdint>
 #include <iostream>
 #include <limits>
-#include <stdexcept>
+#include <memory>
 #include <type_traits>
 #include <vector>
 
 import velocitypp.precision;
+#include "support.hh"
 
 namespace {
 
@@ -19,18 +20,6 @@ void expect(bool condition, const char* message) {
     if (condition) return;
     std::cerr << "FAIL: " << message << '\n';
     ++failures;
-}
-
-template<class F> void expect_invalid(F&& f, const char* message) {
-    try { f(); expect(false, message); }
-    catch (const std::invalid_argument&) {}
-    catch (...) { expect(false, message); }
-}
-
-template<class F> void expect_runtime(F&& f, const char* message) {
-    try { f(); expect(false, message); }
-    catch (const std::runtime_error&) {}
-    catch (...) { expect(false, message); }
 }
 
 template<class T> bool close(T actual, T expected, double tolerance = 2e-6) {
@@ -307,46 +296,81 @@ void test_constant_cutoff_and_invalid_inputs() {
 
     velocitypp::precision::SensitivityOptions bad;
     bad.band = -1;
-    expect_invalid([&] { (void)velocitypp::precision::sensitivity_gene(x.data(), y.data(), n, 1, base, fit, scratch, nullptr, true, bad); },
-                   "negative sensitivity band is rejected");
+    expect(velocitypp::precision::validate_sensitivity(n, 1, x.data(), y.data(), scratch, n, fit, bad).code ==
+               velocitypp::precision::PrecisionCode::invalid_argument,
+           "negative sensitivity band is rejected by explicit validation");
     bad = {};
     bad.prediction_limit = std::numeric_limits<double>::quiet_NaN();
-    expect_invalid([&] { (void)velocitypp::precision::sensitivity_gene(x.data(), y.data(), n, 1, base, fit, scratch, nullptr, true, bad); },
-                   "nonfinite sensitivity limit is rejected");
+    expect(velocitypp::precision::validate_sensitivity(n, 1, x.data(), y.data(), scratch, n, fit, bad).code ==
+               velocitypp::precision::PrecisionCode::invalid_argument,
+           "nonfinite sensitivity limit is rejected by explicit validation");
     bad = {};
-    expect_invalid([&] { (void)velocitypp::precision::sensitivity_gene(x.data(), y.data(), n, 0, base, fit, scratch); },
-                   "zero input stride is rejected");
-    expect_invalid([&] { (void)velocitypp::precision::sensitivity_gene(x.data(), y.data(), n, std::numeric_limits<std::ptrdiff_t>::max(), base, fit, scratch); },
-                   "row-offset overflow from an oversized stride is rejected before dereference");
+    expect(velocitypp::precision::validate_sensitivity(n, 0, x.data(), y.data(), scratch, n, fit, bad).code ==
+               velocitypp::precision::PrecisionCode::invalid_argument,
+           "zero input stride is rejected by explicit validation");
+    expect(velocitypp::precision::validate_sensitivity(n, std::numeric_limits<std::ptrdiff_t>::max(),
+               x.data(), y.data(), scratch, n, fit, bad).code ==
+               velocitypp::precision::PrecisionCode::invalid_argument,
+           "row-offset overflow from an oversized stride is rejected before dereference");
     auto bad_fit = fit;
     bad_fit.percentile_low = 80;
     bad_fit.percentile_high = 20;
-    expect_invalid([&] { (void)velocitypp::precision::sensitivity_gene(x.data(), y.data(), n, 1, base, bad_fit, scratch); },
-                   "invalid fitting percentiles are rejected by the sensitivity boundary");
+    expect(velocitypp::precision::validate_sensitivity(n, 1, x.data(), y.data(), scratch, n, bad_fit).code ==
+               velocitypp::precision::PrecisionCode::invalid_argument,
+           "invalid fitting percentiles are rejected by explicit validation");
+    expect(velocitypp::precision::validate_sensitivity(n, 1, x.data(), y.data(), scratch, n - 1, fit).code ==
+               velocitypp::precision::PrecisionCode::insufficient_capacity,
+           "trimmed sensitivity validation reports the required row-score capacity");
 }
 
-template<class T, class ArrayLike> std::vector<T> values(const ArrayLike& array) {
-    auto v = array.view().template dense<T>();
-    std::vector<T> out(v.extent(0));
-    for (std::size_t i = 0; i < out.size(); ++i)
-        out[i] = v.data()[std::ptrdiff_t(i) * v.stride(0)];
-    return out;
-}
+template<class T> struct FitBuffers {
+    std::vector<T> gamma, offset, r2;
+    std::unique_ptr<bool[]> selected;
+    std::vector<std::uint8_t> status;
+    velocitypp::BasicFitResult<T> result;
 
-std::vector<bool> boolean_values(const anndatapp::Array& array) {
-    auto v = array.view().dense<bool>();
-    std::vector<bool> out(v.extent(0));
-    for (std::size_t i = 0; i < out.size(); ++i)
-        out[i] = v.data()[std::ptrdiff_t(i) * v.stride(0)];
-    return out;
-}
+    explicit FitBuffers(std::size_t genes)
+        : gamma(genes), offset(genes), r2(genes), selected(new bool[genes]{}), status(genes) {
+        result = {gamma.data(), offset.data(), r2.data(), selected.get(), status.data(), genes, false};
+    }
+};
 
-std::vector<std::uint8_t> byte_values(const anndatapp::Array& array) {
-    auto v = array.view().dense<std::uint8_t>();
-    std::vector<std::uint8_t> out(v.extent(0));
-    for (std::size_t i = 0; i < out.size(); ++i)
-        out[i] = v.data()[std::ptrdiff_t(i) * v.stride(0)];
-    return out;
+template<class T> struct StochasticBuffers {
+    FitBuffers<T> initialization;
+    std::vector<T> gamma, offset, offset2, first_scale, second_scale, objective;
+    std::vector<std::uint8_t> status;
+    velocitypp::BasicStochasticFitResult<T> result;
+
+    explicit StochasticBuffers(std::size_t genes)
+        : initialization(genes), gamma(genes), offset(genes), offset2(genes), first_scale(genes),
+          second_scale(genes), objective(genes), status(genes) {
+        result = {initialization.result, gamma.data(), offset.data(), offset2.data(),
+                  first_scale.data(), second_scale.data(), objective.data(), status.data(), genes, false};
+    }
+};
+
+template<class T> struct WorkspaceBuffers {
+    std::vector<T> scalars;
+    std::vector<std::uint8_t> mask;
+    velocitypp::Workspace<T> workspace;
+
+    bool bind(const velocitypp::PreparedInput& input, std::size_t block_genes, bool stochastic) {
+        velocitypp::RunOptions options;
+        options.workspace_bytes = 1u << 20;
+        options.block_genes = block_genes;
+        velocitypp::WorkspaceSize needed;
+        if (!velocitypp::workspace_size<T>(input, options, stochastic, needed)) return false;
+        scalars.resize(needed.scalars);
+        mask.resize(needed.masks);
+        return bool(velocitypp::bind_workspace(input, options, stochastic, scalars.data(), scalars.size(),
+                                               mask.data(), mask.size(), workspace));
+    }
+};
+
+bool prepare_dense(velocitypp::Input input, velocitypp::PreparedInput& prepared) {
+    velocitypp::PreparationSize size;
+    if (!velocitypp::preparation_size(input, size) || size.indices || size.entries) return false;
+    return bool(velocitypp::prepare(input, {}, prepared));
 }
 
 struct PromotionData {
@@ -369,10 +393,15 @@ struct PromotionData {
         }
         return out;
     }
-    static std::array<float, n * g> quantize_for_baseline(const std::array<double, n * g>& x) {
+    static std::array<float, n * g> quantize(const std::array<double, n * g>& x) {
         std::array<float, n * g> out{};
         for (std::size_t i = 0; i < x.size(); ++i)
             out[i] = static_cast<float>(std::round(x[i] * 100.0) / 100.0);
+        return out;
+    }
+    static std::array<float, n * g> narrow(const std::array<double, n * g>& x) {
+        std::array<float, n * g> out{};
+        for (std::size_t i = 0; i < x.size(); ++i) out[i] = static_cast<float>(x[i]);
         return out;
     }
     static std::array<float, n * n> identity() {
@@ -383,24 +412,36 @@ struct PromotionData {
 
     std::array<double, n * g> full_s = make_spliced();
     std::array<double, n * g> full_u = make_unspliced();
-    std::array<float, n * g> baseline_s = quantize_for_baseline(full_s);
-    std::array<float, n * g> baseline_u = quantize_for_baseline(full_u);
+    std::array<float, n * g> mixed_u = narrow(full_u);
+    std::array<float, n * g> baseline_s = quantize(full_s);
+    std::array<float, n * g> baseline_u = quantize(full_u);
     std::array<float, n * n> weights = identity();
+    std::array<std::size_t, g> gene_order{2, 0, 1};
     anndatapp::Array full_s_array = anndatapp::Array::borrow_dense(full_s.data(), {n, g}, {std::ptrdiff_t(g), 1});
     anndatapp::Array full_u_array = anndatapp::Array::borrow_dense(full_u.data(), {n, g}, {std::ptrdiff_t(g), 1});
     anndatapp::Array baseline_s_array = anndatapp::Array::borrow_dense(baseline_s.data(), {n, g}, {std::ptrdiff_t(g), 1});
     anndatapp::Array baseline_u_array = anndatapp::Array::borrow_dense(baseline_u.data(), {n, g}, {std::ptrdiff_t(g), 1});
     anndatapp::Array graph_array = anndatapp::Array::borrow_dense(weights.data(), {n, n}, {std::ptrdiff_t(n), 1});
-    velocitypp::PreparedInput full_input{{full_s_array.view(), full_u_array.view(), graph_array.view(), anndatapp::Axis::gather({2, 0, 1})}};
-    velocitypp::PreparedInput baseline_input{{baseline_s_array.view(), baseline_u_array.view(), graph_array.view(), anndatapp::Axis::gather({2, 0, 1})}};
+    Acquired full_s_acquired{full_s_array.view()}, full_u_acquired{full_u_array.view()};
+    Acquired baseline_s_acquired{baseline_s_array.view()}, baseline_u_acquired{baseline_u_array.view()};
+    Acquired graph_acquired{graph_array.view()};
+    velocitypp::Input full_input{}, baseline_input{};
+    velocitypp::PreparedInput full_prepared{}, baseline_prepared{};
+    bool ready = false;
+
+    PromotionData() {
+        full_input = {full_s_acquired.matrix, full_u_acquired.matrix, graph_acquired.matrix, gene_order.data(), g};
+        baseline_input = {baseline_s_acquired.matrix, baseline_u_acquired.matrix, graph_acquired.matrix, gene_order.data(), g};
+        ready = prepare_dense(full_input, full_prepared) && prepare_dense(baseline_input, baseline_prepared);
+    }
 
     velocitypp::FitOptions fit_options() const {
-        velocitypp::FitOptions o;
-        o.trimming = velocitypp::Trimming::none;
-        o.fit_intercept = false;
-        o.min_r2 = 0;
-        o.min_ratio = 0;
-        return o;
+        velocitypp::FitOptions options;
+        options.trimming = velocitypp::Trimming::none;
+        options.fit_intercept = false;
+        options.min_r2 = 0;
+        options.min_ratio = 0;
+        return options;
     }
 };
 
@@ -416,159 +457,142 @@ struct SourceContext {
         const auto call = ++self.calls[source_gene];
         if (source_gene == 0 && self.unavailable_gene0) return false;
         if (source_gene != 2 || (self.fail_gene2_after_first && call > 1)) return false;
-        auto s = anndatapp::Array::borrow_dense(self.data->full_s.data() + source_gene,
-            {PromotionData::n, 1}, {std::ptrdiff_t(PromotionData::g), 1});
-        auto u = anndatapp::Array::borrow_dense(self.data->full_u.data() + source_gene,
-            {PromotionData::n, 1}, {std::ptrdiff_t(PromotionData::g), 1});
-        column = {s.view(), u.view()};
+        column = {self.data->full_s.data() + source_gene, self.data->mixed_u.data() + source_gene,
+                  std::ptrdiff_t(PromotionData::g * sizeof(double)),
+                  std::ptrdiff_t(PromotionData::g * sizeof(float)),
+                  velocitypp::precision::OriginalType::float64,
+                  velocitypp::precision::OriginalType::float32, PromotionData::n};
         return true;
-    }
-
-    velocitypp::precision::OriginalSource source(std::size_t staging = 0) {
-        return {this, acquire, staging};
     }
 };
 
-velocitypp::RunOptions run32() {
-    velocitypp::RunOptions o;
-    o.workspace_bytes = 1u << 20;
-    o.block_genes = 1;
-    o.output_dtype = anndatapp::DType::float32;
-    o.compute_precision = velocitypp::ComputePrecision::float32;
-    return o;
+template<class T> bool run_steady(const velocitypp::PreparedInput& input,
+                                  velocitypp::FitOptions fit, FitBuffers<T>& result) {
+    WorkspaceBuffers<T> buffers;
+    if (!buffers.bind(input, 1, false)) return false;
+    return bool(velocitypp::reference::steady_state(input, buffers.workspace, result.result, fit));
 }
 
-velocitypp::StochasticRunOptions stochastic_run32() {
-    velocitypp::StochasticRunOptions o;
-    o.workspace_bytes = 1u << 20;
-    o.block_genes = 1;
-    o.output_dtype = anndatapp::DType::float32;
-    o.compute_precision = velocitypp::ComputePrecision::float32;
-    return o;
+template<class T> bool run_stochastic(const velocitypp::PreparedInput& input,
+    velocitypp::StochasticOptions options, StochasticBuffers<T>& result) {
+    WorkspaceBuffers<T> buffers;
+    if (!buffers.bind(input, 1, true)) return false;
+    return bool(velocitypp::reference::stochastic(input, buffers.workspace, result.result, options));
 }
 
-template<class T>
-void compare_fit_at(const velocitypp::FitResult& actual, const velocitypp::FitResult& expected,
-                   std::size_t gene, double tolerance, bool& ok) {
-    const auto ga = values<T>(actual.gamma), ge = values<T>(expected.gamma);
-    const auto oa = values<T>(actual.offset), oe = values<T>(expected.offset);
-    const auto ra = values<T>(actual.r2), re = values<T>(expected.r2);
-    const auto sa = byte_values(actual.status), se = byte_values(expected.status);
-    const auto xa = boolean_values(actual.genes), xe = boolean_values(expected.genes);
-    ok &= close(ga[gene], ge[gene], tolerance) && close(oa[gene], oe[gene], tolerance) &&
-          close(ra[gene], re[gene], tolerance) && sa[gene] == se[gene] && xa[gene] == xe[gene];
+template<class T> bool fit_matches_at(const FitBuffers<T>& a, const FitBuffers<T>& b,
+                                      std::size_t gene, double tolerance) {
+    return close(a.gamma[gene], b.gamma[gene], tolerance) &&
+        close(a.offset[gene], b.offset[gene], tolerance) && close(a.r2[gene], b.r2[gene], tolerance) &&
+        a.status[gene] == b.status[gene] && a.selected[gene] == b.selected[gene];
 }
 
-void test_sensitivity_workspace_budget_and_binding() {
-    PromotionData data;
-    auto options = run32();
-    velocitypp::Workspace workspace(data.baseline_input, options);
-    auto fit = data.fit_options();
-    velocitypp::ReferenceStages32 stages(data.baseline_input, workspace, fit);
-    constexpr std::size_t staging = 64;
-    const auto score = PromotionData::n * sizeof(float);
-    const auto budget = workspace.scratch_bytes() + score + staging;
-    velocitypp::precision::SensitivityWorkspace32 scratch(data.baseline_input, workspace, stages, budget, staging);
-    expect(scratch.data() != nullptr && scratch.scratch_bytes() == score,
-           "sensitivity workspace allocates only its row score buffer under the exact aggregate budget");
-    expect_invalid([&] {
-        velocitypp::precision::SensitivityWorkspace32 too_small(data.baseline_input, workspace, stages, budget - 1, staging);
-    }, "sensitivity workspace rejects a budget one byte below stage plus score plus staging");
+template<class T> bool promote_steady(PromotionData& data, const velocitypp::PreparedInput& input,
+    FitBuffers<T>& output, WorkspaceBuffers<T>& workspace, velocitypp::precision::Promotion& promotion) {
+    if (!workspace.bind(input, 1, false)) return false;
+    velocitypp::BasicReferenceStages<T> stages{};
+    if (!velocitypp::bind_stages(input, workspace.workspace, data.fit_options(), output.result, stages)) return false;
+    if (velocitypp::precision::initialize_promotion(promotion).code != velocitypp::precision::PrecisionCode::ok) return false;
+    for (std::size_t first = 0; first < input.genes;) {
+        const std::size_t count = input.genes - first < workspace.workspace.block ? input.genes - first : workspace.workspace.block;
+        auto moments = stages.moments(first, count);
+        velocitypp::precision::ReferenceMoments<T> reference{&input, &moments, nullptr};
+        promotion.replacement = {&reference, std::is_same_v<T, float> ?
+            velocitypp::precision::replace_reference32 : velocitypp::precision::replace_reference64};
+        const auto check = velocitypp::precision::promote_initial(promotion, first, count);
+        if (check.code != velocitypp::precision::PrecisionCode::ok) return false;
+        auto fit = stages.fit(moments);
+        stages.emit(moments, fit);
+        first += count;
+    }
+    output.result = stages.finish();
+    return true;
+}
 
-    velocitypp::PreparedInput other_input{{data.baseline_s_array.view(), data.baseline_u_array.view(),
-        data.graph_array.view(), anndatapp::Axis::gather({2, 0, 1})}};
-    expect_invalid([&] {
-        velocitypp::precision::SensitivityWorkspace32 wrong_input(other_input, workspace, stages, budget, staging);
-    }, "sensitivity workspace rejects stages bound to a different prepared input object");
-    velocitypp::Workspace other_workspace(data.baseline_input, options);
-    expect_invalid([&] {
-        velocitypp::precision::SensitivityWorkspace32 wrong_workspace(data.baseline_input, other_workspace, stages, budget, staging);
-    }, "sensitivity workspace rejects stages bound to another workspace");
+template<class T> bool promote_stochastic(PromotionData& data, const velocitypp::PreparedInput& input,
+    velocitypp::StochasticOptions options, StochasticBuffers<T>& output, WorkspaceBuffers<T>& workspace,
+    velocitypp::precision::Promotion& promotion) {
+    if (!workspace.bind(input, 1, true)) return false;
+    velocitypp::BasicStochasticReferenceStages<T> stages{};
+    if (!velocitypp::bind_stages(input, workspace.workspace, options, output.result, stages)) return false;
+    if (velocitypp::precision::initialize_promotion(promotion).code != velocitypp::precision::PrecisionCode::ok) return false;
+    for (std::size_t first = 0; first < input.genes;) {
+        const std::size_t count = input.genes - first < workspace.workspace.block ? input.genes - first : workspace.workspace.block;
+        auto moments = stages.initial_moments(first, count);
+        velocitypp::precision::ReferenceMoments<T> reference{&input, &moments, nullptr};
+        promotion.replacement = {&reference, std::is_same_v<T, float> ?
+            velocitypp::precision::replace_reference32 : velocitypp::precision::replace_reference64};
+        if (velocitypp::precision::promote_initial(promotion, first, count).code != velocitypp::precision::PrecisionCode::ok) return false;
+        auto fit = stages.initial_fit(moments);
+        stages.accept_initialization(moments, fit);
+        first += count;
+    }
+    stages.resolve_selection();
+    for (std::size_t first = 0; first < input.genes;) {
+        const std::size_t count = input.genes - first < workspace.workspace.block ? input.genes - first : workspace.workspace.block;
+        auto moments = stages.moments(first, count);
+        velocitypp::precision::ReferenceMoments<T> reference{&input, nullptr, &moments};
+        promotion.replacement.context = &reference;
+        const auto check = velocitypp::precision::promote_second(promotion, first, count);
+        if (check.code != velocitypp::precision::PrecisionCode::ok) return false;
+        auto scales = stages.scales(moments);
+        auto fit = stages.fit(moments, scales);
+        stages.emit(moments, fit);
+        first += count;
+    }
+    output.result = stages.finish();
+    return true;
+}
 
-    auto stochastic_options = stochastic_run32();
-    velocitypp::StochasticWorkspace stochastic_workspace(data.baseline_input, stochastic_options);
-    velocitypp::StochasticOptions so;
-    so.initialization = fit;
-    velocitypp::StochasticReferenceStages32 stochastic_stages(data.baseline_input, stochastic_workspace, so);
-    const auto stochastic_budget = stochastic_workspace.scratch_bytes() + score + staging;
-    velocitypp::precision::SensitivityWorkspace32 stochastic_scratch(
-        data.baseline_input, stochastic_workspace, stochastic_stages, stochastic_budget, staging);
-    expect(stochastic_scratch.data() != nullptr && stochastic_scratch.scratch_bytes() == score,
-           "stochastic sensitivity workspace accepts its correctly bound stage within budget");
-    expect_invalid([&] {
-        velocitypp::precision::SensitivityWorkspace32 too_small(
-            data.baseline_input, stochastic_workspace, stochastic_stages, stochastic_budget - 1, staging);
-    }, "stochastic sensitivity workspace charges caller staging against the same aggregate budget");
+void test_sensitivity_validation_capacity() {
+    constexpr std::size_t rows = 5;
+    const double x[rows]{1, 2, 3, 4, 5}, y[rows]{2, 4, 6, 8, 10}, scratch[rows]{};
+    velocitypp::FitOptions fit;
+    const auto too_small = velocitypp::precision::validate_sensitivity(rows, 1, x, y, scratch, rows - 1, fit);
+    expect(too_small.code == velocitypp::precision::PrecisionCode::insufficient_capacity && too_small.required == rows,
+           "sensitivity validation reports exact caller-owned score capacity");
+    const auto enough = velocitypp::precision::validate_sensitivity(rows, 1, x, y, scratch, rows, fit);
+    expect(enough.code == velocitypp::precision::PrecisionCode::ok,
+           "sensitivity validation accepts correctly sized caller-owned buffers");
 }
 
 void test_steady_selective_promotion() {
     PromotionData data;
-    const auto run = run32();
-    const auto fit = data.fit_options();
-    velocitypp::Workspace workspace(data.baseline_input, run), all_workspace(data.full_input, run), baseline_workspace(data.baseline_input, run);
-    velocitypp::ReferenceStages32 reference(data.baseline_input, workspace, fit);
+    expect(data.ready, "caller-owned promotion fixture prepares dense source and baseline inputs");
+    if (!data.ready) return;
+    auto fit = data.fit_options();
+    FitBuffers<float> full(PromotionData::g), baseline(PromotionData::g), selected(PromotionData::g);
+    expect(run_steady(data.full_prepared, fit, full) && run_steady(data.baseline_prepared, fit, baseline),
+           "reference runs produce full-precision-source and quantized baseline diagnostics");
+
     SourceContext context{&data};
     const std::uint8_t requested[PromotionData::g]{1, 0, 1};
-    velocitypp::precision::PromotionOptions promotion;
-    promotion.source_gene_mask = requested;
-    promotion.source_gene_count = PromotionData::g;
-    promotion.workspace_bytes = 1u << 20;
-    auto source = context.source(2 * PromotionData::n * sizeof(double));
-    velocitypp::precision::SelectiveStages32 selective(data.baseline_input, workspace, reference, source, promotion);
-    const auto selected = velocitypp::steady_state_with(selective, data.baseline_input.n_genes(), workspace.block_genes());
-    const auto all = velocitypp::reference::steady_state(data.full_input, all_workspace, fit);
-    const auto baseline = velocitypp::reference::steady_state(data.baseline_input, baseline_workspace, fit);
-
-    const auto status = selective.promotion_status();
-    const bool statuses_ok = selective.promotion_count() == 1 && status &&
-        status[0] == std::uint8_t(velocitypp::precision::PromotionStatus::promoted) &&
-        status[1] == std::uint8_t(velocitypp::precision::PromotionStatus::unavailable) &&
-        status[2] == std::uint8_t(velocitypp::precision::PromotionStatus::not_requested);
-    expect(data.baseline_input.gene_index(0) == 2 && data.baseline_input.gene_index(1) == 0 &&
-           data.baseline_input.gene_index(2) == 1 && statuses_ok,
-           "source-gene requests map through the prepared permutation and statuses remain in prepared order");
-    bool diagnostics_ok = true;
-    compare_fit_at<float>(selected, all, 0, 1e-6, diagnostics_ok);
-    compare_fit_at<float>(selected, baseline, 1, 1e-6, diagnostics_ok);
-    compare_fit_at<float>(selected, baseline, 2, 1e-6, diagnostics_ok);
-    expect(diagnostics_ok,
-           "promoted gene matches FP64-source diagnostics while unavailable and unrequested columns retain quantized-FP32 baseline results");
+    std::uint8_t status[PromotionData::g]{};
+    velocitypp::precision::Promotion promotion{data.gene_order.data(), PromotionData::g, PromotionData::g,
+        PromotionData::n, requested, PromotionData::g, status, PromotionData::g, 0,
+        {&context, SourceContext::acquire}, {}};
+    WorkspaceBuffers<float> workspace;
+    expect(promote_steady(data, data.baseline_prepared, selected, workspace, promotion),
+           "explicit first-pass promotion composes caller-bound reference moments and raw sources");
+    expect(promotion.promoted == 1 &&
+           status[0] == std::uint8_t(velocitypp::precision::PromotionStatus::promoted) &&
+           status[1] == std::uint8_t(velocitypp::precision::PromotionStatus::unavailable) &&
+           status[2] == std::uint8_t(velocitypp::precision::PromotionStatus::not_requested),
+           "source-gene requests map through the prepared permutation and retain per-gene promotion states");
+    bool diagnostics = fit_matches_at(selected, full, 0, 2e-6) &&
+        fit_matches_at(selected, baseline, 1, 2e-6) && fit_matches_at(selected, baseline, 2, 2e-6);
+    expect(diagnostics,
+           "promoted mixed-dtype source matches full-input diagnostics while unavailable and unrequested genes retain baseline results");
     expect(context.calls[2] == 1 && context.calls[0] == 1 && context.calls[1] == 0,
-           "steady-state acquisition calls the source only for requested genes");
-
-    SourceContext array_source_context{&data};
-    velocitypp::precision::OriginalArraySource array_source(data.full_s_array.view(), data.full_u_array.view());
-    velocitypp::Workspace array_workspace(data.baseline_input, run);
-    velocitypp::ReferenceStages32 array_reference(data.baseline_input, array_workspace, fit);
-    velocitypp::precision::SelectiveStages32 array_selective(data.baseline_input, array_workspace,
-        array_reference, array_source.source(), promotion);
-    const auto array_result = velocitypp::steady_state_with(
-        array_selective, data.baseline_input.n_genes(), array_workspace.block_genes());
-    bool array_ok = true;
-    compare_fit_at<float>(array_result, all, 0, 1e-6, array_ok);
-    expect(array_ok && array_selective.promotion_count() == 2,
-           "dense OriginalArraySource acquires the requested permuted columns without staging copies");
-
-    auto tight = promotion;
-    tight.workspace_bytes = workspace.scratch_bytes();
-    auto staged_source = context.source(1);
-    expect_invalid([&] {
-        velocitypp::precision::SelectiveStages32 rejected(data.baseline_input, workspace, reference, staged_source, tight);
-    }, "selective promotion rejects caller staging beyond the remaining numerical workspace budget");
-    tight.workspace_bytes = workspace.scratch_bytes() - 1;
-    auto no_staging_source = context.source();
-    expect_invalid([&] {
-        velocitypp::precision::SelectiveStages32 rejected(data.baseline_input, workspace, reference, no_staging_source, tight);
-    }, "selective promotion rejects a budget below the reference stage workspace");
+           "steady promotion acquires only requested source genes");
 }
 
 void test_stochastic_selective_promotion() {
     PromotionData data;
-    const auto run = stochastic_run32();
-    velocitypp::StochasticRunOptions all_run = run, baseline_run = run;
-    velocitypp::StochasticOptions stochastic;
-    stochastic.initialization = data.fit_options();
-
+    expect(data.ready, "caller-owned promotion fixture prepares dense source and baseline inputs");
+    if (!data.ready) return;
+    velocitypp::StochasticOptions options;
+    options.initialization = data.fit_options();
     double original_xy = 0, original_xx = 0;
     for (std::size_t i = 0; i < PromotionData::n; ++i) {
         const double x = data.full_s[i * PromotionData::g + 2];
@@ -578,128 +602,104 @@ void test_stochastic_selective_promotion() {
     }
     const double original_gamma = original_xy / original_xx;
     expect(original_gamma > 2.0, "FP64 original fixture retains a slope above its quantized-FP32 baseline");
-    stochastic.initialization.min_ratio = (2.0 + original_gamma) / 2.0;
+    options.initialization.min_ratio = (2.0 + original_gamma) / 2.0;
 
-    velocitypp::StochasticWorkspace workspace(data.baseline_input, run),
-        all_workspace(data.full_input, all_run), baseline_workspace(data.baseline_input, baseline_run);
-    velocitypp::StochasticReferenceStages32 reference(data.baseline_input, workspace, stochastic);
+    StochasticBuffers<float> full(PromotionData::g), baseline(PromotionData::g), selected(PromotionData::g);
+    expect(run_stochastic(data.full_prepared, options, full) &&
+           run_stochastic(data.baseline_prepared, options, baseline),
+           "stochastic reference runs establish promoted-source and baseline outcomes");
+
     SourceContext context{&data};
     const std::uint8_t requested[PromotionData::g]{1, 0, 1};
-    velocitypp::precision::PromotionOptions promotion;
-    promotion.source_gene_mask = requested;
-    promotion.source_gene_count = PromotionData::g;
-    promotion.workspace_bytes = 1u << 20;
-    auto source = context.source(2 * PromotionData::n * sizeof(double));
-    velocitypp::precision::SelectiveStochasticStages32 selective(
-        data.baseline_input, workspace, reference, source, promotion);
-    const auto selected = velocitypp::stochastic_with(
-        selective, data.baseline_input.n_genes(), workspace.block_genes());
-    const auto all = velocitypp::reference::stochastic(data.full_input, all_workspace, stochastic);
-    const auto baseline = velocitypp::reference::stochastic(data.baseline_input, baseline_workspace, stochastic);
-
-    const auto promotion_status = selective.promotion_status();
-    const bool mask_ok = selective.promotion_count() == 1 && promotion_status &&
-        promotion_status[0] == std::uint8_t(velocitypp::precision::PromotionStatus::promoted) &&
-        promotion_status[1] == std::uint8_t(velocitypp::precision::PromotionStatus::unavailable) &&
-        promotion_status[2] == std::uint8_t(velocitypp::precision::PromotionStatus::not_requested);
-    const auto selected_genes = boolean_values(selected.initialization.genes);
-    const auto all_genes = boolean_values(all.initialization.genes);
-    const auto baseline_genes = boolean_values(baseline.initialization.genes);
-    const auto selected_status = byte_values(selected.status);
-    bool results_ok = mask_ok && selected_genes[0] && all_genes[0] && !baseline_genes[0] &&
-        selected_status[0] != std::uint8_t(velocitypp::StochasticStatus::not_selected);
-    const auto sg = values<float>(selected.gamma), ag = values<float>(all.gamma), bg = values<float>(baseline.gamma);
-    const auto so = values<float>(selected.offset), ao = values<float>(all.offset), bo = values<float>(baseline.offset);
-    const auto so2 = values<float>(selected.offset2), ao2 = values<float>(all.offset2), bo2 = values<float>(baseline.offset2);
-    const auto ss1 = values<float>(selected.first_scale), as1 = values<float>(all.first_scale), bs1 = values<float>(baseline.first_scale);
-    const auto ss2 = values<float>(selected.second_scale), as2 = values<float>(all.second_scale), bs2 = values<float>(baseline.second_scale);
-    const auto s_obj = values<float>(selected.objective), a_obj = values<float>(all.objective), b_obj = values<float>(baseline.objective);
-    const auto s_status = byte_values(selected.status), a_status = byte_values(all.status), b_status = byte_values(baseline.status);
+    std::uint8_t status[PromotionData::g]{};
+    velocitypp::precision::Promotion promotion{data.gene_order.data(), PromotionData::g, PromotionData::g,
+        PromotionData::n, requested, PromotionData::g, status, PromotionData::g, 0,
+        {&context, SourceContext::acquire}, {}};
+    WorkspaceBuffers<float> workspace;
+    expect(promote_stochastic(data, data.baseline_prepared, options, selected, workspace, promotion),
+           "stochastic promotion applies original columns before initialization selection and second moments");
+    const bool mask_ok = promotion.promoted == 1 &&
+        status[0] == std::uint8_t(velocitypp::precision::PromotionStatus::promoted) &&
+        status[1] == std::uint8_t(velocitypp::precision::PromotionStatus::unavailable) &&
+        status[2] == std::uint8_t(velocitypp::precision::PromotionStatus::not_requested);
+    bool outcomes = mask_ok && selected.initialization.selected[0] && full.initialization.selected[0] &&
+        !baseline.initialization.selected[0] && selected.status[0] != std::uint8_t(velocitypp::StochasticStatus::not_selected);
     for (std::size_t j = 0; j < PromotionData::g; ++j) {
-        const bool promoted = j == 0;
-        const auto& gamma = promoted ? ag : bg;
-        const auto& offset = promoted ? ao : bo;
-        const auto& offset2 = promoted ? ao2 : bo2;
-        const auto& first = promoted ? as1 : bs1;
-        const auto& second = promoted ? as2 : bs2;
-        const auto& objective = promoted ? a_obj : b_obj;
-        const auto& status = promoted ? a_status : b_status;
-        const auto& genes = promoted ? all_genes : baseline_genes;
-        results_ok &= close(sg[j], gamma[j], 2e-5) && close(so[j], offset[j], 2e-5) &&
-            close(so2[j], offset2[j], 2e-5) && close(ss1[j], first[j], 2e-5) &&
-            close(ss2[j], second[j], 2e-5) && close(s_obj[j], objective[j], 2e-5) &&
-            s_status[j] == status[j] && selected_genes[j] == genes[j];
+        const auto& expected = j == 0 ? full : baseline;
+        outcomes = outcomes && close(selected.gamma[j], expected.gamma[j], 2e-5) &&
+            close(selected.offset[j], expected.offset[j], 2e-5) &&
+            close(selected.offset2[j], expected.offset2[j], 2e-5) &&
+            close(selected.first_scale[j], expected.first_scale[j], 2e-5) &&
+            close(selected.second_scale[j], expected.second_scale[j], 2e-5) &&
+            close(selected.objective[j], expected.objective[j], 2e-5) &&
+            selected.status[j] == expected.status[j] &&
+            selected.initialization.selected[j] == expected.initialization.selected[j] &&
+            selected.initialization.status[j] == expected.initialization.status[j];
     }
-    expect(results_ok,
-           "stochastic promotion is applied before initialization selection and matches either the FP64-source or quantized-FP32 baseline");
+    expect(outcomes,
+           "stochastic promoted outputs match original-source refinement while remaining genes match quantized baseline");
     expect(context.calls[2] == 2 && context.calls[0] == 1 && context.calls[1] == 0,
-           "stochastic source callbacks run for requested genes during initialization and again for promoted genes on refinement");
-
-    SourceContext no_request_context{&data};
-    velocitypp::precision::PromotionOptions no_request;
-    no_request.workspace_bytes = 1u << 20;
-    velocitypp::StochasticWorkspace no_request_workspace(data.baseline_input, run);
-    velocitypp::StochasticReferenceStages32 no_request_reference(data.baseline_input, no_request_workspace, stochastic);
-    velocitypp::precision::SelectiveStochasticStages32 no_request_stages(data.baseline_input, no_request_workspace,
-        no_request_reference, no_request_context.source(), no_request);
-    (void)velocitypp::stochastic_with(no_request_stages, data.baseline_input.n_genes(), no_request_workspace.block_genes());
-    expect(no_request_stages.promotion_count() == 0 &&
-           no_request_context.calls[0] + no_request_context.calls[1] + no_request_context.calls[2] == 0,
-           "an absent source-gene request mask never invokes the original-source callback");
+           "stochastic promotion reacquires an original column for the second-moment pass");
 
     SourceContext disappearing{&data};
     disappearing.fail_gene2_after_first = true;
-    velocitypp::StochasticWorkspace disappearing_workspace(data.baseline_input, run);
-    velocitypp::StochasticReferenceStages32 disappearing_reference(data.baseline_input, disappearing_workspace, stochastic);
-    velocitypp::precision::SelectiveStochasticStages32 disappearing_stages(data.baseline_input, disappearing_workspace,
-        disappearing_reference, disappearing.source(), promotion);
-    expect_runtime([&] {
-        (void)velocitypp::stochastic_with(disappearing_stages, data.baseline_input.n_genes(), disappearing_workspace.block_genes());
-    }, "an original promoted gene disappearing before refinement raises instead of mixing precisions");
-    expect(disappearing.calls[2] == 2,
-           "the disappearing-source case reaches the second-pass reacquisition boundary");
+    StochasticBuffers<float> failed(PromotionData::g);
+    WorkspaceBuffers<float> failed_workspace;
+    std::uint8_t failed_status[PromotionData::g]{};
+    velocitypp::precision::Promotion failing{data.gene_order.data(), PromotionData::g, PromotionData::g,
+        PromotionData::n, requested, PromotionData::g, failed_status, PromotionData::g, 0,
+        {&disappearing, SourceContext::acquire}, {}};
+    const bool first_pass = [&] {
+        if (!failed_workspace.bind(data.baseline_prepared, 1, true)) return false;
+        velocitypp::BasicStochasticReferenceStages<float> stages{};
+        if (!velocitypp::bind_stages(data.baseline_prepared, failed_workspace.workspace, options, failed.result, stages)) return false;
+        if (velocitypp::precision::initialize_promotion(failing).code != velocitypp::precision::PrecisionCode::ok) return false;
+        auto moments = stages.initial_moments(0, 1);
+        velocitypp::precision::ReferenceMoments<float> reference{&data.baseline_prepared, &moments, nullptr};
+        failing.replacement = {&reference, velocitypp::precision::replace_reference32};
+        if (velocitypp::precision::promote_initial(failing, 0, 1).code != velocitypp::precision::PrecisionCode::ok) return false;
+        auto fit = stages.initial_fit(moments);
+        stages.accept_initialization(moments, fit);
+        return failing.promoted == 1;
+    }();
+    velocitypp::precision::ReferenceMoments<float> second_reference{};
+    velocitypp::BasicStochasticMomentBlock<float> second_block{};
+    second_reference.input = &data.baseline_prepared;
+    second_reference.second = &second_block;
+    failing.replacement = {&second_reference, velocitypp::precision::replace_reference32};
+    auto unavailable = velocitypp::precision::promote_second(failing, 0, 1);
+    expect(first_pass && unavailable.code == velocitypp::precision::PrecisionCode::unavailable &&
+           unavailable.location == 0 && disappearing.calls[2] == 2,
+           "source disappearance before stochastic refinement reports an explicit unavailable status at its prepared position");
 }
 
-void test_steady_no_request_does_not_acquire() {
+void test_promotion_without_requests_and_missing_source() {
     PromotionData data;
-    const auto run = run32();
-    velocitypp::Workspace workspace(data.baseline_input, run);
-    velocitypp::ReferenceStages32 reference(data.baseline_input, workspace, data.fit_options());
-    SourceContext context{&data};
-    velocitypp::precision::PromotionOptions promotion;
-    promotion.workspace_bytes = workspace.scratch_bytes();
-    velocitypp::precision::SelectiveStages32 selective(data.baseline_input, workspace, reference,
-        context.source(std::numeric_limits<std::size_t>::max()), promotion);
-    (void)velocitypp::steady_state_with(selective, data.baseline_input.n_genes(), workspace.block_genes());
-    expect(selective.promotion_count() == 0 &&
-           context.calls[0] + context.calls[1] + context.calls[2] == 0,
-           "no request bypasses source acquisition and its declared staging budget");
+    expect(data.ready, "caller-owned promotion fixture prepares dense inputs");
+    if (!data.ready) return;
+    FitBuffers<float> result(PromotionData::g);
+    WorkspaceBuffers<float> workspace;
+    SourceContext no_request{&data};
+    std::uint8_t status[PromotionData::g]{};
+    velocitypp::precision::Promotion none{data.gene_order.data(), PromotionData::g, PromotionData::g,
+        PromotionData::n, nullptr, 0, status, PromotionData::g, 0, {&no_request, SourceContext::acquire}, {}};
+    expect(promote_steady(data, data.baseline_prepared, result, workspace, none) && none.promoted == 0 &&
+           no_request.calls[0] + no_request.calls[1] + no_request.calls[2] == 0,
+           "an absent source-gene mask executes the reference path without provider calls");
 
-    velocitypp::Workspace zero_workspace(data.baseline_input, run);
-    velocitypp::ReferenceStages32 zero_reference(data.baseline_input, zero_workspace, data.fit_options());
-    const std::uint8_t zero_mask[PromotionData::g]{};
-    promotion.source_gene_mask = zero_mask;
-    promotion.source_gene_count = PromotionData::g;
-    promotion.workspace_bytes = zero_workspace.scratch_bytes();
-    velocitypp::precision::SelectiveStages32 zero_selective(data.baseline_input, zero_workspace, zero_reference,
-        context.source(std::numeric_limits<std::size_t>::max()), promotion);
-    (void)velocitypp::steady_state_with(zero_selective, data.baseline_input.n_genes(), zero_workspace.block_genes());
-    expect(zero_selective.promotion_count() == 0 &&
-           context.calls[0] + context.calls[1] + context.calls[2] == 0,
-           "an all-zero mask bypasses source acquisition and its declared staging budget");
+    const std::uint8_t zero[PromotionData::g]{};
+    velocitypp::precision::Promotion all_zero{data.gene_order.data(), PromotionData::g, PromotionData::g,
+        PromotionData::n, zero, PromotionData::g, status, PromotionData::g, 0, {&no_request, SourceContext::acquire}, {}};
+    expect(promote_steady(data, data.baseline_prepared, result, workspace, all_zero) && all_zero.promoted == 0 &&
+           no_request.calls[0] + no_request.calls[1] + no_request.calls[2] == 0,
+           "an all-zero request mask bypasses original-column acquisition");
 
-    velocitypp::Workspace missing_workspace(data.baseline_input, run);
-    velocitypp::ReferenceStages32 missing_reference(data.baseline_input, missing_workspace, data.fit_options());
     const std::uint8_t requested[PromotionData::g]{0, 0, 1};
-    promotion.source_gene_mask = requested;
-    promotion.workspace_bytes = missing_workspace.scratch_bytes();
-    velocitypp::precision::OriginalSource missing{nullptr, nullptr, std::numeric_limits<std::size_t>::max()};
-    velocitypp::precision::SelectiveStages32 missing_selective(data.baseline_input, missing_workspace,
-        missing_reference, missing, promotion);
-    (void)velocitypp::steady_state_with(missing_selective, data.baseline_input.n_genes(), missing_workspace.block_genes());
-    expect(missing_selective.promotion_count() == 0 &&
-           missing_selective.promotion_status()[0] == std::uint8_t(velocitypp::precision::PromotionStatus::unavailable),
-           "missing original provider keeps baseline results even if it advertises staging");
+    velocitypp::precision::Promotion missing{data.gene_order.data(), PromotionData::g, PromotionData::g,
+        PromotionData::n, requested, PromotionData::g, status, PromotionData::g, 0, {}, {}};
+    expect(promote_steady(data, data.baseline_prepared, result, workspace, missing) && missing.promoted == 0 &&
+           status[0] == std::uint8_t(velocitypp::precision::PromotionStatus::unavailable),
+           "requested but missing original source retains the reference result with unavailable status");
 }
 
 }
@@ -709,10 +709,10 @@ int main() {
     test_analytic_screen<float>();
     test_constant_cutoff_and_invalid_inputs<double>();
     test_constant_cutoff_and_invalid_inputs<float>();
-    test_sensitivity_workspace_budget_and_binding();
+    test_sensitivity_validation_capacity();
     test_steady_selective_promotion();
     test_stochastic_selective_promotion();
-    test_steady_no_request_does_not_acquire();
+    test_promotion_without_requests_and_missing_source();
     if (!failures) std::cout << "precision tests passed\n";
     return failures ? 1 : 0;
 }

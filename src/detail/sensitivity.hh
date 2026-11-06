@@ -7,7 +7,7 @@
 
 namespace velocitypp::detail::sensitivity {
 
-enum class State : std::uint8_t { no_trimming, unscoreable, stable, sensitive };
+enum class State : uint8_t { no_trimming, unscoreable, stable, sensitive };
 
 template<class T> struct Options {
     T band = T(.5), prediction_limit = T(.1), r2_limit = T(.05);
@@ -25,9 +25,9 @@ template<class T> struct Report {
 // columns must be disjoint.  Prediction norms include all rows, like R²; the
 // supplied fit mask applies to percentile selection and the regression itself.
 template<class T, class Sorter> inline Report<T> report(
-    const T* x, const T* y, std::size_t rows, std::ptrdiff_t stride,
+    const T* x, const T* y, size_t rows, ptrdiff_t stride,
     const scientific::Fit<T>& base, const scientific::Options<T>& fit,
-    T* scratch, const std::uint8_t* mask, bool enabled,
+    T* scratch, const uint8_t* mask, bool enabled,
     Options<T> opt, Sorter sort) {
     using namespace scientific;
     Report<T> out;
@@ -39,21 +39,21 @@ template<class T, class Sorter> inline Report<T> report(
         opt.band < 0 || opt.prediction_limit < 0 || opt.r2_limit < 0) return out;
 
     const bool lower = fit.trimming == Trimming::tails && fit.fit_intercept;
-    T max_x = -std::numeric_limits<T>::infinity(), max_y = max_x;
-    std::size_t n = 0;
-    for (std::size_t i = 0; i < rows; ++i) {
-        const auto k = std::ptrdiff_t(i)*stride;
+    T max_x = -infinity<T>(), max_y = max_x;
+    size_t n = 0;
+    for (size_t i = 0; i < rows; ++i) {
+        const auto k = ptrdiff_t(i)*stride;
         if (!isfinite(x[k]) || !isfinite(y[k])) return out;
         if (!included(i, mask)) continue;
         max_x = maximum(max_x, x[k]); max_y = maximum(max_y, y[k]); ++n;
     }
     if (!n) return out;
-    std::size_t k = 0;
-    for (std::size_t i = 0; i < rows; ++i) if (included(i, mask)) {
-        const auto p = std::ptrdiff_t(i)*stride;
+    size_t k = 0;
+    for (size_t i = 0; i < rows; ++i) if (included(i, mask)) {
+        const auto p = ptrdiff_t(i)*stride;
         scratch[k++] = score(x[p], y[p], max_x, max_y);
     }
-    for (std::size_t i = 0; i < n; ++i) if (!isfinite(scratch[i])) return out;
+    for (size_t i = 0; i < n; ++i) if (!isfinite(scratch[i])) return out;
     sort(scratch, n);
     out.low = lower ? percentile(scratch, n, fit.percentile_low) : T(0);
     out.high = percentile(scratch, n, fit.percentile_high);
@@ -71,8 +71,8 @@ template<class T, class Sorter> inline Report<T> report(
     out.selection_change = a.selected != base.selected || b.selected != base.selected;
 
     T residual2 = 0, response2 = 0, prediction2 = 0, change_a2 = 0, change_b2 = 0;
-    for (std::size_t i = 0; i < rows; ++i) {
-        const auto p = std::ptrdiff_t(i)*stride;
+    for (size_t i = 0; i < rows; ++i) {
+        const auto p = ptrdiff_t(i)*stride;
         T prediction = base.gamma*x[p] + base.offset, residual = y[p] - prediction;
         residual2 += residual*residual; response2 += y[p]*y[p]; prediction2 += prediction*prediction;
         if (a.status == FitStatus::ok) { T d = a.gamma*x[p] + a.offset - prediction; change_a2 += d*d; }
@@ -80,7 +80,7 @@ template<class T, class Sorter> inline Report<T> report(
     }
     if (!isfinite(residual2) || !isfinite(response2) || !isfinite(prediction2) ||
         !isfinite(change_a2) || !isfinite(change_b2)) return out;
-    T denominator = maximum(square_root(residual2), T(32)*std::numeric_limits<T>::epsilon()*
+    T denominator = maximum(square_root(residual2), T(32)*epsilon<T>()*
         maximum(square_root(response2), square_root(prediction2)));
     if (!(denominator > 0) || !isfinite(denominator)) return out;
     out.prediction_change = square_root(maximum(change_a2, change_b2))/denominator;

@@ -21,9 +21,9 @@ def main():
     root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--anndatapp-prefix', type=Path, default=root/'build/deps/install')
-    parser.add_argument('--output', type=Path, default=root/'benchmarks/results/module-build.json')
+    parser.add_argument('--output', type=Path, default=root/'build/qualification/module-build.json')
     args = parser.parse_args()
-    artifacts = root/'benchmarks/artifacts'
+    artifacts = root/'build/qualification/module-build-artifacts'
     artifacts.mkdir(parents=True, exist_ok=True)
     run = Path(tempfile.mkdtemp(prefix='module-build-', dir=artifacts))
     source, build = run/'source', run/'build'

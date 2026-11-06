@@ -1,104 +1,54 @@
 # Velocity++
 
-Velocity++ is a standalone C++20 RNA velocity library with explicit numerical
-memory and composable scientific algorithms. Its repository and public package
-identity are `velocitypp`; the local ccell submodule directory is `velocity/`.
-
-## Current package boundary
-
-The native modules are `velocitypp` and `velocitypp.precision`, the C++ namespace
-is `velocitypp`, and the installed CMake target is `velocitypp::velocitypp`.
-The standalone library depends on AnnData++ 1.0 or newer and accepts its arrays
-directly through `anndatapp::ArrayView`, `anndatapp::ArrayEdit`, and
-`anndatapp::DType`. Expression and graph inputs and outputs support FP32 and
-FP64.
-
-There is no FP16 or binary16 path, no Cellerator dependency or target alias, and
-no CUDA or AVX2 backend in this package. In the root `ccell` project, wrappers
-provide `ccell.velocity` and `ccell` owns preprocessing. Those wrappers do not
-change the standalone package boundary.
-
-The current source carries first- and second-order neighborhood moments,
-steady-state and stochastic fitting, bounded workspace, explicit reference
-stages, and optional precision sensitivity/source selection. Historical
-qualification records below are tied to earlier source snapshots; they do not
-qualify the current direct-view `velocitypp` source.
+A C++20 numerical development reference for RNA velocity. The implementation
+exposes calculations, borrowed numerical storage and replaceable computational
+regions. Its standard reference allocates nothing: callers supply topology,
+workspace, results and output buffers. AnnData++ provides existing acquired data
+descriptors; no Python, Torch, CUDA or Cellerator runtime is required.
 
 ```cpp
 import velocitypp;
-
-// data is an anndatapp::AnnData with prepared expression and explicit weights.
-velocitypp::PreparedInput input{velocitypp::from_anndata(data)};
-velocitypp::Workspace workspace{input};
-auto fit = velocitypp::reference::steady_state(input, workspace);
+import velocitypp.precision;  // Optional sensitivity and original-column promotion.
 ```
 
-## Standalone build
+FP32 and FP64 storage/computation, dense signed strides, CSR/CSC, deterministic
+steady-state fitting, second-order moments and stochastic refinement are supported.
+Raw per-gene routines, bound reference stages, static template composition and
+runtime function-pointer bindings are available. Consumers can retain novel
+layouts across replaced regions or replace the complete algorithm.
 
-Use Clang 18 with its matching `clang-scan-deps`, CMake 3.28 or newer, Ninja,
-and an installed AnnData++ 1.0 or newer:
+The caller constructs AnnData++ storage and acquires addressable descriptors
+before invoking the reference. Numerical calls never materialize selections or
+create owned result arrays. See [API](docs/api.md), [precision](docs/precision.md)
+and the compiled [examples](examples) for caller-bound usage. This is a clean
+API cutover from the former allocating workspace/result classes.
+
+## Build
+
+Use Linux, Clang 18 with matching clang-scan-deps, CMake >=3.28, Ninja, and an
+installed AnnData++ 1.0 or newer:
 
 ```sh
-cmake -S . -B build/standalone -G Ninja \
-  -DCMAKE_CXX_COMPILER=clang++-18 \
-  -DCMAKE_PREFIX_PATH="/path/to/anndatapp/install" \
-  -DVELOCITYPP_BUILD_TESTS=OFF \
-  -DVELOCITYPP_BUILD_EXAMPLES=OFF
-cmake --build build/standalone
+cmake -S . -B build/debug -G Ninja -DCMAKE_CXX_COMPILER=clang++-18 \
+  -DCMAKE_PREFIX_PATH=/path/to/anndatapp/install -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/debug --parallel 2
+ctest --test-dir build/debug --output-on-failure
 ```
 
-This builds Velocity++ without configuring `ccell` and without Python, Torch,
-CUDA, or a half-precision helper. CMake options use the `VELOCITYPP_*` prefix;
-example and qualification executables use the `velocitypp_*` prefix.
+The standalone package remains `velocitypp`, with target
+`velocitypp::velocitypp`. In a ccell source checkout this Git submodule is at
+`external/velocitypp`; root `import ccell.velocity;` re-exports the same types.
+CPU FP16, specialized device code and Cellerator integration belong downstream.
 
-Installed consumers use:
+## Contracts and evidence
 
-```cmake
-find_package(velocitypp CONFIG REQUIRED)
-target_link_libraries(my_app PRIVATE velocitypp::velocitypp)
-```
+- [Strict numerical style](STYLE.md)
+- [Architecture and scientific contracts](docs/architecture.md)
+- [Build and installed consumers](docs/development.md)
+- [Source-bound qualification and historical limits](docs/validation.md)
 
-## Scientific scope
-
-The scientific scope includes neighborhood statistics, steady-state and
-stochastic velocity estimation, transcription/splicing/degradation dynamics,
-parameter and latent-time inference, and associated diagnostics. Velocity
-graphs and transition calculations are related, separately composable
-operations. The earlier first two milestones cover first moments and
-steady-state velocity, followed by second-order moments and stochastic fitting.
-The remaining scientific families are not part of this standalone package yet.
-
-scVelo supplies mathematical and behavioral reference material. Its Python
-object structure, allocation patterns, dense intermediates, and whole-dataset
-workflow do not determine the native implementation. Changes to models,
-objectives, preprocessing, precision, and statistical conventions must remain
-explicit and testable. Different numerical algorithms and solvers are welcome
-when they meet declared numerical-similarity and scientific requirements.
-
-## Historical qualification records
-
-The Milestone 1 and Milestone 2 measurements describe earlier `velocity`
-source snapshots. Milestone 1 recorded 23.8x lower preparation-inclusive
-incremental peak memory on a 4,096-cell, 2,048-gene sparse workload, with similar
-runtime and passing supplied numerical fixtures. Milestone 2 recorded 37.9x
-lower incremental peak memory (690 MB to 18.2 MB), a passing paired median
-no-regression gate, and 32 passing stochastic estimator cases. These are
-historical results; they do not establish current `velocitypp` qualification or
-a general runtime speedup. See [validation and evidence limits](docs/validation.md).
-
-## Project documents
-
-- [Architecture and design constraints](docs/architecture.md)
-- [scVelo mathematics and existing acceleration evidence](docs/scvelo-foundation.md)
-- [Numerical validation and efficiency evidence](docs/validation.md)
-- [Native API, workspace, and customization](docs/api.md)
-- [Storage, computation, and selective precision](docs/precision.md)
-- [Current package boundary and historical source segmentation](docs/segmentation.md)
-- [Development and Project Control](docs/development.md)
-- [Coding style](STYLE.md) and [agent guidance](AGENTS.md)
-- [Planning state](planning/README.md)
-
-## Repository
-
-The standalone repository is
-[tumlinso/velocitypp](https://github.com/tumlinso/velocitypp).
+Historical planning JSON, fixtures and measurement receipts remain unchanged;
+they do not qualify the refactored source. Current acceptance requires native
+and installed-consumer tests, allocation instrumentation over all reference
+phases, independent numerical comparisons, and module rebuild checks. Performance
+and scientific-equivalence claims require their own source-bound evidence.

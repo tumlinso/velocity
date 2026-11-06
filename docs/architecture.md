@@ -1,9 +1,11 @@
 # Architecture and design constraints
 
-Velocity++ is the standalone C++20 package in this `velocity` checkout. Its
+Velocity++ is the standalone C++20 package in this standalone checkout. Its
 public modules are `velocitypp` and `velocitypp.precision`, and its installed
 target is `velocitypp::velocitypp`. It depends on AnnData++ 1.0 or newer and
-uses FP32/FP64 `anndatapp::ArrayView`, `ArrayEdit`, and `DType` directly.
+uses FP32/FP64 existing AnnData++ byte descriptors acquired by callers.
+The standard reference is allocation-free in every phase; topology, workspace,
+state and results are borrowed caller storage.
 Earlier FP16, AVX2, and CUDA source and qualification records are historical;
 they do not describe the current package. See
 [the current boundary](segmentation.md).
@@ -95,8 +97,9 @@ Downstream code must be able to reuse or replace meaningful internal parts:
 model evaluation, objectives and derivatives where applicable, statistics,
 parameter updates, convergence checks, fitting strategies, batching, and memory
 management. A whole-operation replacement must also remain possible. A
-downstream ccell implementation may change layouts and fuse stages while
-preserving the operation's declared results.
+downstream implementation may replace connected regions or the whole algorithm
+with novel layouts, intermediates and mathematical methods. Only interfaces to
+retained code impose compatibility; reference intermediate structures are optional.
 
 Keep reference invocation explicit and independent of downstream substitutions.
 A comparison or fallback must be able to run the same declared method and input
@@ -117,7 +120,8 @@ facade, execution runtime, or general plugin framework is not a prerequisite.
 
 ## Memory, ownership, and execution
 
-Separate allocation owners from acquired numerical views. Expose relevant
+The reference creates no allocation owners. Callers acquire AnnData++ numerical
+views and supply every topology/result/workspace buffer. Expose relevant
 pointers, extents, strides, sparse widths/orientation, mutability, and aliasing.
 Document retained and borrowed lifetimes and the work performed at acquisition
 or conversion boundaries. Permit explicit trusted access where useful.
@@ -141,8 +145,8 @@ data dependency is AnnData++ 1.0 or newer.
 Use [AnnData++](https://github.com/tumlinso/anndatapp) for supported AnnData
 access and serialization. Its FP32/FP64 arrays and views are native inputs and
 outputs, including externally borrowed storage. Velocity++ imports
-`anndatapp.core` and uses `anndatapp::ArrayView`, `ArrayEdit`, and `DType`
-directly. It has no separate numeric-view adapter or binary16 dependency.
+`anndatapp.core` and borrows its caller-acquired byte descriptors with explicit
+`DType` tags. Reference results and scratch are caller-provided numerical buffers. It has no separate numeric-view adapter or binary16 dependency.
 
 ## Storage and arithmetic
 

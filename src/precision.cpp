@@ -1,13 +1,6 @@
 module;
-#include <algorithm>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
-#include <limits>
-#include <memory>
-#include <stdexcept>
-#include <utility>
-#include <vector>
+#include <stddef.h>
+#include <stdint.h>
 #include "detail/sensitivity.hh"
 
 module velocitypp.precision;
@@ -16,221 +9,154 @@ import velocitypp;
 namespace velocitypp::precision {
 namespace {
 
-struct Sort {
-    template<class T> void operator()(T* p, std::size_t n) const { std::sort(p, p+n); }
-};
-
 template<class T> velocitypp::detail::sensitivity::Options<T> numeric(SensitivityOptions o) {
     return {T(o.band), T(o.prediction_limit), T(o.r2_limit)};
 }
-
 template<class T> velocitypp::detail::scientific::Options<T> numeric(const FitOptions& o) {
     using namespace velocitypp::detail;
     return {scientific::Trimming(o.trimming), T(o.percentile_low), T(o.percentile_high),
             o.fit_intercept, o.positive_intercept, o.r2_adjusted,
             T(o.ratio_min), T(o.ratio_max), T(o.min_r2), T(o.min_ratio)};
 }
-
 template<class T> BasicSensitivityReport<T> report_gene(const T* x, const T* y,
-    std::size_t rows, std::ptrdiff_t stride, const BasicGeneFit<T>& base,
-    const FitOptions& fit, T* scratch, const std::uint8_t* mask, bool enabled,
-    SensitivityOptions o) {
-    if (!std::isfinite(o.band) || !std::isfinite(o.prediction_limit) || !std::isfinite(o.r2_limit) ||
-        o.band < 0 || o.prediction_limit < 0 || o.r2_limit < 0)
-        throw std::invalid_argument("invalid sensitivity options");
-    T dummy = 0;
-    reference::fit_gene(static_cast<const T*>(nullptr), static_cast<const T*>(nullptr), 0, 1, fit, &dummy);
-    if (rows) {
-        if (!x || !y || !stride) throw std::invalid_argument("invalid sensitivity inputs or stride");
-        if (fit.trimming != Trimming::none && !scratch) throw std::invalid_argument("sensitivity requires score scratch");
-        auto step = stride > 0 ? std::uintmax_t(stride) : std::uintmax_t(-(stride + 1)) + 1;
-        if (rows > 1 && std::uintmax_t(rows - 1) > std::uintmax_t(std::numeric_limits<std::ptrdiff_t>::max())/step)
-            throw std::invalid_argument("sensitivity stride overflows row offsets");
-    }
+    size_t rows, ptrdiff_t stride, const BasicGeneFit<T>& base, const FitOptions& fit,
+    T* scratch, const uint8_t* mask, bool enabled, SensitivityOptions o) noexcept {
     using namespace velocitypp::detail;
-    auto result = sensitivity::report(x, y, rows, stride,
+    auto r = sensitivity::report(x, y, rows, stride,
         scientific::Fit<T>{base.gamma, base.offset, base.r2, scientific::FitStatus(base.status), base.selected},
-        numeric<T>(fit), scratch, mask, enabled, numeric<T>(o), Sort{});
-    return {SensitivityState(result.state), result.low, result.high, result.delta,
-            result.prediction_change, result.r2_change, FitStatus(result.expanded_status),
-            FitStatus(result.contracted_status), result.status_change, result.selection_change};
+        numeric<T>(fit), scratch, mask, enabled, numeric<T>(o), scientific::HeapSort{});
+    return {SensitivityState(r.state), r.low, r.high, r.delta, r.prediction_change, r.r2_change,
+            FitStatus(r.expanded_status), FitStatus(r.contracted_status), r.status_change, r.selection_change};
+}
+size_t gene(const Promotion& p, size_t i) { return p.genes ? p.genes[i] : i; }
+bool valid_stride(size_t rows, ptrdiff_t stride) {
+    if (rows < 2) return true;
+    uintmax_t steps = uintmax_t(rows-1);
+    if (steps > uintmax_t(PTRDIFF_MAX)) return false;
+    if (!stride) return true;
+    uintmax_t magnitude = stride < 0 ? uintmax_t(-(stride+1))+1 : uintmax_t(stride);
+    uintmax_t limit = uintmax_t(PTRDIFF_MAX) + uintmax_t(stride < 0);
+    return steps <= limit/magnitude;
+}
+bool valid_column(const OriginalColumn& c, size_t rows) {
+    if (c.rows != rows || (rows && (!c.spliced || !c.unspliced)) ||
+        !valid_stride(rows,c.spliced_stride_bytes) || !valid_stride(rows,c.unspliced_stride_bytes)) return false;
+    return (c.spliced_type == OriginalType::float32 || c.spliced_type == OriginalType::float64) &&
+           (c.unspliced_type == OriginalType::float32 || c.unspliced_type == OriginalType::float64);
 }
 
-bool higher_precision(const OriginalColumn& c, std::size_t n) {
-    auto usable = [n](const anndatapp::ArrayView& a) {
-        if (a.rank() != 2 || a.extent(0) != n || a.extent(1) != 1)
-            throw std::invalid_argument("an original source column must have shape cells by one");
-        return a.dtype() == anndatapp::DType::float32 || a.dtype() == anndatapp::DType::float64;
-    };
-    return usable(c.spliced) && usable(c.unspliced);
-}
+} // namespace
 
-template<class T> std::pair<std::unique_ptr<T[]>, std::size_t> allocate_score(
-    std::size_t rows, std::size_t stage_bytes, std::size_t budget, std::size_t staging) {
-    if (rows > std::numeric_limits<std::size_t>::max()/sizeof(T))
-        throw std::invalid_argument("sensitivity scratch size overflows");
-    auto bytes = rows*sizeof(T);
-    if (stage_bytes > budget || staging > budget - stage_bytes || bytes > budget - stage_bytes - staging)
-        throw std::invalid_argument("sensitivity scratch exceeds the numerical workspace budget");
-    return {rows ? std::unique_ptr<T[]>(new T[rows]) : nullptr, bytes};
-}
-
-}
-
-template<class T> BasicSensitivityWorkspace<T>::BasicSensitivityWorkspace(const PreparedInput& p,
-    const Workspace& w, const BasicReferenceStages<T>& stages, std::size_t budget, std::size_t staging) {
-    if (!stages.bound_to(p, w)) throw std::invalid_argument("sensitivity stage belongs to another input or workspace");
-    auto allocation = allocate_score<T>(p.n_cells(), w.scratch_bytes(), budget, staging);
-    data_ = std::move(allocation.first); bytes_ = allocation.second;
-}
-template<class T> BasicSensitivityWorkspace<T>::BasicSensitivityWorkspace(const PreparedInput& p,
-    const StochasticWorkspace& w, const BasicStochasticReferenceStages<T>& stages,
-    std::size_t budget, std::size_t staging) {
-    if (!stages.bound_to(p, w)) throw std::invalid_argument("sensitivity stage belongs to another input or workspace");
-    auto allocation = allocate_score<T>(p.n_cells(), w.scratch_bytes(), budget, staging);
-    data_ = std::move(allocation.first); bytes_ = allocation.second;
-}
-template<class T> BasicSensitivityWorkspace<T>::~BasicSensitivityWorkspace() = default;
-template<class T> BasicSensitivityWorkspace<T>::BasicSensitivityWorkspace(BasicSensitivityWorkspace&&) noexcept = default;
-template<class T> BasicSensitivityWorkspace<T>& BasicSensitivityWorkspace<T>::operator=(BasicSensitivityWorkspace&&) noexcept = default;
-template<class T> T* BasicSensitivityWorkspace<T>::data() noexcept { return data_.get(); }
-template<class T> std::size_t BasicSensitivityWorkspace<T>::scratch_bytes() const noexcept { return bytes_; }
-
-SensitivityReport sensitivity_gene(const double* x, const double* y, std::size_t rows,
-    std::ptrdiff_t stride, const GeneFit& base, const FitOptions& fit, double* scratch,
-    const std::uint8_t* mask, bool enabled, SensitivityOptions o) {
-    return report_gene(x, y, rows, stride, base, fit, scratch, mask, enabled, o);
-}
-SensitivityReport32 sensitivity_gene(const float* x, const float* y, std::size_t rows,
-    std::ptrdiff_t stride, const GeneFit32& base, const FitOptions& fit, float* scratch,
-    const std::uint8_t* mask, bool enabled, SensitivityOptions o) {
-    return report_gene(x, y, rows, stride, base, fit, scratch, mask, enabled, o);
-}
-
-OriginalArraySource::OriginalArraySource(anndatapp::ArrayView s, anndatapp::ArrayView u)
-    : spliced_(std::move(s)), unspliced_(std::move(u)) {
-    spliced_.validate(); unspliced_.validate();
-    if (spliced_.rank() != 2 || unspliced_.rank() != 2 ||
-        spliced_.layout() != anndatapp::Layout::dense || unspliced_.layout() != anndatapp::Layout::dense ||
-        spliced_.extent(0) != unspliced_.extent(0) || spliced_.extent(1) != unspliced_.extent(1))
-        throw std::invalid_argument("original source arrays must be matching dense matrices");
-    auto floating = [](anndatapp::DType t) {
-        return t == anndatapp::DType::float32 || t == anndatapp::DType::float64;
-    };
-    if (!floating(spliced_.dtype()) || !floating(unspliced_.dtype()))
-        throw std::invalid_argument("original source arrays must use floating storage");
-}
-bool OriginalArraySource::acquire(void* context, std::size_t gene, OriginalColumn& c) {
-    auto& source = *static_cast<OriginalArraySource*>(context);
-    if (gene >= source.spliced_.extent(1)) return false;
-    auto column = anndatapp::Axis::stride(gene, 1);
-    c.spliced = source.spliced_.select({anndatapp::Axis::all(), column});
-    c.unspliced = source.unspliced_.select({anndatapp::Axis::all(), column});
-    return true;
-}
-OriginalSource OriginalArraySource::source() noexcept { return {this, &OriginalArraySource::acquire, 0}; }
-
-namespace detail {
-template<class T> struct SelectionState {
-    const PreparedInput* input;
-    BasicReferenceStages<T>* steady = nullptr;
-    BasicStochasticReferenceStages<T>* stochastic = nullptr;
-    OriginalSource source;
-    PromotionOptions options;
-    std::vector<std::uint8_t> status;
-    std::size_t promoted = 0;
-
-    SelectionState(const PreparedInput& p, std::size_t scratch, OriginalSource s, PromotionOptions o)
-        : input(&p), source(s), options(o) {
-        if (o.source_gene_mask && o.source_gene_count != p.source_genes())
-            throw std::invalid_argument("promotion mask must cover the source gene axis");
-        bool requested = false;
-        if (o.source_gene_mask && s.acquire)
-            for (std::size_t i = 0; i < p.n_genes() && !requested; ++i)
-                requested = o.source_gene_mask[p.gene_index(i)] != 0;
-        if (scratch > o.workspace_bytes || (requested && s.staging_bytes > o.workspace_bytes - scratch))
-            throw std::invalid_argument("promotion staging exceeds the numerical workspace budget");
-        if (o.source_gene_mask) status.resize(p.n_genes(), std::uint8_t(PromotionStatus::not_requested));
+PrecisionCheck validate_sensitivity(size_t rows, ptrdiff_t stride, const void* x,
+    const void* y, const void* scratch, size_t scratch_count,
+    const FitOptions& f, SensitivityOptions o) noexcept {
+    if (!__builtin_isfinite(o.band) || !__builtin_isfinite(o.prediction_limit) ||
+        !__builtin_isfinite(o.r2_limit) || o.band < 0 || o.prediction_limit < 0 || o.r2_limit < 0 ||
+        __builtin_isnan(f.ratio_min) || __builtin_isnan(f.ratio_max) || f.ratio_min > f.ratio_max ||
+        !__builtin_isfinite(f.min_r2) || !__builtin_isfinite(f.min_ratio) ||
+        !__builtin_isfinite(f.percentile_low) || !__builtin_isfinite(f.percentile_high) ||
+        f.percentile_low < 0 || f.percentile_high > 100 || f.percentile_low > f.percentile_high ||
+        (f.trimming != Trimming::none && f.trimming != Trimming::upper && f.trimming != Trimming::tails))
+        return {PrecisionCode::invalid_argument, 0, 0};
+    if (rows && (!x || !y || !stride)) return {PrecisionCode::invalid_argument, 0, 0};
+    if (rows && f.trimming != Trimming::none && (!scratch || scratch_count < rows))
+        return {PrecisionCode::insufficient_capacity, 0, rows};
+    if (rows > 1) {
+        uintmax_t step = stride > 0 ? uintmax_t(stride) : uintmax_t(-(stride+1))+1;
+        if (uintmax_t(rows-1) > uintmax_t(PTRDIFF_MAX)/step) return {PrecisionCode::invalid_argument, 0, 0};
     }
+    return {};
+}
+SensitivityReport sensitivity_gene(const double* x, const double* y, size_t rows,
+    ptrdiff_t stride, const GeneFit& base, const FitOptions& fit, double* scratch,
+    const uint8_t* mask, bool enabled, SensitivityOptions o) noexcept {
+    return report_gene(x,y,rows,stride,base,fit,scratch,mask,enabled,o);
+}
+SensitivityReport32 sensitivity_gene(const float* x, const float* y, size_t rows,
+    ptrdiff_t stride, const GeneFit32& base, const FitOptions& fit, float* scratch,
+    const uint8_t* mask, bool enabled, SensitivityOptions o) noexcept {
+    return report_gene(x,y,rows,stride,base,fit,scratch,mask,enabled,o);
+}
 
-    bool fetch(std::size_t position, OriginalColumn& column) const {
-        auto gene = input->gene_index(position);
-        return source.acquire && source.acquire(source.context, gene, column) && higher_precision(column, input->n_cells());
+namespace {
+template<class T> PrecisionCode replace_reference(ReferenceMoments<T>& r, size_t position, size_t offset,
+                                                   const OriginalColumn& c, bool second) noexcept {
+    if (!r.input || !valid_column(c,r.input->rows)) return PrecisionCode::invalid_argument;
+    auto st = c.spliced_type, ut = c.unspliced_type;
+    if (!second) {
+        auto* b = r.initial;
+        if (!b || offset >= b->count || position < b->first || position-b->first != offset || b->rows != c.rows ||
+            b->stride <= 0 || (c.rows && (!b->spliced || !b->unspliced))) return PrecisionCode::invalid_argument;
+        reference::moments_from(*r.input,c.spliced,c.spliced_stride_bytes,st,
+            c.unspliced,c.unspliced_stride_bytes,ut,b->spliced ? b->spliced+offset : nullptr,b->unspliced ? b->unspliced+offset : nullptr,size_t(b->stride));
+    } else {
+        auto* b = r.second;
+        if (!b || offset >= b->count || position < b->first || position-b->first != offset || b->rows != c.rows || b->stride <= 0 ||
+            (c.rows && (!b->spliced || !b->unspliced || !b->spliced_second || !b->cross))) return PrecisionCode::invalid_argument;
+        reference::second_moments_from(*r.input,c.spliced,c.spliced_stride_bytes,st,
+            c.unspliced,c.unspliced_stride_bytes,ut,b->spliced ? b->spliced+offset : nullptr,b->unspliced ? b->unspliced+offset : nullptr,
+            b->spliced_second ? b->spliced_second+offset : nullptr,b->cross ? b->cross+offset : nullptr,
+            b->unspliced_second ? b->unspliced_second+offset : nullptr,size_t(b->stride));
     }
+    return PrecisionCode::ok;
+}
+}
+PrecisionCode replace_reference64(void* p, size_t position, size_t offset,
+                                  const OriginalColumn& c, bool second) noexcept {
+    return p ? replace_reference(*static_cast<ReferenceMoments<double>*>(p),position,offset,c,second) : PrecisionCode::invalid_argument;
+}
+PrecisionCode replace_reference32(void* p, size_t position, size_t offset,
+                                  const OriginalColumn& c, bool second) noexcept {
+    return p ? replace_reference(*static_cast<ReferenceMoments<float>*>(p),position,offset,c,second) : PrecisionCode::invalid_argument;
+}
 
-    template<class Block, class Stages> void initialize(Block& b, Stages& stages) {
-        if (!options.source_gene_mask) return;
-        for (std::size_t j = 0; j < b.count; ++j) {
-            auto position = b.first + j;
-            if (!options.source_gene_mask[input->gene_index(position)]) continue;
-            OriginalColumn c;
-            if (!fetch(position, c)) { status[position] = std::uint8_t(PromotionStatus::unavailable); continue; }
-            stages.replace_moments(b, j, 1, c.spliced, c.unspliced);
-            status[position] = std::uint8_t(PromotionStatus::promoted); ++promoted;
+PrecisionCheck validate_promotion(const Promotion& p) noexcept {
+    if (p.mask && p.mask_count != p.source_gene_count) return {PrecisionCode::invalid_argument, 0, p.source_gene_count};
+    if (p.mask && p.gene_count && (!p.status || p.status_capacity < p.gene_count))
+        return {PrecisionCode::insufficient_capacity, 0, p.gene_count};
+    if (!p.genes && p.gene_count > p.source_gene_count) return {PrecisionCode::invalid_argument, p.source_gene_count, 0};
+    for (size_t i = 0; p.genes && i < p.gene_count; ++i)
+        if (p.genes[i] >= p.source_gene_count) return {PrecisionCode::invalid_argument, i, 0};
+    return {};
+}
+PrecisionCheck initialize_promotion(Promotion& p) noexcept {
+    auto check = validate_promotion(p);
+    if (check.code != PrecisionCode::ok) return check;
+    p.promoted = 0;
+    if (p.mask) for (size_t i=0;i<p.gene_count;++i) p.status[i] = uint8_t(PromotionStatus::not_requested);
+    return {};
+}
+PrecisionCheck promote_initial(Promotion& p, size_t first, size_t count) {
+    if (first > p.gene_count || count > p.gene_count-first) return {PrecisionCode::invalid_argument, first, 0};
+    if (!p.mask) return {};
+    for (size_t j=0;j<count;++j) {
+        size_t i=first+j, g=gene(p,i);
+        if (!p.mask[g]) continue;
+        OriginalColumn c;
+        if (!p.source.acquire || !p.source.acquire(p.source.context,g,c)) {
+            p.status[i]=uint8_t(PromotionStatus::unavailable); continue;
         }
+        if (!valid_column(c,p.rows) || !p.replacement.replace) return {PrecisionCode::invalid_argument,i,0};
+        auto code=p.replacement.replace(p.replacement.context,i,j,c,false);
+        if (code != PrecisionCode::ok) return {code,i,0};
+        p.status[i]=uint8_t(PromotionStatus::promoted); ++p.promoted;
     }
-
-    template<class Block> void reapply(Block& b, BasicStochasticReferenceStages<T>& stages) {
-        if (status.empty()) return;
-        for (std::size_t j = 0; j < b.count; ++j) {
-            auto position = b.first + j;
-            if (status[position] != std::uint8_t(PromotionStatus::promoted)) continue;
-            OriginalColumn c;
-            if (!fetch(position, c))
-                throw std::runtime_error("promoted original source became unavailable between passes");
-            stages.replace_moments(b, j, 1, c.spliced, c.unspliced);
-        }
+    return {};
+}
+PrecisionCheck promote_second(Promotion& p, size_t first, size_t count) {
+    if (first > p.gene_count || count > p.gene_count-first) return {PrecisionCode::invalid_argument, first, 0};
+    if (!p.mask) return {};
+    for (size_t j=0;j<count;++j) {
+        size_t i=first+j;
+        if (p.status[i] != uint8_t(PromotionStatus::promoted)) continue;
+        OriginalColumn c;
+        if (!p.source.acquire || !p.source.acquire(p.source.context,gene(p,i),c))
+            return {PrecisionCode::unavailable,i,0};
+        if (!valid_column(c,p.rows) || !p.replacement.replace) return {PrecisionCode::invalid_argument,i,0};
+        auto code=p.replacement.replace(p.replacement.context,i,j,c,true);
+        if (code != PrecisionCode::ok) return {code,i,0};
     }
-};
+    return {};
 }
 
-template<class T> BasicSelectiveStages<T>::BasicSelectiveStages(const PreparedInput& p, Workspace& w,
-    BasicReferenceStages<T>& stages, OriginalSource source, PromotionOptions options) {
-    if (!stages.bound_to(p, w)) throw std::invalid_argument("promotion stage belongs to another input or workspace");
-    state_ = std::make_unique<detail::SelectionState<T>>(p, w.scratch_bytes(), source, options);
-    state_->steady = &stages;
-}
-template<class T> BasicSelectiveStages<T>::~BasicSelectiveStages() = default;
-template<class T> BasicSelectiveStages<T>::BasicSelectiveStages(BasicSelectiveStages&&) noexcept = default;
-template<class T> BasicSelectiveStages<T>& BasicSelectiveStages<T>::operator=(BasicSelectiveStages&&) noexcept = default;
-template<class T> BasicMomentBlock<T> BasicSelectiveStages<T>::moments(std::size_t first, std::size_t count) {
-    auto b = state_->steady->moments(first, count); state_->initialize(b, *state_->steady); return b;
-}
-template<class T> BasicFitBlock<T> BasicSelectiveStages<T>::fit(BasicMomentBlock<T> b) { return state_->steady->fit(b); }
-template<class T> void BasicSelectiveStages<T>::emit(BasicMomentBlock<T> m, BasicFitBlock<T> f) { state_->steady->emit(m, f); }
-template<class T> FitResult BasicSelectiveStages<T>::finish() { return state_->steady->finish(); }
-template<class T> const std::uint8_t* BasicSelectiveStages<T>::promotion_status() const noexcept { return state_->status.empty() ? nullptr : state_->status.data(); }
-template<class T> std::size_t BasicSelectiveStages<T>::promotion_count() const noexcept { return state_->promoted; }
-
-template<class T> BasicSelectiveStochasticStages<T>::BasicSelectiveStochasticStages(const PreparedInput& p,
-    StochasticWorkspace& w, BasicStochasticReferenceStages<T>& stages, OriginalSource source, PromotionOptions options) {
-    if (!stages.bound_to(p, w)) throw std::invalid_argument("promotion stage belongs to another input or workspace");
-    state_ = std::make_unique<detail::SelectionState<T>>(p, w.scratch_bytes(), source, options);
-    state_->stochastic = &stages;
-}
-template<class T> BasicSelectiveStochasticStages<T>::~BasicSelectiveStochasticStages() = default;
-template<class T> BasicSelectiveStochasticStages<T>::BasicSelectiveStochasticStages(BasicSelectiveStochasticStages&&) noexcept = default;
-template<class T> BasicSelectiveStochasticStages<T>& BasicSelectiveStochasticStages<T>::operator=(BasicSelectiveStochasticStages&&) noexcept = default;
-template<class T> BasicMomentBlock<T> BasicSelectiveStochasticStages<T>::initial_moments(std::size_t first, std::size_t count) {
-    auto b = state_->stochastic->initial_moments(first, count); state_->initialize(b, *state_->stochastic); return b;
-}
-template<class T> BasicFitBlock<T> BasicSelectiveStochasticStages<T>::initial_fit(BasicMomentBlock<T> b) { return state_->stochastic->initial_fit(b); }
-template<class T> void BasicSelectiveStochasticStages<T>::accept_initialization(BasicMomentBlock<T> m, BasicFitBlock<T> f) { state_->stochastic->accept_initialization(m, f); }
-template<class T> void BasicSelectiveStochasticStages<T>::resolve_selection() { state_->stochastic->resolve_selection(); }
-template<class T> BasicStochasticMomentBlock<T> BasicSelectiveStochasticStages<T>::moments(std::size_t first, std::size_t count) {
-    auto b = state_->stochastic->moments(first, count); state_->reapply(b, *state_->stochastic); return b;
-}
-template<class T> BasicStochasticScaleBlock<T> BasicSelectiveStochasticStages<T>::scales(BasicStochasticMomentBlock<T> b) { return state_->stochastic->scales(b); }
-template<class T> BasicStochasticFitBlock<T> BasicSelectiveStochasticStages<T>::fit(BasicStochasticMomentBlock<T> m, BasicStochasticScaleBlock<T> s) { return state_->stochastic->fit(m, s); }
-template<class T> void BasicSelectiveStochasticStages<T>::emit(BasicStochasticMomentBlock<T> m, BasicStochasticFitBlock<T> f) { state_->stochastic->emit(m, f); }
-template<class T> StochasticFitResult BasicSelectiveStochasticStages<T>::finish() { return state_->stochastic->finish(); }
-template<class T> const std::uint8_t* BasicSelectiveStochasticStages<T>::promotion_status() const noexcept { return state_->status.empty() ? nullptr : state_->status.data(); }
-template<class T> std::size_t BasicSelectiveStochasticStages<T>::promotion_count() const noexcept { return state_->promoted; }
-
-template class BasicSensitivityWorkspace<float>;
-template class BasicSensitivityWorkspace<double>;
-template class BasicSelectiveStages<float>;
-template class BasicSelectiveStages<double>;
-template class BasicSelectiveStochasticStages<float>;
-template class BasicSelectiveStochasticStages<double>;
-}
+} // namespace velocitypp::precision

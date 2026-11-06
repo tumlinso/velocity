@@ -9,6 +9,7 @@
 #include <vector>
 
 import velocitypp;
+#include "stochastic_support.hh"
 
 namespace {
 int failures = 0;
@@ -67,7 +68,8 @@ struct Fixture {
     std::size_t n = 8, g = 2;
     std::vector<double> s, u, w;
     anndatapp::Array sa, ua, wa;
-    velocitypp::PreparedInput prepared;
+    PreparedStorage storage;
+    velocitypp::PreparedInput& prepared;
     Fixture()
         : s{1,3, 2,4, 1,2, 3,7, 2,5, 5,8, 4,10, 7,11},
           u{2,5, 5,8, 1,5, 8,12, 3,13, 8,13, 10,17, 13,20},
@@ -76,7 +78,7 @@ struct Fixture {
           wa([&] {
               for (std::size_t i=0;i<n;++i) w[i*n+i]=1;
               return anndatapp::Array::borrow_dense(w.data(), {n,n}, {std::ptrdiff_t(n),1});
-          }()), prepared({sa.view(),ua.view(),wa.view()}) {}
+          }()), storage(sa.view(),ua.view(),wa.view()), prepared(storage.value) {}
 };
 
 auto dense_values(const anndatapp::Array& a) {
@@ -100,7 +102,7 @@ void sparse_moments_coalesce_expression_duplicates() {
     auto u=anndatapp::Array::borrow_sparse(anndatapp::Layout::csc,n,g,3,uv,ui,uo);
     auto w=anndatapp::Array::zeros<double>({n,n});
     auto* wp=w.edit().dense<double>().data(); wp[0]=1;wp[3]=1;
-    velocitypp::PreparedInput p({s.view(),u.view(),w.view()});
+    PreparedStorage ps(s.view(),u.view(),w.view()); auto& p=ps.value;
     double ms[n]{},mu[n]{},mss[n]{},mus[n]{},muu[n]{},scratch_s[n]{},scratch_u[n]{};
     velocitypp::reference::second_moments(p,0,1,ms,mu,mss,mus,muu,scratch_s,scratch_u);
     expect(close(ms[0],3)&&close(mu[0],5)&&close(mss[0],9)&&close(mus[0],15)&&close(muu[0],25)&&
@@ -124,7 +126,7 @@ void dense_csr_csc_and_signed_stride_match() {
     auto wc=compressed(anndatapp::Layout::csc,f.n,f.n,f.w);
     // Fixture W is populated by construction in its array initializer.
     auto sa=sc.array(),ua=uc.array(),wa=wc.array();
-    velocitypp::PreparedInput sparse({sa.view(),ua.view(),wa.view()});
+    PreparedStorage sparse_storage(sa.view(),ua.view(),wa.view()); auto& sparse=sparse_storage.value;
     std::fill(ms.begin(),ms.end(),0);std::fill(mu.begin(),mu.end(),0);std::fill(mss.begin(),mss.end(),0);
     std::fill(mus.begin(),mus.end(),0);std::fill(muu.begin(),muu.end(),0);
     velocitypp::reference::second_moments(sparse,0,f.g,ms.data(),mu.data(),mss.data(),mus.data(),muu.data(),ss.data(),su.data());
@@ -138,7 +140,7 @@ void dense_csr_csc_and_signed_stride_match() {
     }
     auto srev=anndatapp::Array::borrow_dense(sr.data()+(f.n-1)*f.g,{f.n,f.g},{-std::ptrdiff_t(f.g),1});
     auto urev=anndatapp::Array::borrow_dense(ur.data()+(f.n-1)*f.g,{f.n,f.g},{-std::ptrdiff_t(f.g),1});
-    velocitypp::PreparedInput reversed({srev.view(),urev.view(),f.wa.view()});
+    PreparedStorage reversed_storage(srev.view(),urev.view(),f.wa.view()); auto& reversed=reversed_storage.value;
     std::fill(ms.begin(),ms.end(),0);std::fill(mu.begin(),mu.end(),0);std::fill(mss.begin(),mss.end(),0);
     std::fill(mus.begin(),mus.end(),0);std::fill(muu.begin(),muu.end(),0);
     velocitypp::reference::second_moments(reversed,0,f.g,ms.data(),mu.data(),mss.data(),mus.data(),muu.data(),ss.data(),su.data());
@@ -146,19 +148,16 @@ void dense_csr_csc_and_signed_stride_match() {
 }
 void stochastic_path_and_outputs() {
     Fixture f;
-    velocitypp::StochasticRunOptions ro; ro.block_genes=1; ro.output_dtype=anndatapp::DType::float64;
-    ro.second_residual=true; ro.spliced_second=true; ro.cross=true; ro.unspliced_second=true;
-    velocitypp::StochasticWorkspace workspace(f.prepared,ro);
-    expect(workspace.block_genes()==1&&workspace.scratch_bytes()<=ro.workspace_bytes,
+    velocitypp::RunOptions ro; ro.block_genes=1;
+    StochasticStorage<double> ws(f.prepared,ro);
+    expect(ws.workspace.block==1&&ws.workspace.scratch_bytes<=ro.workspace_bytes,
            "stochastic workspace obeys one-gene blocks and budget");
-    auto v=anndatapp::Array::zeros<double>({f.n,f.g}),r2=anndatapp::Array::zeros<double>({f.n,f.g});
-    auto result=velocitypp::reference::stochastic_into(f.prepared,workspace,v.edit(),options(),r2.edit());
-    auto gamma=dense_values(result.gamma),offset=dense_values(result.offset),offset2=dense_values(result.offset2);
-    auto status=result.status.view().dense<std::uint8_t>();
-    auto velocity=dense_values(v), residual2=dense_values(r2);
+    std::vector<double> velocity(f.n*f.g), residual2(f.n*f.g);
+    require_status(velocitypp::reference::stochastic_into(f.prepared,ws.workspace,ws.result,velocity.data(),velocity.size(),residual2.data(),residual2.size(),f.g,options()));
+    auto& result=ws.result; auto& gamma=ws.gamma; auto& offset=ws.offset; auto& offset2=ws.offset2; auto& status=ws.status;
     bool outputs_ok=true;
     for(std::size_t j=0;j<f.g;++j) {
-        auto st=static_cast<velocitypp::StochasticStatus>(status.data()[j]);
+        auto st=static_cast<velocitypp::StochasticStatus>(status[j]);
         outputs_ok &= std::isfinite(gamma[j])&&std::isfinite(offset[j])&&std::isfinite(offset2[j]);
         if(st==velocitypp::StochasticStatus::ok) {
             for(std::size_t i=0;i<f.n;++i) {
@@ -170,25 +169,46 @@ void stochastic_path_and_outputs() {
         }
     }
     expect(outputs_ok,"stochastic caller-owned velocity and second residual follow documented equations and remain finite");
-    expect(result.initialization.gamma.view().extent(0)==f.g,"result retains deterministic initialization diagnostics");
+    expect(result.initialization.capacity==f.g,"result retains deterministic initialization diagnostics");
 
-    velocitypp::StochasticRunOptions wide; wide.block_genes=64;
-    velocitypp::StochasticWorkspace workspace_wide(f.prepared,wide);
-    auto out_wide=velocitypp::reference::stochastic(f.prepared,workspace_wide,options());
-    bool same=true; auto gwide=dense_values(out_wide.gamma);
-    for(std::size_t j=0;j<f.g;++j) same &= close(gamma[j],gwide[j]);
+    velocitypp::RunOptions wide; wide.block_genes=64;
+    StochasticStorage<double> ww(f.prepared,wide); ww.run(f.prepared,options());
+    bool same=true;
+    for(std::size_t j=0;j<f.g;++j) same &= close(gamma[j],ww.gamma[j]);
     expect(same,"stochastic results are independent of gene block width");
+}
+void typed_workspace_and_optional_residual() {
+    Fixture f;
+    StochasticStorage<double> d(f.prepared); d.run(f.prepared,options());
+    StochasticStorage<float> x(f.prepared);
+    std::vector<float> velocity(f.n*f.g);
+    require_status(velocitypp::reference::stochastic_into(f.prepared,x.workspace,x.result,velocity.data(),velocity.size(),static_cast<float*>(nullptr),0,f.g,options()));
+    bool same=true;
+    for(std::size_t j=0;j<f.g;++j) {
+        same &= x.status[j]==d.status[j] && close(x.gamma[j],d.gamma[j],2e-4) && close(x.offset[j],d.offset[j],2e-4);
+        for(std::size_t i=0;i<f.n;++i) if(x.status[j]==std::uint8_t(velocitypp::StochasticStatus::ok))
+            same &= close(velocity[i*f.g+j],f.u[i*f.g+j]-x.gamma[j]*f.s[i*f.g+j]-x.offset[j],2e-4);
+    }
+    expect(same,"float and double stochastic fits agree and second residual is optional");
+    std::vector<float> mixed(f.n*f.g,-42);
+    require_status(velocitypp::reference::stochastic_into(f.prepared,d.workspace,d.result,mixed.data(),mixed.size(),static_cast<float*>(nullptr),0,f.g,options()));
+    for(std::size_t i=0;i<mixed.size();++i) same &= close(mixed[i],velocity[i],2e-4);
+    expect(same,"double computation writes float output");
+    std::fill(mixed.begin(),mixed.end(),-42);
+    auto fail=velocitypp::reference::stochastic_into(f.prepared,d.workspace,d.result,mixed.data(),mixed.size()-1,static_cast<float*>(nullptr),0,f.g,options());
+    bool untouched=fail.code==velocitypp::Code::capacity;
+    for(float v:mixed) untouched &= v==-42;
+    expect(untouched,"insufficient residual capacity reports failure without output writes");
 }
 void ratio_bounds_recompute_intercept_and_zero_scale_falls_back() {
     Fixture f;
-    velocitypp::StochasticWorkspace workspace(f.prepared);
+    StochasticStorage<double> workspace(f.prepared);
     auto bound=options(); bound.initialization.ratio_max=1.;
-    auto result=velocitypp::reference::stochastic(f.prepared,workspace,bound);
-    auto gamma=dense_values(result.gamma), offset=dense_values(result.offset);
-    auto status=result.status.view().dense<std::uint8_t>();
+    auto& result=workspace.run(f.prepared,bound);
+    auto& gamma=workspace.gamma; auto& offset=workspace.offset; auto& status=workspace.status;
     bool ok=true;
     for(std::size_t j=0;j<f.g;++j) {
-        auto st=static_cast<velocitypp::StochasticStatus>(status.data()[j]);
+        auto st=static_cast<velocitypp::StochasticStatus>(status[j]);
         if(st==velocitypp::StochasticStatus::ok) {
             double mx=0,my=0;
             for(std::size_t i=0;i<f.n;++i) { auto k=i*f.g+j; mx+=f.s[k];my+=f.u[k]; }
@@ -204,65 +224,24 @@ void ratio_bounds_recompute_intercept_and_zero_scale_falls_back() {
     auto u=anndatapp::Array::borrow_dense(udata,{n,1},{1,1});
     auto w=anndatapp::Array::zeros<double>({n,n});
     auto* wp=w.edit().dense<double>().data(); for(std::size_t i=0;i<n;++i)wp[i*n+i]=1;
-    velocitypp::PreparedInput p({s.view(),u.view(),w.view()});
-    velocitypp::StochasticRunOptions ro; ro.second_residual=true;
-    velocitypp::StochasticWorkspace ws(p,ro);
-    auto velocity_out=anndatapp::Array::zeros<double>({n,1});
-    auto residual_out=anndatapp::Array::zeros<double>({n,1});
-    auto exact=velocitypp::reference::stochastic_into(p,ws,velocity_out.edit(),options(),residual_out.edit());
-    auto exact_status=exact.status.view().dense<std::uint8_t>();
-    auto exact_gamma=dense_values(exact.gamma),exact_offset=dense_values(exact.offset);
-    auto ev=dense_values(velocity_out),er=dense_values(residual_out);
-    bool fallback=static_cast<velocitypp::StochasticStatus>(exact_status.data()[0])==velocitypp::StochasticStatus::zero_scale&&
+    PreparedStorage ps(s.view(),u.view(),w.view()); auto& p=ps.value;
+    StochasticStorage<double> ws(p);
+    std::vector<double> ev(n),er(n);
+    require_status(velocitypp::reference::stochastic_into(p,ws.workspace,ws.result,ev.data(),ev.size(),er.data(),er.size(),1,options()));
+    auto& exact_status=ws.status; auto& exact_gamma=ws.gamma; auto& exact_offset=ws.offset;
+    bool fallback=static_cast<velocitypp::StochasticStatus>(exact_status[0])==velocitypp::StochasticStatus::zero_scale&&
         close(exact_gamma[0],2.)&&close(exact_offset[0],0.);
     for(double x:ev) fallback &= close(x,0.);
     for(double x:er) fallback &= close(x,0.);
     expect(fallback,"zero residual scale preserves deterministic parameters and zeroes second residual output");
 }
 
-template<class F> void expect_invalid(F&& f,const char* what) {
-    try { f(); expect(false,what); }
-    catch(const std::invalid_argument&) {}
-    catch(...) { expect(false,what); }
-}
-void public_buffers_reject_aliases_and_invalid_strides() {
+void validation_reports_nonfinite_input() {
     Fixture f;
-    double ms[8]{},mu[8]{},mss[8]{},mus[8]{},muu[8]{},ss[8]{},su[8]{};
-    expect_invalid([&] { velocitypp::reference::second_moments(f.prepared,0,1,
-        f.s.data(),mu,mss,mus,muu,ss,su); },
-        "second-moment output may not overwrite an expression input");
-    expect_invalid([&] { velocitypp::reference::second_moments(f.prepared,0,1,
-        ms,mu,mss,mus,muu,ms,su); },
-        "second-moment scratch may not overlap a requested output");
-
     auto old=f.s[0]; f.s[0]=std::numeric_limits<double>::quiet_NaN();
-    expect_invalid([&] { velocitypp::reference::second_moments(f.prepared,0,1,
-        ms,mu,mss,mus,muu,ss,su); },
-        "full validation catches borrowed input mutation before second-moment evaluation");
+    expect(velocitypp::validate(f.prepared.input).code==velocitypp::Code::nonfinite,
+           "explicit validation catches borrowed input mutation");
     f.s[0]=old;
-
-    double gamma=1,offset=0,offset2=0,scale=1,objective=0;
-    std::uint8_t status=std::uint8_t(velocitypp::StochasticStatus::ok);
-    velocitypp::StochasticFitBlock fit{0,1,&gamma,&offset,&offset2,&scale,&scale,&status,&objective};
-    double xs[8]{1,2,3,4,5,6,7,8},ys[8]{2,4,6,8,10,12,14,16},q[8]{},c[8]{};
-    velocitypp::StochasticMomentBlock m{0,1,8,1,xs,ys,q,c,nullptr};
-    auto alias=anndatapp::Array::borrow_dense(xs,{8,1},{1,1});
-    expect_invalid([&] { velocitypp::reference::stochastic_residuals(m,fit,alias.edit()); },
-        "stochastic residual output may not overwrite borrowed moment storage");
-    double shared[8]{};
-    auto first=anndatapp::Array::borrow_dense(shared,{8,1},{1,1});
-    auto second=anndatapp::Array::borrow_dense(shared,{8,1},{1,1});
-    expect_invalid([&] { velocitypp::reference::stochastic_residuals(m,fit,first.edit(),second.edit()); },
-        "stochastic velocity and second-residual outputs may not overlap");
-
-    double scratch[3]{};
-    auto init=velocitypp::GeneFit{1.,0.,.9,velocitypp::FitStatus::ok,true};
-    auto opt=options();
-    expect_invalid([&] { (void)velocitypp::reference::stochastic_fit_gene(nullptr,ys,q,c,3,1,init,{},opt,scratch); },
-        "public per-gene stochastic primitive rejects null numerical inputs");
-    auto too_wide=std::numeric_limits<std::ptrdiff_t>::max()/2+1;
-    expect_invalid([&] { (void)velocitypp::reference::stochastic_fit_gene(xs,ys,q,c,3,too_wide,init,{},opt,scratch); },
-        "public per-gene stochastic primitive rejects overflowing signed strides before reading");
 }
 
 void overflowed_primitive_stages_keep_finite_fallbacks() {
@@ -287,32 +266,56 @@ void overflowed_primitive_stages_keep_finite_fallbacks() {
 
 void scratch_does_not_scale_with_total_gene_count() {
     Fixture f;
-    velocitypp::Input small_in{f.sa.view(),f.ua.view(),f.wa.view()};
-    velocitypp::PreparedInput small(std::move(small_in));
-    velocitypp::Input large_in{f.sa.view(),f.ua.view(),f.wa.view()};
-    large_in.genes=anndatapp::Axis::gather({0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1});
-    velocitypp::PreparedInput large(std::move(large_in));
-    velocitypp::StochasticRunOptions run; run.block_genes=2;
-    velocitypp::StochasticWorkspace a(small,run), b(large,run);
-    expect(a.block_genes()==2&&b.block_genes()==2&&a.scratch_bytes()==b.scratch_bytes(),
+    PreparedStorage small(f.sa.view(),f.ua.view(),f.wa.view());
+    size_t genes[]{0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
+    PreparedStorage large(f.sa.view(),f.ua.view(),f.wa.view(),genes,20);
+    velocitypp::RunOptions run; run.block_genes=2;
+    StochasticStorage<double> a(small.value,run), b(large.value,run);
+    expect(a.workspace.block==2&&b.workspace.block==2&&a.workspace.scratch_bytes==b.workspace.scratch_bytes,
            "stochastic numerical scratch depends on rows and gene block, not full gene count");
 }
 
+void signed_and_broadcast_mask_strides() {
+    Fixture f;
+    std::uint8_t rows[]{1,1,1,1,1,1,1,0}, reversed[]{0,1,1,1,1,1,1,1};
+    PreparedStorage a(f.sa.view(),f.ua.view(),f.wa.view(),nullptr,0,rows);
+    PreparedStorage b(f.sa.view(),f.ua.view(),f.wa.view(),nullptr,0,reversed+7,nullptr,-1);
+    StochasticStorage<double> x(a.value),y(b.value); x.run(a.value,options()); y.run(b.value,options());
+    bool same=true;
+    for(size_t j=0;j<f.g;++j) same &= x.status[j]==y.status[j] && close(x.gamma[j],y.gamma[j]);
+    expect(same,"negative row-mask stride preserves logical fitting rows");
+
+    std::uint8_t one=1, gene_mask[]{1,0}, gene_reverse[]{0,1};
+    PreparedStorage c(f.sa.view(),f.ua.view(),f.wa.view(),nullptr,0,&one,gene_mask,0,1);
+    PreparedStorage d(f.sa.view(),f.ua.view(),f.wa.view(),nullptr,0,&one,gene_reverse+1,0,-1);
+    StochasticStorage<double> z(c.value),w(d.value); z.run(c.value,options()); w.run(d.value,options());
+    same=true;
+    for(size_t j=0;j<f.g;++j) same &= z.status[j]==w.status[j] && close(z.gamma[j],w.gamma[j]);
+    expect(same,"broadcast row mask and negative gene-mask stride preserve logical selection");
+    PreparedStorage e(f.sa.view(),f.ua.view(),f.wa.view(),nullptr,0,nullptr,&one,1,0);
+    StochasticStorage<double> all(e.value),unmasked(f.prepared); all.run(e.value,options()); unmasked.run(f.prepared,options());
+    same=true;
+    for(size_t j=0;j<f.g;++j) same &= all.status[j]==unmasked.status[j] && close(all.gamma[j],unmasked.gamma[j]);
+    expect(same,"broadcast gene mask selects every gene");
+
+    auto invalid=f.prepared.input; invalid.fit_mask=&one; invalid.fit_mask_stride=PTRDIFF_MAX;
+    expect(velocitypp::validate(invalid).code==velocitypp::Code::overflow,"row-mask stride overflow is rejected before reading");
+    double source[24]{}; auto matrix=anndatapp::Array::borrow_dense(source,{8,3},{3,1});
+    Acquired acquired(matrix.view()); invalid=f.prepared.input;
+    invalid.spliced=acquired.matrix; invalid.unspliced=acquired.matrix;
+    invalid.gene_mask=&one; invalid.gene_mask_stride=PTRDIFF_MAX;
+    expect(velocitypp::validate(invalid).code==velocitypp::Code::overflow,"gene-mask stride overflow is rejected before reading");
+}
 void masks_and_fallbacks_are_explicit() {
     Fixture f;
-    std::array<bool,8> rows{true,true,true,true,true,true,true,false};
-    auto mask=anndatapp::Array::borrow_dense(rows.data(),{f.n},{1});
-    velocitypp::Input in{f.sa.view(),f.ua.view(),f.wa.view()}; in.fit_mask=mask.view();
-    velocitypp::PreparedInput p(std::move(in));
-    velocitypp::StochasticWorkspace w(p);
-    auto result=velocitypp::reference::stochastic(p,w,options());
-    auto status=result.status.view().dense<std::uint8_t>();
-    auto scales1=dense_values(result.first_scale), scales2=dense_values(result.second_scale);
-    auto initial_gamma=dense_values(result.initialization.gamma);
-    auto initial_offset=dense_values(result.initialization.offset);
+    std::array<std::uint8_t,8> rows{true,true,true,true,true,true,true,false};
+    PreparedStorage ps(f.sa.view(),f.ua.view(),f.wa.view(),nullptr,0,rows.data()); auto& p=ps.value;
+    StochasticStorage<double> w(p); w.run(p,options());
+    auto& status=w.status; auto& scales1=w.first; auto& scales2=w.second;
+    auto& initial_gamma=w.ig; auto& initial_offset=w.io;
     bool ok=true;
     for(std::size_t j=0;j<f.g;++j) {
-        auto st=static_cast<velocitypp::StochasticStatus>(status.data()[j]);
+        auto st=static_cast<velocitypp::StochasticStatus>(status[j]);
         double mean1=0,mean2=0, gamma2=0, xx=0, xy=0;
         for(std::size_t i=0;i<7;++i) {
             auto k=i*f.g+j;
@@ -339,42 +342,35 @@ void masks_and_fallbacks_are_explicit() {
     }
     expect(ok,"fit-row mask controls both population residual scales (ddof zero)");
 
-    std::array<bool,2> genes{false,false};
-    auto gene_mask=anndatapp::Array::borrow_dense(genes.data(),{f.g},{1});
-    velocitypp::Input none{f.sa.view(),f.ua.view(),f.wa.view()}; none.gene_mask=gene_mask.view();
-    velocitypp::PreparedInput pn(std::move(none)); velocitypp::StochasticWorkspace wn(pn);
-    auto retained=velocitypp::reference::stochastic(pn,wn,options());
-    auto st=retained.status.view().dense<std::uint8_t>();
-    auto sg=retained.gamma.view().dense<double>();
-    auto retained_gamma=dense_values(retained.initialization.gamma);
+    std::array<std::uint8_t,2> genes{false,false};
+    PreparedStorage psn(f.sa.view(),f.ua.view(),f.wa.view(),nullptr,0,nullptr,genes.data()); auto& pn=psn.value; StochasticStorage<double> wn(pn);
+    auto& retained=wn.run(pn,options());
     bool none_ok=!retained.refit_all;
-    for(std::size_t j=0;j<f.g;++j) none_ok &= static_cast<velocitypp::StochasticStatus>(st.data()[j])==velocitypp::StochasticStatus::not_selected&&close(sg.data()[j],retained_gamma[j]);
+    for(std::size_t j=0;j<f.g;++j) none_ok &= static_cast<velocitypp::StochasticStatus>(wn.status[j])==velocitypp::StochasticStatus::not_selected&&close(wn.gamma[j],wn.ig[j]);
     expect(none_ok,"no selected genes retain deterministic diagnostics by default");
     auto refit=options(); refit.refit_all_if_none=true;
-    auto all=velocitypp::reference::stochastic(pn,wn,refit);
-    expect(all.refit_all,"explicit option reports scVelo refit-all fallback when no genes pass selection");
+    expect(wn.run(pn,refit).refit_all,"explicit option reports refit-all fallback");
 
     auto threshold=options(); threshold.initialization.min_r2=2.;
-    velocitypp::StochasticWorkspace wt(f.prepared);
-    auto kept_all=velocitypp::reference::stochastic(f.prepared,wt,threshold);
+    StochasticStorage<double> wt(f.prepared);
+    bool kept=wt.run(f.prepared,threshold).refit_all;
     auto attempted=threshold; attempted.refit_all_if_none=true;
-    auto refined=velocitypp::reference::stochastic(f.prepared,wt,attempted);
-    auto refined_status=refined.status.view().dense<std::uint8_t>();
-    bool tried=refined.refit_all;
-    for(std::size_t j=0;j<f.g;++j)
-        tried &= static_cast<velocitypp::StochasticStatus>(refined_status.data()[j])!=velocitypp::StochasticStatus::not_selected;
+    bool tried=wt.run(f.prepared,attempted).refit_all;
+    for(std::size_t j=0;j<f.g;++j) tried &= static_cast<velocitypp::StochasticStatus>(wt.status[j])!=velocitypp::StochasticStatus::not_selected;
     expect(tried,"refit-all option attempts valid genes after deterministic selection thresholds reject every gene");
-    expect(!kept_all.refit_all,"default no-selection path does not silently refit all genes");
+    expect(!kept,"default no-selection path does not silently refit all genes");
 }
 }
 int main() {
     sparse_moments_coalesce_expression_duplicates();
     dense_csr_csc_and_signed_stride_match();
     stochastic_path_and_outputs();
+    typed_workspace_and_optional_residual();
     ratio_bounds_recompute_intercept_and_zero_scale_falls_back();
-    public_buffers_reject_aliases_and_invalid_strides();
+    validation_reports_nonfinite_input();
     overflowed_primitive_stages_keep_finite_fallbacks();
     scratch_does_not_scale_with_total_gene_count();
+    signed_and_broadcast_mask_strides();
     masks_and_fallbacks_are_explicit();
     if(!failures) std::cout<<"stochastic tests passed\n";
     return failures?1:0;

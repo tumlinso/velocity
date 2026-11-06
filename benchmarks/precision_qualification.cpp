@@ -22,6 +22,7 @@
 #include <vector>
 
 import velocitypp;
+#include "support.hh"
 
 namespace {
 constinit std::atomic<bool> count_allocations{false};
@@ -274,34 +275,6 @@ struct OwnedArray {
     std::size_t bytes = 0;
 };
 
-std::size_t scalar_bytes(anndatapp::DType type) {
-    switch (type) {
-    case anndatapp::DType::boolean: case anndatapp::DType::int8: case anndatapp::DType::uint8: return 1;
-    case anndatapp::DType::int16: case anndatapp::DType::uint16: return 2;
-    case anndatapp::DType::int32: case anndatapp::DType::uint32: case anndatapp::DType::float32: return 4;
-    case anndatapp::DType::int64: case anndatapp::DType::uint64: case anndatapp::DType::float64: return 8;
-    }
-    throw std::runtime_error("unsupported output dtype");
-}
-
-std::size_t array_bytes(const anndatapp::Array& a) {
-    std::size_t count = 1;
-    for (std::size_t i = 0; i < a.rank(); ++i) {
-        if (a.extent(i) && count > std::numeric_limits<std::size_t>::max()/a.extent(i))
-            throw std::runtime_error("array extent product overflows");
-        count *= a.extent(i);
-    }
-    return count*scalar_bytes(a.dtype());
-}
-
-std::size_t fit_result_bytes(const velocitypp::StochasticFitResult& fit) {
-    const auto& init = fit.initialization;
-    return array_bytes(init.gamma) + array_bytes(init.offset) + array_bytes(init.r2)
-        + array_bytes(init.genes) + array_bytes(init.status) + array_bytes(fit.gamma)
-        + array_bytes(fit.offset) + array_bytes(fit.offset2) + array_bytes(fit.first_scale)
-        + array_bytes(fit.second_scale) + array_bytes(fit.status) + array_bytes(fit.objective);
-}
-
 struct Checksum {
     std::uint64_t values = 0;
     double sum = 0, absolute_sum = 0;
@@ -316,42 +289,45 @@ struct Checksum {
     }
 };
 
-template<class T> void checksum_add(Checksum& checksum, T value) { checksum.add(value); }
-
-template<class T>
-void checksum_values(Checksum& checksum, const T* data, std::size_t rows, std::size_t columns,
-                     std::ptrdiff_t row_stride, std::ptrdiff_t column_stride) {
-    for (std::size_t i = 0; i < rows; ++i)
-        for (std::size_t j = 0; j < columns; ++j)
-            checksum_add(checksum, data[std::ptrdiff_t(i)*row_stride + std::ptrdiff_t(j)*column_stride]);
-}
-
-void checksum_block(Checksum& checksum, const anndatapp::ArrayView& output,
-                    std::size_t count, std::size_t rows) {
-    if (output.layout() != anndatapp::Layout::dense || output.rank() != 2
-        || output.extent(0) != rows || output.extent(1) != count)
-        throw std::runtime_error("velocity sink received an unexpected output view");
-    if (output.dtype() == anndatapp::DType::float32) {
-        const auto view = output.dense<float>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else if (output.dtype() == anndatapp::DType::float64) {
-        const auto view = output.dense<double>();
-        checksum_values(checksum, view.data(), rows, count, view.stride(0), view.stride(1));
-    } else throw std::runtime_error("velocity sink dtype must be float32 or float64");
-}
-
-struct SinkState {
+template<class T, class O> struct SinkState {
     Checksum velocity, second_residual;
     std::size_t next_gene = 0, rows = 0;
+    std::vector<O>* velocity_output = nullptr;
+    std::vector<O>* second_output = nullptr;
 };
 
-void stream_sink(void* context, const velocitypp::StochasticOutputBlock& block) {
-    auto& state = *static_cast<SinkState*>(context);
-    if (block.first != state.next_gene || !block.count)
-        throw std::runtime_error("velocity sink blocks are not contiguous");
-    checksum_block(state.velocity, block.velocity, block.count, state.rows);
-    checksum_block(state.second_residual, block.second_residual, block.count, state.rows);
-    state.next_gene += block.count;
+template<class O>
+void checksum_block(Checksum& checksum, const O* output, std::size_t rows, std::size_t columns) {
+    for (std::size_t i = 0; i < rows; ++i)
+        for (std::size_t j = 0; j < columns; ++j)
+            checksum.add(output[i * columns + j]);
+}
+
+template<class T, class O>
+void steady_sink(void* context, const velocitypp::BasicMomentBlock<T>& moments,
+                 const velocitypp::BasicFitBlock<T>& fit) {
+    auto& state = *static_cast<SinkState<T, O>*>(context);
+    if (moments.first != state.next_gene || !moments.count || moments.rows != state.rows
+        || fit.first != moments.first || fit.count != moments.count)
+        throw std::runtime_error("steady-state sink blocks are not contiguous or compatible");
+    velocitypp::reference::residuals(moments, fit, state.velocity_output->data(),
+        std::ptrdiff_t(moments.count));
+    checksum_block(state.velocity, state.velocity_output->data(), moments.rows, moments.count);
+    state.next_gene += moments.count;
+}
+
+template<class T, class O>
+void stochastic_sink(void* context, const velocitypp::BasicStochasticMomentBlock<T>& moments,
+                     const velocitypp::BasicStochasticFitBlock<T>& fit) {
+    auto& state = *static_cast<SinkState<T, O>*>(context);
+    if (moments.first != state.next_gene || !moments.count || moments.rows != state.rows
+        || fit.first != moments.first || fit.count != moments.count)
+        throw std::runtime_error("stochastic sink blocks are not contiguous or compatible");
+    velocitypp::reference::stochastic_residuals(moments, fit, state.velocity_output->data(),
+        state.second_output->data(), std::ptrdiff_t(moments.count));
+    checksum_block(state.velocity, state.velocity_output->data(), moments.rows, moments.count);
+    checksum_block(state.second_residual, state.second_output->data(), moments.rows, moments.count);
+    state.next_gene += moments.count;
 }
 
 struct Memory { std::uint64_t rss = 0, hwm = 0; };
@@ -450,80 +426,103 @@ Config parse_args(int argc, char** argv) {
         throw std::runtime_error("invalid configuration");
     return c;
 }
-void steady_sink(void* p, const velocitypp::OutputBlock& block) {
-    auto& state=*static_cast<SinkState*>(p);
-    if (block.first!=state.next_gene || !block.count) throw std::runtime_error("bad block order");
-    checksum_block(state.velocity,block.velocity,block.count,state.rows);
-    state.next_gene+=block.count;
-}
-std::size_t fit_result_bytes(const velocitypp::FitResult& x) {
-    return array_bytes(x.gamma)+array_bytes(x.offset)+array_bytes(x.r2)+array_bytes(x.genes)+array_bytes(x.status);
-}
-int run(const Config& c) {
-    auto t0=Clock::now(); auto before=memory();
-    count_allocations.store(true,std::memory_order_relaxed);
-    auto fixture=load_fixture(c.input); auto tload=Clock::now(); auto loaded=memory();
-    auto n=fixture.spliced->rows, g=fixture.spliced->columns;
-    auto ef=parse_expression_format(c.expression), gf=parse_graph_format(c.graph);
-    check_probe_bound(fixture,ef,n,g);
-    auto convert_array = [&](const auto& src, Format f) {
-        if (c.profile=="fp64") return typed_array<double>(src,f);
-        return typed_array<float>(src,f);
-    };
-    auto s=convert_array(fixture.spliced,ef), u=convert_array(fixture.unspliced,ef);
-    auto w=convert_array(fixture.weights,gf);
-    auto file_bytes=fixture.file_bytes;
-    fixture.spliced.reset();fixture.unspliced.reset();fixture.weights.reset();
-    auto tpack=Clock::now();
-    velocitypp::PreparedInput prepared({s.view,u.view,w.view},anndatapp::Validation::none);
-    auto precision=(c.profile=="fp64" || c.profile=="legacy") ? velocitypp::ComputePrecision::float64 : velocitypp::ComputePrecision::float32;
-    auto dtype=c.profile=="fp64" ? anndatapp::DType::float64 : anndatapp::DType::float32;
-    auto tprep=Clock::now();
-    velocitypp::FitOptions options; options.min_r2=-100; options.min_ratio=-100;
-    SinkState sink{{},{},0,n};
-    std::size_t scratch=0, result_bytes=0, selected=0; std::size_t statuses[7]{};
-    auto tcompute=tprep;
-    if (c.method=="steady") {
-        velocitypp::RunOptions ro; ro.workspace_bytes=max_workspace_bytes;ro.block_genes=c.block;ro.compute_precision=precision;ro.output_dtype=dtype;
-        velocitypp::Workspace workspace(prepared,ro);scratch=workspace.scratch_bytes();tcompute=Clock::now();
-        auto result=c.backend=="scalar" ? velocitypp::reference::steady_state(prepared,workspace,options,{&sink,steady_sink})
-            : velocitypp::cpu::steady_state(prepared,workspace,options,{&sink,steady_sink});
-        result_bytes=fit_result_bytes(result);
-        auto genes=result.genes.view().dense<bool>();
-        for (std::size_t j=0;j<g;++j) selected+=genes.data()[std::ptrdiff_t(j)*genes.stride(0)];
+template<class T, class O>
+int run_typed(const Config& c, const OwnedArray& s, const OwnedArray& u, const OwnedArray& w,
+              std::uint64_t file_bytes, std::size_t n, std::size_t g,
+              Clock::time_point t0, Memory before, Clock::time_point tload,
+              Memory loaded, Clock::time_point tpack) {
+    velocity_benchmark::Acquired s_input(s.view), u_input(u.view), w_input(w.view);
+    velocitypp::Input input{s_input.matrix, u_input.matrix, w_input.matrix};
+    velocity_benchmark::PreparedStorage prepared(input);
+    const auto tprep = Clock::now();
+    velocitypp::FitOptions options; options.min_r2 = -100; options.min_ratio = -100;
+    velocitypp::RunOptions run_options;
+    run_options.workspace_bytes = max_workspace_bytes;
+    run_options.block_genes = c.block;
+    const bool stochastic = c.method == "stochastic";
+    velocity_benchmark::fit_workspace_budget<T, O>(prepared.input, run_options, stochastic,
+        stochastic ? 2 : 1);
+    velocity_benchmark::WorkspaceStorage<T> workspace(prepared.input, run_options, stochastic);
+    const auto block_elements = checked_size(mul_bytes(n, workspace.size.block), "sink output count");
+    std::vector<O> velocity_output, second_output;
+    velocity_output.resize(block_elements);
+    if (stochastic) second_output.resize(block_elements);
+    const auto scratch_bytes = workspace.bytes()
+        + velocity_output.capacity() * sizeof(O) + second_output.capacity() * sizeof(O);
+    if (scratch_bytes > max_workspace_bytes)
+        throw std::runtime_error("allocated workspace and output blocks exceed 64-MiB limit");
+    const auto tcompute = Clock::now();
+    SinkState<T, O> sink{{}, {}, 0, n, &velocity_output, stochastic ? &second_output : nullptr};
+    std::size_t result_bytes = 0, selected = 0;
+    std::size_t statuses[7]{};
+    std::optional<velocity_benchmark::FitStorage<T>> steady_result;
+    std::optional<velocity_benchmark::StochasticFitStorage<T>> stochastic_result;
+    if (!stochastic) {
+        steady_result.emplace(g);
+        auto result = steady_result->result();
+        velocitypp::BasicBlockSink<T> callback{&sink, steady_sink<T, O>};
+        const auto status = c.backend == "scalar"
+            ? velocitypp::reference::steady_state(prepared.input, workspace.workspace, result, options, callback)
+            : velocitypp::cpu::steady_state(prepared.input, workspace.workspace, result, options, callback);
+        velocity_benchmark::require(status, "velocitypp steady-state run");
+        result_bytes = steady_result->bytes();
+        for (std::size_t j = 0; j < g; ++j) selected += steady_result->genes[j];
     } else {
-        velocitypp::StochasticRunOptions ro;ro.workspace_bytes=max_workspace_bytes;ro.block_genes=c.block;ro.compute_precision=precision;ro.output_dtype=dtype;ro.second_residual=true;
-        velocitypp::StochasticWorkspace workspace(prepared,ro);scratch=workspace.scratch_bytes();tcompute=Clock::now();
-        velocitypp::StochasticOptions so;so.initialization=options;
-        auto result=c.backend=="scalar" ? velocitypp::reference::stochastic(prepared,workspace,so,{&sink,stream_sink})
-            : velocitypp::cpu::stochastic(prepared,workspace,so,{&sink,stream_sink});
-        result_bytes=fit_result_bytes(result);
-        auto genes=result.initialization.genes.view().dense<bool>();
-        auto status=result.status.view().dense<std::uint8_t>();
-        for (std::size_t j=0;j<g;++j) {
-            selected+=genes.data()[std::ptrdiff_t(j)*genes.stride(0)];
-            auto v=status.data()[std::ptrdiff_t(j)*status.stride(0)];
-            if (v<7) ++statuses[v];
+        stochastic_result.emplace(g);
+        auto result = stochastic_result->result();
+        velocitypp::StochasticOptions stochastic_options;
+        stochastic_options.initialization = options;
+        velocitypp::BasicStochasticBlockSink<T> callback{&sink, stochastic_sink<T, O>};
+        const auto status = c.backend == "scalar"
+            ? velocitypp::reference::stochastic(prepared.input, workspace.workspace, result, stochastic_options, callback)
+            : velocitypp::cpu::stochastic(prepared.input, workspace.workspace, result, stochastic_options, callback);
+        velocity_benchmark::require(status, "velocitypp stochastic run");
+        result_bytes = stochastic_result->bytes();
+        for (std::size_t j = 0; j < g; ++j) {
+            selected += stochastic_result->initialization.genes[j];
+            const auto code = stochastic_result->status[j];
+            if (code < 7) ++statuses[code];
         }
     }
-    auto tend=Clock::now();count_allocations.store(false,std::memory_order_relaxed);
-    auto alloc=allocation_stats(); auto after=memory();
-    if (sink.next_gene!=g || sink.velocity.values!=n*g || !sink.velocity.finite
-        || (c.method=="stochastic" && (sink.second_residual.values!=n*g || !sink.second_residual.finite)))
+    const auto tend = Clock::now();
+    count_allocations.store(false, std::memory_order_relaxed);
+    const auto alloc = allocation_stats();
+    const auto after = memory();
+    if (sink.next_gene != g || sink.velocity.values != n*g || !sink.velocity.finite
+        || (stochastic && (sink.second_residual.values != n*g || !sink.second_residual.finite)))
         throw std::runtime_error("invalid sink output");
-    std::cout<<std::setprecision(17)<<"{\"schema\":\"velocity.precision-cpu.v1\",\"profile\":\""<<c.profile
-        <<"\",\"backend\":\""<<c.backend<<"\",\"method\":\""<<c.method<<"\",\"expression\":\""<<c.expression
-        <<"\",\"graph\":\""<<c.graph<<"\",\"shape\":["<<n<<","<<g<<"],\"block_genes\":"<<c.block
-        <<",\"input_file_bytes\":"<<file_bytes<<",\"input_storage_bytes\":"<<s.bytes+u.bytes+w.bytes
-        <<",\"selected_genes\":"<<selected<<",\"stochastic_status_counts\":["<<statuses[0]<<","<<statuses[1]<<","<<statuses[2]<<","<<statuses[3]<<","<<statuses[4]<<","<<statuses[5]<<","<<statuses[6]<<"]"
-        <<",\"prepared_bytes\":"<<prepared.storage_bytes()<<",\"scratch_bytes\":"<<scratch<<",\"result_bytes\":"<<result_bytes
-        <<",\"global_new_calls\":"<<alloc.calls<<",\"global_new_requested_bytes\":"<<alloc.bytes
-        <<",\"process_peak_bytes\":"<<after.hwm<<",\"rss_before_bytes\":"<<before.rss<<",\"rss_loaded_bytes\":"<<loaded.rss
-        <<",\"incremental_peak_from_loaded_bytes\":"<<(after.hwm>loaded.rss?after.hwm-loaded.rss:0)
-        <<",\"load_s\":"<<seconds(t0,tload)<<",\"packing_s\":"<<seconds(tload,tpack)<<",\"prepare_s\":"<<seconds(tpack,tprep)
-        <<",\"workspace_s\":"<<seconds(tprep,tcompute)<<",\"execute_sink_s\":"<<seconds(tcompute,tend)<<",\"end_to_end_s\":"<<seconds(t0,tend)
-        <<",\"velocity_checksum\":"<<sink.velocity.sum<<",\"second_residual_checksum\":"<<sink.second_residual.sum<<",\"finite\":true}\n";
+    const auto prepared_bytes = prepared.bytes();
+    std::cout << std::setprecision(17) << "{\"schema\":\"velocity.precision-cpu.v1\",\"profile\":\"" << c.profile
+        << "\",\"backend\":\"" << c.backend << "\",\"method\":\"" << c.method << "\",\"expression\":\"" << c.expression
+        << "\",\"graph\":\"" << c.graph << "\",\"shape\":[" << n << "," << g << "],\"block_genes\":" << c.block
+        << ",\"input_file_bytes\":" << file_bytes << ",\"input_storage_bytes\":" << s.bytes+u.bytes+w.bytes
+        << ",\"selected_genes\":" << selected << ",\"stochastic_status_counts\":[" << statuses[0] << "," << statuses[1] << "," << statuses[2] << "," << statuses[3] << "," << statuses[4] << "," << statuses[5] << "," << statuses[6] << "]"
+        << ",\"prepared_bytes\":" << prepared_bytes << ",\"scratch_bytes\":" << scratch_bytes << ",\"result_bytes\":" << result_bytes
+        << ",\"global_new_calls\":" << alloc.calls << ",\"global_new_requested_bytes\":" << alloc.bytes
+        << ",\"process_peak_bytes\":" << after.hwm << ",\"rss_before_bytes\":" << before.rss << ",\"rss_loaded_bytes\":" << loaded.rss
+        << ",\"incremental_peak_from_loaded_bytes\":" << (after.hwm>loaded.rss?after.hwm-loaded.rss:0)
+        << ",\"load_s\":" << seconds(t0,tload) << ",\"packing_s\":" << seconds(tload,tpack) << ",\"prepare_s\":" << seconds(tpack,tprep)
+        << ",\"workspace_s\":" << seconds(tprep,tcompute) << ",\"execute_sink_s\":" << seconds(tcompute,tend) << ",\"end_to_end_s\":" << seconds(t0,tend)
+        << ",\"velocity_checksum\":" << sink.velocity.sum << ",\"second_residual_checksum\":" << sink.second_residual.sum << ",\"finite\":true}\n";
     return 0;
+}
+
+int run(const Config& c) {
+    const auto t0 = Clock::now(); const auto before = memory();
+    count_allocations.store(true, std::memory_order_relaxed);
+    auto fixture = load_fixture(c.input); const auto tload = Clock::now(); const auto loaded = memory();
+    const auto n = fixture.spliced->rows, g = fixture.spliced->columns;
+    const auto ef = parse_expression_format(c.expression), gf = parse_graph_format(c.graph);
+    check_probe_bound(fixture, ef, n, g);
+    const auto file_bytes = fixture.file_bytes;
+    auto s = c.profile == "fp64" ? typed_array<double>(fixture.spliced, ef) : typed_array<float>(fixture.spliced, ef);
+    auto u = c.profile == "fp64" ? typed_array<double>(fixture.unspliced, ef) : typed_array<float>(fixture.unspliced, ef);
+    auto w = c.profile == "fp64" ? typed_array<double>(fixture.weights, gf) : typed_array<float>(fixture.weights, gf);
+    fixture.spliced.reset(); fixture.unspliced.reset(); fixture.weights.reset();
+    const auto tpack = Clock::now();
+    if (c.profile == "fp32") return run_typed<float, float>(c,s,u,w,file_bytes,n,g,t0,before,tload,loaded,tpack);
+    if (c.profile == "fp64") return run_typed<double, double>(c,s,u,w,file_bytes,n,g,t0,before,tload,loaded,tpack);
+    return run_typed<double, float>(c,s,u,w,file_bytes,n,g,t0,before,tload,loaded,tpack);
 }
 }
 int main(int argc,char** argv) { try { return run(parse_args(argc,argv)); } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 2; } }

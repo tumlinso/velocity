@@ -1,6 +1,22 @@
 # Numerical validation and efficiency evidence
 
-## Current Velocity++ direct-view source checks (2026-11-06)
+## Allocation-free caller-storage refactor checks (2026-11-06)
+
+The standalone Debug build with qualification enabled compiled all seven
+qualification/benchmark drivers, including the precision interop driver.
+The complete native CTest suite passed 14/14, including installed consumers,
+three examples, static/runtime foreign-layout replacement, precision promotion,
+and the allocation instrumentation suite. The Linux/glibc allocation test
+intercepts public malloc/calloc/realloc/free, aligned allocation and C++
+new/delete, with an interception self-check over fresh/repeated reference phases,
+empty inputs and capacity errors. Private allocators and direct mmap are outside
+that interception coverage. It is skipped on non-glibc and sanitizer builds.
+
+The paired current-source scientific campaign is recorded by ccell under
+`build/refactor/current`; historical JSON receipts below remain unchanged.
+No new GPU or performance claim follows from these native checks.
+
+## Earlier direct-view source checks (2026-11-06)
 
 Fresh Debug and ASan/UBSan builds each passed the full native CTest suite:
 12/12 tests, including the installed consumer. Seven qualification driver

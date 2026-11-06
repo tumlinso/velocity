@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <cstdio>
 import velocitypp;
+#include "stochastic_support.hh"
 void check(bool x) { if(!x) throw std::runtime_error("stochastic customization check failed"); }
 struct Token {std::size_t first,count;};
 struct Opaque {
@@ -52,38 +53,37 @@ struct Custom {
     velocitypp::StochasticFitResult finish(){return ref.finish();}
 };
 struct Collector {int blocks=0;std::size_t values=0;};
-void collect(void* p,const velocitypp::StochasticOutputBlock& b){
+void collect(void* p,const velocitypp::StochasticMomentBlock& m,const velocitypp::StochasticFitBlock& f){
     auto& c=*static_cast<Collector*>(p);++c.blocks;
-    auto v=b.velocity.dense<double>();
-    for(std::size_t i=0;i<v.extent(0);++i)for(std::size_t j=0;j<v.extent(1);++j)
-        check(std::abs(v.data()[std::ptrdiff_t(i)*v.stride(0)+std::ptrdiff_t(j)*v.stride(1)]-3*double(i+1))<1e-12);
-    c.values+=b.count;
+    for(std::size_t i=0;i<m.rows;++i)for(std::size_t j=0;j<m.count;++j)
+        check(std::abs(m.unspliced[i*m.stride+j]-f.gamma[j]*m.spliced[i*m.stride+j]-3*double(i+1))<1e-12);
+    c.values+=m.count;
 }
 int main(){try{
     Opaque opaque;check(velocitypp::stochastic_with(opaque,5,2)==5 && opaque.init==3 && opaque.blocks==3);
     auto s=anndatapp::Array::empty<double>({5,5}),u=anndatapp::Array::empty<double>({5,5}),w=anndatapp::Array::zeros<double>({5,5});
     for(int i=0;i<5;++i){w.edit().dense<double>().data()[6*i]=1;for(int j=0;j<5;++j){s.edit().dense<double>().data()[5*i+j]=i+1;u.edit().dense<double>().data()[5*i+j]=2*(i+1)+.1*(i%2);}}
-    velocitypp::PreparedInput input({s.view(),u.view(),w.view()});
-    velocitypp::StochasticRunOptions run;run.block_genes=2;run.output_dtype=anndatapp::DType::float64;
-    velocitypp::StochasticWorkspace workspace(input,run);Collector collector;
-    Custom custom{velocitypp::StochasticReferenceStages(input,workspace,{}, {&collector,collect})};
-    auto replaced=velocitypp::stochastic_with(custom,input.n_genes(),workspace.block_genes());
+    PreparedStorage storage(s.view(),u.view(),w.view()); auto& input=storage.value;
+    velocitypp::RunOptions run;run.block_genes=2;
+    StochasticStorage<double> workspace(input,run);Collector collector;
+    Custom custom{}; require_status(velocitypp::bind_stages(input,workspace.workspace,{},workspace.result,custom.ref,{&collector,collect}));
+    auto replaced=velocitypp::stochastic_with(custom,input.genes,workspace.workspace.block);
     check(custom.replaced==3 && collector.blocks==3 && collector.values==5);
-    for(int j=0;j<5;++j)check(replaced.gamma.view().dense<double>().data()[j]==3);
+    for(int j=0;j<5;++j)check(replaced.gamma[j]==3);
     for(int mode=0;mode<3;++mode){
         velocitypp::StochasticOptions opts;
         // The custom fit consumes real reference second moments even though
         // built-in initialization rejects every gene for refinement.
         if(mode==2) opts.initialization.min_r2=2;
-        Custom part{velocitypp::StochasticReferenceStages(input,workspace,opts)};part.mode=mode;
-        auto result=velocitypp::stochastic_with(part,input.n_genes(),workspace.block_genes());
+        Custom part{}; require_status(velocitypp::bind_stages(input,workspace.workspace,opts,workspace.result,part.ref)); part.mode=mode;
+        auto result=velocitypp::stochastic_with(part,input.genes,workspace.workspace.block);
         check((mode!=0 || part.replaced==3) && (mode!=1 || part.scale_calls==3) && (mode!=2 || part.fit_calls==3));
         if(mode==2)for(int j=0;j<5;++j){
-            check(!result.initialization.genes.view().dense<bool>().data()[j]);
-            check(result.gamma.view().dense<double>().data()[j]==3);
+            check(!result.initialization.genes[j]);
+            check(result.gamma[j]==3);
         }
     }
-    auto baseline=velocitypp::reference::stochastic(input,workspace);
-    for(int j=0;j<5;++j)check(std::abs(baseline.gamma.view().dense<double>().data()[j]-3)>.1);
+    auto baseline=workspace.run(input);
+    for(int j=0;j<5;++j)check(std::abs(baseline.gamma[j]-3)>.1);
     std::puts("stochastic opaque stages, multiblock padded custom values, explicit reference passed");
 }catch(const std::exception& e){std::fprintf(stderr,"%s\n",e.what());return 1;}}

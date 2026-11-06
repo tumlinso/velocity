@@ -161,7 +161,7 @@ def compare(ref, got):
 
 def qualify(driver, output=None, artifacts=None):
     ns = source_namespace()
-    scratch = artifacts or ROOT / 'tests/artifacts'
+    scratch = artifacts or ROOT / 'build/qualification/deterministic-artifacts'
     scratch.mkdir(parents=True, exist_ok=True)
     report = dict(source_commit=SOURCE_COMMIT, source_hashes=SOURCE_HASHES,
                   native_driver_sha256=hashlib.sha256(driver.read_bytes()).hexdigest(),
@@ -211,7 +211,7 @@ def qualify(driver, output=None, artifacts=None):
                                 gamma=degenerate['gamma'].tolist(), r2=degenerate['r2'].tolist(),
                                 selected=degenerate['selected'].tolist(), finite=finite)
     report['pass_all'] = all(x['pass_all'] for x in report['cases']) and degenerate_pass
-    output = output or ROOT / 'tests/results/milestone-1.json'
+    output = output or ROOT / 'build/qualification/deterministic.json'
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report, indent=2))

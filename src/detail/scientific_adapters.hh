@@ -16,7 +16,4 @@ template<class T> scientific::Fit<T> numeric_fit(const BasicGeneFit<T>& f) {
 template<class T> scientific::Scales<T> numeric_scales(const BasicStochasticScales<T>& f) {
     return {f.first, f.second, scientific::StochasticStatus(f.status)};
 }
-struct StandardSort {
-    template<class T> void operator()(T* p, std::size_t n) const { std::sort(p, p + n); }
-};
 }

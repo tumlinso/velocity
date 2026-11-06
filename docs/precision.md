@@ -1,84 +1,84 @@
 # Precision and selected originals
 
-`import velocitypp.precision;` provides an optional advisory sensitivity
-report and stage compositions that acquire explicitly selected original gene
-columns. The standalone package stores expression and graph arrays as FP32 or
-FP64 AnnData++ arrays. `anndatapp::ArrayView`, `ArrayEdit`, and `DType` are used
-directly.
+`import velocitypp.precision;` provides advisory sensitivity calculations and
+explicit selective use of original expression columns. Reference routines use
+caller-owned buffers and allocate nothing. The caller acquires AnnData++ views,
+allocates outputs and scratch, and retains their storage before execution.
+Compute precision is explicit through the selected FP32 or FP64 workspace and
+function overload; it does not change source array storage precision.
 
-The default `ComputePrecision::automatic` resolves to FP64 for supported
-FP32/FP64 inputs. Set `compute_precision` explicitly to use FP32. Storage and
-computation precision remain separate choices; selecting a compute precision
-does not change source array dtypes. Unless `RunOptions::output_dtype` is
-explicitly set, FP32 computation produces FP32 output. FP64 computation uses
-the widest spliced/unspliced input dtype, with FP32 as the minimum, so output
-is FP64 when either expression input is FP64 and FP32 otherwise.
-
-Ordinary `reference::steady_state` and `reference::stochastic` do not inspect
-original sources or run screening. The sensitivity report is advisory and does
-not request source acquisition or promotion.
+Reference deterministic and stochastic calculations do not screen or promote
+sources automatically. Sensitivity is an advisory result; the caller chooses
+whether to request original data and how to use the result.
 
 ## Sensitivity to trimming thresholds
 
-`sensitivity_gene` accepts an existing initialization fit, the corresponding
-spliced/unspliced moment columns, and caller-owned rows-element score scratch.
-It uses the fit-row mask during trimming and regression and all rows for
-prediction and residual norms, as the existing R² does. The report recomputes
-only two stress fits after sorting scores once.
+`sensitivity_gene` takes an existing per-gene initialization fit, its spliced
+and unspliced moment columns, signed element stride, fit options, optional fit
+mask, and caller-owned score scratch. With trimming enabled, scratch has at
+least `rows` elements and is disjoint from the input columns. The fit mask
+controls trimming and regression; prediction and residual norms use all rows.
+A report recomputes two stress fits after sorting the scores.
 
-Defaults use a cutoff band of
-`0.5 * 2^-11 * max(1, abs(active cutoffs))` and flag a changed status or
-selection, an absolute R² change over 0.05, or a prediction change over 10% of
-baseline residual L2. The denominator floor is
-`32 * epsilon_compute * max(response L2, baseline_prediction L2)`. Thresholds
-are configurable. With trimming disabled, no stress fits run; a degenerate
-baseline is explicitly unscoreable. This measures susceptibility to changed
-trimming bounds; it is not an error bound or an automatic promotion decision.
+The default cutoff band is
+`0.5 * 2^-11 * max(1, abs(active cutoffs))`. The report flags status or
+selection changes, absolute R² change over 0.05, or prediction change over 10%
+of the baseline residual L2 norm. The denominator floor is
+`32 * epsilon_compute * max(response L2, baseline prediction L2)`. The caller
+may change these values. When trimming is disabled, no stress fits run; a
+degenerate baseline is unscoreable. This report measures sensitivity to
+trimming bounds, not an error bound or an automatic promotion decision.
 
-For bounded CPU screening, `SensitivityWorkspace32` allocates score storage
-only after verifying that the score buffer, bound stage workspace, and declared
-source staging fit the numeric budget. Use `SensitivityWorkspace` with FP64
-computation. A manually supplied score buffer must be accounted for by the
-caller. Report arrays are caller-owned and counted separately as O(genes)
-diagnostics.
+`validate_sensitivity` explicitly checks options, pointer/stride requirements,
+and scratch capacity. It returns `PrecisionCheck` with an error code, location,
+and required element count. The numerical `sensitivity_gene` overloads are
+trusted entry points: the caller supplies valid pointers and capacity and keeps
+all storage alive during the call. Empty inputs require no numerical storage.
 
 ## Selecting original columns
 
-`OriginalArraySource` retains two dense host `anndatapp::ArrayView`s and returns
-zero-copy single-column views when a requested source gene is acquired.
-Borrowed storage still requires its owner. Keep the source object alive while
-its views are in use.
+`Promotion` is caller-owned state containing the source-gene mask, optional
+prepared-to-source gene index array, caller-provided prepared-order status
+array, and typed source/replacement callbacks with caller-owned contexts. Keep
+the source mask and gene mapping immutable until both passes finish.
+`validate_promotion` checks capacities and gene indices. `initialize_promotion`
+resets statuses and promotion count. The caller then calls `promote_initial`
+for each processed block before fitting that block. Missing originals retain
+the baseline values and receive `PromotionStatus::unavailable`; unrequested
+positions remain `not_requested`. The count includes duplicate source genes
+when they appear at distinct prepared positions.
 
-`OriginalSource` accepts a callback for a backed or custom provider. It returns
-a dense N×1 FP32 or FP64 spliced/unspliced `ArrayView` pair, or reports that the
-pair is unavailable, and declares the provider's total staging bytes. Sum
-sparse duplicates when materializing a column. Values and owners must remain
-valid while used and consistent between initialization and stochastic
-refinement. Original columns must use the same cell order, normalization, and
-units as the prepared input.
+An `OriginalSource` callback supplies an already acquired pair of columns as
+`OriginalColumn`. The two pointers address the first logical observation;
+strides are signed **bytes**, including zero for a repeated value. Their full
+`(rows - 1) * stride` extent must fit `ptrdiff_t`; invalid extents are rejected
+before the replacement writes. Spliced and unspliced columns can independently
+use FP32 or FP64. Values must use the same
+cell order, normalization, and units as the prepared reference input and remain
+valid until the replacement callback returns. Reacquiring a gene for the second
+pass must reproduce the same values. The provider handles any sparse
+materialization and duplicate summation before supplying a column. A consumer
+replacement may allocate explicitly; its memory use and lifetime are its own
+contract.
 
-Construct `SelectiveStages32` or `SelectiveStochasticStages32` around the
-corresponding reference stage, workspace, and input. Supply a host byte mask
-indexed by source gene and keep it immutable for the run. Only requested genes
-with available original pairs are selected; missing originals retain the
-baseline input and receive an `unavailable` status.
-`promotion_status()` is in prepared-gene order and is null when no mask or genes
-were supplied. `promotion_count()` counts prepared-gene occurrences, including
-repeated selections.
+`ReferenceMoments<T>` binds an existing prepared input and the active first- or
+second-order moment blocks. Set the corresponding block pointer before each
+block and use `replace_reference32` or `replace_reference64` as the
+`MomentReplacement` callback. The replacement recomputes only requested
+columns using the prepared reference graph and writes directly to the existing
+caller-owned block buffers. Custom replacements may instead use entirely
+different representations and state.
 
-Initialization is complete before global low-signal and refit-all selection;
-the stochastic second pass reuses the same source choice. If a previously
-available original disappears between passes, execution fails before mixing
-source data. Graph weights are not promoted.
+In stochastic calculations the caller invokes `promote_second` on each second
+moment block after the same source choices were made during initialization.
+Previously promoted columns are reacquired. If an original disappears between
+passes, the function reports `unavailable` at that prepared position rather
+than silently mixing sources. Graph weights are unchanged. Blocks cover each
+prepared position once per pass; callback/state changes require caller
+synchronization. A failure leaves earlier positions complete, while a failing
+callback may have partially written its current position; no rollback occurs.
 
-The CPU convenience wrapper acquires one requested gene at a time to bound
-staging. For caller-controlled multigene batching, reference stages also expose
-`replace_moments` on a contiguous range while reusing the prepared graph and
-workspace. To apply a chosen source mask within a custom first pass, obtain
-baseline moments and fit, report sensitivity, replace explicitly chosen
-columns, recompute that block's initialization, and only then accept it.
-Alternatively run sensitivity reporting and source selection as separate
-explicit runs.
-
-See the [selective precision example](../examples/selective_precision.cpp) for
-a CPU stochastic run with an explicit source-gene mask.
+For sensitivity-guided source choice, screen the baseline initialization fit,
+choose the mask explicitly, recompute chosen moments, and then fit the promoted
+block. The caller can also run screening and source selection as separate
+passes with reusable scratch.
